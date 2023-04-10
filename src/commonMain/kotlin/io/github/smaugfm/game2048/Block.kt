@@ -1,0 +1,62 @@
+package io.github.smaugfm.game2048
+
+import korlibs.image.color.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
+
+class Block(val power: PowerOfTwo) : Container() {
+    init {
+        roundRect(Size(cellSize, cellSize), rectCorners, fill = color)
+        val textColor =
+            if (power.isLowest)
+                Colors.BLACK
+            else
+                Colors.WHITE
+        text(
+            power.score.toString(),
+            textSize.toFloat(),
+            textColor,
+            font
+        ) {
+            centerBetween(0.0, 0.0, cellSize, cellSize)
+        }
+    }
+
+    private val color
+        get() = when (power.power) {
+            1 -> RGBA(240, 228, 218)
+            2 -> RGBA(236, 224, 201)
+            3 -> RGBA(255, 178, 120)
+            4 -> RGBA(254, 150, 92)
+            5 -> RGBA(247, 123, 97)
+            6 -> RGBA(235, 88, 55)
+            7 -> RGBA(236, 220, 146)
+            8 -> RGBA(240, 212, 121)
+            9 -> RGBA(244, 206, 96)
+            10 -> RGBA(248, 200, 71)
+            11 -> RGBA(256, 194, 46)
+            12 -> RGBA(104, 130, 249)
+            13 -> RGBA(51, 85, 247)
+            14 -> RGBA(10, 47, 222)
+            15 -> RGBA(9, 43, 202)
+            16 -> RGBA(181, 37, 188)
+            17 -> RGBA(166, 34, 172)
+            else -> RGBA(166, 34, 172)
+        }
+
+
+    private val textSize
+        get() =
+            with(power) {
+                if (power <= 6) cellSize / 2
+                else if (power <= 9) cellSize * 4 / 9
+                else if (power <= 13) cellSize * 2 / 5
+                else if (power <= 16) cellSize * 7 / 20
+                else cellSize * 3 / 10
+            }
+
+    companion object {
+        fun Container.addBlock(power: PowerOfTwo) =
+            Block(power).addTo(this)
+    }
+}

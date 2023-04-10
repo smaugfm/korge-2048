@@ -5,6 +5,7 @@ plugins {
 korge {
     id = "io.github.smaugfm.game2048"
     name = "game2048"
+    jvmMainClassName = "io.github.smaugfm.game2048.MainKt"
 //    To enable all targets at once
 //    targetAll()
 

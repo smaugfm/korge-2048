@@ -1,7 +1,9 @@
+package io.github.smaugfm.game2048
+
 import korlibs.datastructure.iterators.fastForEach
 
 class History(from: String?, private val onUpdate: (History) -> Unit) {
-    class Element(val numberIds: IntArray, val score: Int)
+    class Element(val powers: IntArray, val score: Int)
 
     private val history = mutableListOf<Element>()
 
@@ -15,8 +17,8 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
         }
     }
 
-    fun add(numberIds: IntArray, score: Int) {
-        history.add(Element(numberIds, score))
+    fun add(powers: IntArray, score: Int) {
+        history.add(Element(powers, score))
         onUpdate(this)
     }
 
@@ -36,14 +38,14 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
     fun isEmpty() = history.isEmpty()
 
     private fun elementFromString(string: String): Element {
-        val numbers = string.split(',').map { it.toInt() }
-        if (numbers.size != 17) throw IllegalArgumentException("Incorrect history")
-        return Element(IntArray(16) { numbers[it] }, numbers[16])
+        val powers = string.split(',').map { it.toInt() }
+        if (powers.size != 17) throw IllegalArgumentException("Incorrect history")
+        return Element(IntArray(16) { powers[it] }, powers[16])
     }
 
     override fun toString(): String {
         return history.joinToString(";") {
-            it.numberIds.joinToString(",") + "," + it.score
+            it.powers.joinToString(",") + "," + it.score
         }
     }
 }
