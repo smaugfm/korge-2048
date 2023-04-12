@@ -8,57 +8,75 @@ object MoveGenerator {
 
     private val indices = 0 until boardArraySize
     private val directionIndexesMap = mapOf(
-        Direction.TOP to { i: Int -> i until boardArraySize step boardSize },
-        Direction.BOTTOM to { i: Int -> (i until boardArraySize step boardSize).reversed() },
-        Direction.LEFT to { i: Int -> i * boardSize until ((i + 1) * boardSize) },
-        Direction.RIGHT to { i: Int -> (i * boardSize until ((i + 1) * boardSize)).reversed() },
+        Direction.TOP to { i: Int -> (i until boardArraySize step boardSize).toList() },
+        Direction.BOTTOM to { i: Int -> (i until boardArraySize step boardSize).reversed().toList() },
+        Direction.LEFT to { i: Int -> (i * boardSize until ((i + 1) * boardSize)).toList() },
+        Direction.RIGHT to { i: Int -> (i * boardSize until ((i + 1) * boardSize)).reversed().toList() },
     )
 
-    data class Move(
-        val from: Int, val to: Int, val merge: Boolean
-    )
+    sealed interface BoardMove {
+        data class Move(val from: Int, val to: Int) : BoardMove
+        data class Merge(val from1: Int, val from2: Int, val to: Int) : BoardMove
+    }
 
     data class MoveBoardResult(
         val board: Board,
-        val moves: List<Move>,
+        val moves: List<BoardMove>,
     )
 
     fun moveBoard(board: Board, direction: Direction): MoveBoardResult {
-        val newMap = Board()
-        val moves = mutableListOf<Move>()
+        val newBoard = Board()
+        val moves = mutableListOf<BoardMove>()
+
         for (i in (0 until boardSize)) {
             val indexes = directionIndexesMap[direction]!!(i)
-            moveMapLine(indexes, board, newMap, moves)
+            moveLine(indexes, board, newBoard, moves)
         }
 
-        return MoveBoardResult(newMap, moves)
+        return MoveBoardResult(newBoard, moves)
     }
 
-    fun moveMapLine(
-        indexes: Iterable<Int>,
-        board: Board,
-        newMap: Board,
-        moves: MutableList<Move>,
-    ) {
-        val newIndexes = indexes.iterator()
-        var newMapIndex = newIndexes.next()
-        var merged = false
+    private fun firstNotEmpty(board: Board, indexes: List<Int>, startFrom: Int? = -1): Int? {
+        if (startFrom == null)
+            return null
+        var i = startFrom + 1
+        while (i < indexes.size) {
+            if (board[indexes[i]] > 0)
+                return i
+            i++
+        }
 
-        for (oldMapIndex in indexes) {
-            val moving = board[oldMapIndex]
-            if (moving <= 0)
-                continue
-            if (!merged && moving == newMap[newMapIndex]) {
-                newMap[newMapIndex] += 1
-                merged = true
+        return null
+    }
+
+    fun moveLine(
+        indexes: List<Int>,
+        board: Board,
+        newBoard: Board,
+        moves: MutableList<BoardMove>
+    ) {
+        var oldCursor1: Int? = firstNotEmpty(board, indexes) ?: return
+        var oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
+        var newCursor = 0
+
+        while (oldCursor1 != null) {
+            if (oldCursor2 != null && board[indexes[oldCursor1]] == board[indexes[oldCursor2]]) {
+                newBoard[indexes[newCursor]] = board[indexes[oldCursor1]] + 1
+                moves.add(BoardMove.Merge(indexes[oldCursor1], indexes[oldCursor2], indexes[newCursor]))
+                oldCursor1 = firstNotEmpty(board, indexes, oldCursor2)
+                oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
+                newCursor++
             } else {
-                if (newMap[newMapIndex] > 0)
-                    newMapIndex = newIndexes.next()
-                newMap[newMapIndex] = moving
-                merged = false
-            }
-            if (oldMapIndex != newMapIndex) {
-                moves.add(Move(oldMapIndex, newMapIndex, merged))
+                newBoard[indexes[newCursor]] = board[indexes[oldCursor1]]
+                if (oldCursor1 != newCursor)
+                    moves.add(BoardMove.Move(indexes[oldCursor1], indexes[newCursor]))
+                newCursor++
+                if (oldCursor2 != null) {
+                    oldCursor1 = oldCursor2
+                    oldCursor2 = firstNotEmpty(board, indexes, oldCursor2)
+                } else {
+                    return
+                }
             }
         }
     }

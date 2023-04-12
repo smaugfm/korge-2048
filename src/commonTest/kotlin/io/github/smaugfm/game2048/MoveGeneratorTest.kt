@@ -45,6 +45,12 @@ class MoveGeneratorTest {
     }
 
     @Test
+    fun testMoveLine0() {
+        val newBoard = genPosMapForOneLine(intArrayOf(1, 2, 3, -1))
+        assertEquals(posMapOneLine(intArrayOf(1, 2, 3, -1)), newBoard)
+    }
+
+    @Test
     fun testMoveLine1() {
         val newBoard = genPosMapForOneLine(intArrayOf(1, 1, 1, 1))
         assertEquals(posMapOneLine(intArrayOf(2, 2, -1, -1)), newBoard)
@@ -104,18 +110,24 @@ class MoveGeneratorTest {
         assertEquals(posMapOneLine(intArrayOf(1, -1, -1, -1)), newBoard)
     }
 
+    @Test
+    fun testMoveLine11() {
+        val newBoard = genPosMapForOneLine(intArrayOf(1, 2, 3, 4))
+        assertEquals(posMapOneLine(intArrayOf(1, 2, 3, 4)), newBoard)
+    }
+
     private fun posMapOneLine(array: IntArray) =
         Board(array + IntArray(boardArraySize - array.size) { -1 })
 
     private fun genPosMapForOneLine(array: IntArray): Board {
-        val boadr = posMapOneLine(array)
+        val board = posMapOneLine(array)
         val newBoard = Board()
-        val moves = mutableListOf<MoveGenerator.Move>()
-        MoveGenerator.moveMapLine(
+        val moves = mutableListOf<MoveGenerator.BoardMove>()
+        MoveGenerator.moveLine(
             listOf(0, 1, 2, 3),
-            boadr,
+            board,
             newBoard,
-            moves,
+            moves
         )
         return newBoard
     }

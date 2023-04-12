@@ -1,16 +1,15 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.core.MoveGenerator
-import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
-import io.github.smaugfm.game2048.core.PowerOfTwo
 import io.github.smaugfm.game2048.board
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.cellPadding
 import io.github.smaugfm.game2048.cellSize
+import io.github.smaugfm.game2048.core.MoveGenerator
+import io.github.smaugfm.game2048.core.PowerOfTwo
 import io.github.smaugfm.game2048.rectCorners
 import io.github.smaugfm.game2048.rectRadius
-import korlibs.datastructure.iterators.fastForEach
+import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
 import korlibs.image.color.Colors
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
@@ -31,9 +30,7 @@ class UiBoard(virtualWidth: Int) : Container() {
         val boardSizePixels: Double = 50 + 4 * cellSize
         position((virtualWidth - boardSizePixels) / 2, 150.0)
         roundRect(
-            Size(boardSizePixels, boardSizePixels),
-            rectCorners,
-            Colors["#b9aea0"]
+            Size(boardSizePixels, boardSizePixels), rectCorners, Colors["#b9aea0"]
         ) {
             graphics {
                 for (i in 0 until boardSize) {
@@ -54,46 +51,53 @@ class UiBoard(virtualWidth: Int) : Container() {
     }
 
     fun clear() {
-        blocks.indices.forEach(::deleteBlock)
+        blocks.indices.forEach {
+            blocks[it]?.removeFromParent()
+            blocks[it] = null
+        }
     }
 
-    fun createNewBlock(power: PowerOfTwo, index: Int) {
-        blocks[index] = addBlock(power, index)
+    fun createNewBlock(power: PowerOfTwo, index: Int): UiBlock {
+        return addBlock(power, index)
+            .also {
+                blocks[index] = it
+            }
     }
 
     suspend fun animate(
-        moves: List<MoveGenerator.Move>,
+        boardMoves: List<MoveGenerator.BoardMove>,
         onEnd: () -> Unit
-    ) = animate {
-        parallel {
-            moves.fastForEach { (from, to, merge) ->
-                animateMove(from, to)
-                if (merge)
-                    animateMerge(from, to)
+    ): Animator {
+        return animate {
+            parallel {
+                boardMoves.forEach {
+                    when (it) {
+                        is MoveGenerator.BoardMove.Move -> {
+                            animateMove(it.from, it.to)
+                        }
+
+                        is MoveGenerator.BoardMove.Merge -> {
+                            animateMerge(it.from1, it.from2, it.to)
+                        }
+                    }
+                }
+            }
+            block {
+                onEnd()
             }
         }
-        block {
-            onEnd()
-        }
     }
 
-    private fun Animator.animateMove(
-        from: Int,
-        to: Int
-    ) {
-        val block = blocks[from]!!
-        block.animateMove(this, to)
-        deleteBlock(to)
-        blocks[to] = block
-    }
-
-    private fun Animator.animateMerge(from: Int, to: Int) {
+    private fun Animator.animateMerge(from1: Int, from2: Int, to: Int) {
         sequence {
+            parallel {
+                blocks[from1]!!.animateMove(this, to)
+                blocks[from2]!!.animateMove(this, to)
+            }
             block {
-                val nextPower = board.power(from).next()
-                deleteBlock(from)
-                deleteBlock(to)
-                createNewBlock(nextPower, to)
+                blocks[from1]!!.removeFromParent()
+                blocks[from2]!!.removeFromParent()
+                createNewBlock(board.power(from1).next(), to)
             }
             sequenceLazy {
                 blocks[to]!!.animateScale(this)
@@ -101,18 +105,22 @@ class UiBoard(virtualWidth: Int) : Container() {
         }
     }
 
-    private fun deleteBlock(index: Int) {
-        val b = blocks[index]
-        b?.removeFromParent()
-        blocks[index] = null
+    private fun Animator.animateMove(
+        from: Int,
+        to: Int,
+    ) {
+        sequence {
+            blocks[from]!!.animateMove(this, to)
+            block {
+                blocks[to] = blocks[from]
+                blocks[from] = null
+            }
+        }
     }
 
     companion object {
-        fun Stage.addBoard() =
-            UiBoard(views.virtualWidth)
-                .addTo(this)
+        fun Stage.addBoard() = UiBoard(views.virtualWidth).addTo(this)
 
-        private operator fun Scale.plus(d: Double): Scale =
-            Scale(scaleX + d, scaleY + d)
+        private operator fun Scale.plus(d: Double): Scale = Scale(scaleX + d, scaleY + d)
     }
 }

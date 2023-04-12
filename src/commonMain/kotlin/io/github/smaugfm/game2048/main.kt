@@ -1,12 +1,12 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
 import io.github.smaugfm.game2048.core.Board.Companion.board
 import io.github.smaugfm.game2048.core.Direction
 import io.github.smaugfm.game2048.core.MoveGenerator
 import io.github.smaugfm.game2048.core.PowerOfTwo
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UiBoard
+import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
 import io.github.smaugfm.game2048.ui.addStaticUi
 import korlibs.event.Key
 import korlibs.image.bitmap.Bitmap
@@ -108,13 +108,15 @@ fun Stage.moveBlocksTo(direction: Direction) {
         }
     }
 
-    val (newMap, moves) = MoveGenerator.moveBoard(board, direction)
-    if (board != newMap) {
+    val (newBoard, moves) = MoveGenerator.moveBoard(board, direction)
+    if (board != newBoard) {
         isAnimationRunning = true
         launchImmediately {
             uiBoard.animate(moves) {
-                board = newMap
-                val points = moves.filter { it.merge }.sumOf { board.power(it.to).score }
+                board = newBoard
+                val points = moves
+                    .filterIsInstance<MoveGenerator.BoardMove.Move>()
+                    .sumOf { board.power(it.to).score }
                 score.update(score.value + points)
                 generateBlockAndSave()
                 isAnimationRunning = false
