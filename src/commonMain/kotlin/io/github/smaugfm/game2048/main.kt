@@ -1,7 +1,13 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.Board.Companion.addBoard
-import io.github.smaugfm.game2048.PositionMap.Companion.positionMap
+import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
+import io.github.smaugfm.game2048.core.Board.Companion.board
+import io.github.smaugfm.game2048.core.Direction
+import io.github.smaugfm.game2048.core.MoveGenerator
+import io.github.smaugfm.game2048.core.PowerOfTwo
+import io.github.smaugfm.game2048.persistence.History
+import io.github.smaugfm.game2048.ui.UiBoard
+import io.github.smaugfm.game2048.ui.addStaticUi
 import korlibs.event.Key
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
@@ -35,10 +41,12 @@ import korlibs.math.geom.Size
 import kotlin.properties.Delegates
 import kotlin.random.Random
 
-var cellSize: Double = 0.0
 const val cellPadding = 10
-var btnSize: Double = 0.0
 const val rectRadius = 5.0
+const val boardSize = 4
+const val boardArraySize = boardSize * boardSize
+var btnSize: Double = 0.0
+var cellSize: Double = 0.0
 val rectCorners = RectCorners(rectRadius)
 var font: Font by Delegates.notNull()
 var restartImg: Bitmap by Delegates.notNull()
@@ -48,11 +56,8 @@ var isAnimationRunning = false
 var isGameOver = false
 val score = ObservableProperty(0)
 val best = ObservableProperty(0)
-var board: Board by Delegates.notNull()
-const val boardSize = 4
-const val boardArraySize = boardSize * boardSize
-
-var map = positionMap()
+var uiBoard: UiBoard by Delegates.notNull()
+var board = board()
 
 suspend fun main() = Korge(
     KorgeConfig(
@@ -62,7 +67,7 @@ suspend fun main() = Korge(
     )
 ) {
     setupGame()
-    board = addBoard()
+    uiBoard = addBoard()
     addStaticUi()
     if (!history.isEmpty()) {
         restoreField(history.currentElement)
@@ -94,7 +99,7 @@ suspend fun main() = Korge(
 fun Stage.moveBlocksTo(direction: Direction) {
     if (isAnimationRunning) return
 
-    if (!MoveGenerator.hasAvailableMoves(map)) {
+    if (!MoveGenerator.hasAvailableMoves(board)) {
         if (!isGameOver) {
             isGameOver = true
             showGameOver {
@@ -103,13 +108,13 @@ fun Stage.moveBlocksTo(direction: Direction) {
         }
     }
 
-    val (newMap, moves) = MoveGenerator.moveMap(map, direction)
-    if (map != newMap) {
+    val (newMap, moves) = MoveGenerator.moveBoard(board, direction)
+    if (board != newMap) {
         isAnimationRunning = true
         launchImmediately {
-            board.animate(moves) {
-                map = newMap
-                val points = moves.filter { it.merge }.sumOf { map.power(it.to).score }
+            uiBoard.animate(moves) {
+                board = newMap
+                val points = moves.filter { it.merge }.sumOf { board.power(it.to).score }
                 score.update(score.value + points)
                 generateBlockAndSave()
                 isAnimationRunning = false
@@ -123,14 +128,14 @@ fun Container.showGameOver(onRestart: () -> Unit) = container {
         this@container.removeFromParent()
         onRestart()
     }
-    position(board.pos)
-    roundRect(board.size, rectCorners, Colors["#FFFFFF33"])
+    position(uiBoard.pos)
+    roundRect(uiBoard.size, rectCorners, Colors["#FFFFFF33"])
     text("Game Over", 60f, Colors.BLACK, font) {
-        centerOn(board)
+        centerOn(uiBoard)
         y -= 60
     }
     text("Try again", 40f, Colors.BLACK, font) {
-        centerOn(board)
+        centerOn(uiBoard)
         y += 20
         onOver {
             onOver { color = RGBA(90, 90, 90) }
@@ -150,29 +155,29 @@ fun Container.showGameOver(onRestart: () -> Unit) = container {
 
 fun restart() {
     isGameOver = false
-    map = positionMap()
-    board.clear()
+    board = board()
+    uiBoard.clear()
     score.update(0)
     history.clear()
     generateBlockAndSave()
 }
 
 fun generateBlockAndSave() {
-    val index = map.getRandomFreeIndex() ?: return
+    val index = board.getRandomFreeIndex() ?: return
     val power = if (Random.nextDouble() < 0.9) PowerOfTwo(1) else PowerOfTwo(2)
-    board.createNewBlock(power, index)
-    map[index] = power.power
-    history.add(map.powers(), score.value)
+    uiBoard.createNewBlock(power, index)
+    board[index] = power.power
+    history.add(board.powers(), score.value)
 }
 
 fun restoreField(historyElement: History.Element) {
-    board.clear()
-    map = positionMap()
+    uiBoard.clear()
+    board = board()
     score.update(historyElement.score)
     historyElement.powers.forEachIndexed { i, power ->
         if (power > 0) {
-            board.createNewBlock(PowerOfTwo(power), i)
-            map[i] = power
+            uiBoard.createNewBlock(PowerOfTwo(power), i)
+            board[i] = power
         }
     }
 }

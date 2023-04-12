@@ -1,5 +1,17 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.ui
 
+import io.github.smaugfm.game2048.best
+import io.github.smaugfm.game2048.btnSize
+import io.github.smaugfm.game2048.cellSize
+import io.github.smaugfm.game2048.font
+import io.github.smaugfm.game2048.history
+import io.github.smaugfm.game2048.rectCorners
+import io.github.smaugfm.game2048.restart
+import io.github.smaugfm.game2048.restartImg
+import io.github.smaugfm.game2048.restoreField
+import io.github.smaugfm.game2048.score
+import io.github.smaugfm.game2048.uiBoard
+import io.github.smaugfm.game2048.undoImg
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.image.text.TextAlignment
@@ -30,7 +42,7 @@ import korlibs.math.geom.Size
 fun Stage.addStaticUi() {
     val bgLogo = addLogo()
     val bgBest = addLabel("BEST", best) {
-        alignRightToRightOf(board)
+        alignRightToRightOf(uiBoard)
         alignTopToTopOf(bgLogo)
     }
     addLabel("SCORE", score) {
@@ -38,7 +50,7 @@ fun Stage.addStaticUi() {
         alignTopToTopOf(bgBest)
     }
 
-    addButtons(bgBest, board)
+    addButtons(bgBest, uiBoard)
 }
 
 
@@ -106,7 +118,7 @@ private fun Stage.addLogo(): RoundRect {
         rectCorners,
         Colors["#edc403"]
     ) {
-        alignLeftToLeftOf(board)
+        alignLeftToLeftOf(uiBoard)
         positionY(30)
     }
     text(

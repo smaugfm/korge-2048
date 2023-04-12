@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.core
 
 @JvmInline
 value class PowerOfTwo(val power: Int) {

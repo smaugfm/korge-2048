@@ -1,7 +1,15 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.Block.Companion.addBlock
-import io.github.smaugfm.game2048.Position.Companion.toPosition
+import io.github.smaugfm.game2048.core.MoveGenerator
+import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
+import io.github.smaugfm.game2048.core.PowerOfTwo
+import io.github.smaugfm.game2048.board
+import io.github.smaugfm.game2048.boardArraySize
+import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.cellPadding
+import io.github.smaugfm.game2048.cellSize
+import io.github.smaugfm.game2048.rectCorners
+import io.github.smaugfm.game2048.rectRadius
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.image.color.Colors
 import korlibs.korge.animate.Animator
@@ -16,8 +24,8 @@ import korlibs.korge.view.roundRect
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 
-class Board(virtualWidth: Int) : Container() {
-    private val blocks = arrayOfNulls<Block>(boardArraySize)
+class UiBoard(virtualWidth: Int) : Container() {
+    private val blocks = arrayOfNulls<UiBlock>(boardArraySize)
 
     init {
         val boardSizePixels: Double = 50 + 4 * cellSize
@@ -50,7 +58,7 @@ class Board(virtualWidth: Int) : Container() {
     }
 
     fun createNewBlock(power: PowerOfTwo, index: Int) {
-        blocks[index] = addBlock(power, index.toPosition())
+        blocks[index] = addBlock(power, index)
     }
 
     suspend fun animate(
@@ -74,7 +82,7 @@ class Board(virtualWidth: Int) : Container() {
         to: Int
     ) {
         val block = blocks[from]!!
-        block.animateMove(this, to.toPosition())
+        block.animateMove(this, to)
         deleteBlock(to)
         blocks[to] = block
     }
@@ -82,7 +90,7 @@ class Board(virtualWidth: Int) : Container() {
     private fun Animator.animateMerge(from: Int, to: Int) {
         sequence {
             block {
-                val nextPower = map.power(from).next()
+                val nextPower = board.power(from).next()
                 deleteBlock(from)
                 deleteBlock(to)
                 createNewBlock(nextPower, to)
@@ -101,7 +109,7 @@ class Board(virtualWidth: Int) : Container() {
 
     companion object {
         fun Stage.addBoard() =
-            Board(views.virtualWidth)
+            UiBoard(views.virtualWidth)
                 .addTo(this)
 
         private operator fun Scale.plus(d: Double): Scale =

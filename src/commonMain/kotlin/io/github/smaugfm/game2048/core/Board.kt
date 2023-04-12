@@ -1,8 +1,10 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.core
 
+import io.github.smaugfm.game2048.boardArraySize
+import io.github.smaugfm.game2048.boardSize
 import korlibs.datastructure.IntArray2
 
-class PositionMap(
+class Board(
     private val array: IntArray = IntArray(boardArraySize) { -1 }
 ) {
     operator fun get(index: Int) = array[index]
@@ -19,7 +21,7 @@ class PositionMap(
     fun powers() = array
 
     override fun equals(other: Any?): Boolean =
-        (other is PositionMap) && this.array.contentEquals(other.array)
+        (other is Board) && this.array.contentEquals(other.array)
 
     override fun hashCode() = array.hashCode()
 
@@ -27,6 +29,6 @@ class PositionMap(
         IntArray2(boardSize, boardSize, array).toString()
 
     companion object {
-        fun positionMap() = PositionMap()
+        fun board() = Board()
     }
 }

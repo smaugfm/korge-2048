@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.persistence
 
 import korlibs.datastructure.iterators.fastForEach
 

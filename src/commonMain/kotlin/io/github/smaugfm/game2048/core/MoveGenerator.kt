@@ -1,6 +1,8 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.core
 
-import io.github.smaugfm.game2048.Position.Companion.toPosition
+import io.github.smaugfm.game2048.boardArraySize
+import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.ui.UiBlock.Companion.toPosition
 
 object MoveGenerator {
 
@@ -16,26 +18,26 @@ object MoveGenerator {
         val from: Int, val to: Int, val merge: Boolean
     )
 
-    data class MoveMapResult(
-        val map: PositionMap,
+    data class MoveBoardResult(
+        val board: Board,
         val moves: List<Move>,
     )
 
-    fun moveMap(map: PositionMap, direction: Direction): MoveMapResult {
-        val newMap = PositionMap()
+    fun moveBoard(board: Board, direction: Direction): MoveBoardResult {
+        val newMap = Board()
         val moves = mutableListOf<Move>()
         for (i in (0 until boardSize)) {
             val indexes = directionIndexesMap[direction]!!(i)
-            moveMapLine(indexes, map, newMap, moves)
+            moveMapLine(indexes, board, newMap, moves)
         }
 
-        return MoveMapResult(newMap, moves)
+        return MoveBoardResult(newMap, moves)
     }
 
     fun moveMapLine(
         indexes: Iterable<Int>,
-        map: PositionMap,
-        newMap: PositionMap,
+        board: Board,
+        newMap: Board,
         moves: MutableList<Move>,
     ) {
         val newIndexes = indexes.iterator()
@@ -43,7 +45,7 @@ object MoveGenerator {
         var merged = false
 
         for (oldMapIndex in indexes) {
-            val moving = map[oldMapIndex]
+            val moving = board[oldMapIndex]
             if (moving <= 0)
                 continue
             if (!merged && moving == newMap[newMapIndex]) {
@@ -62,24 +64,24 @@ object MoveGenerator {
     }
 
 
-    fun hasAvailableMoves(map: PositionMap): Boolean =
+    fun hasAvailableMoves(board: Board): Boolean =
         indices.any { i ->
-            hasAdjacentEqualPosition(map, i)
+            hasAdjacentEqualPosition(board, i)
         }
 
-    private fun PositionMap.getXY(x: Int, y: Int): Int {
+    private fun Board.getXY(x: Int, y: Int): Int {
         val index = y * boardSize + x
         if (index < 0 || index >= boardSize)
             return -1
         return this[index]
     }
 
-    private fun hasAdjacentEqualPosition(map: PositionMap, i: Int): Boolean {
-        val value = map[i]
+    private fun hasAdjacentEqualPosition(board: Board, i: Int): Boolean {
+        val value = board[i]
         val pos = i.toPosition()
-        return value == map.getXY(pos.x - 1, pos.y) ||
-            value == map.getXY(pos.x + 1, pos.y) ||
-            value == map.getXY(pos.x, pos.y - 1) ||
-            value == map.getXY(pos.x, pos.y + 1)
+        return value == board.getXY(pos.x - 1, pos.y) ||
+            value == board.getXY(pos.x + 1, pos.y) ||
+            value == board.getXY(pos.x, pos.y - 1) ||
+            value == board.getXY(pos.x, pos.y + 1)
     }
 }
