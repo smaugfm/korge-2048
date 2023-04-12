@@ -12,7 +12,7 @@ import korlibs.io.async.ObservableProperty
 import korlibs.io.file.std.*
 import korlibs.korge.*
 import korlibs.korge.input.*
-import korlibs.korge.service.storage.*
+import korlibs.korge.service.storage.storage
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import kotlin.properties.*
@@ -32,51 +32,52 @@ var isGameOver = false
 val score = ObservableProperty(0)
 val best = ObservableProperty(0)
 var board: Board by Delegates.notNull()
+const val boardSize = 4
+const val boardArraySize = boardSize * boardSize
 
 var map = positionMap()
 
-suspend fun main() =
-    Korge(
-        KorgeConfig(
-            windowSize = Size(480, 640),
-            title = "2048",
-            backgroundColor = RGBA(253, 247, 240),
-        )
-    ) {
-        setupGame()
-        board = addBoard()
-        addStaticUi()
-        if (!history.isEmpty()) {
-            restoreField(history.currentElement)
-        } else {
-            generateBlockAndSave()
-        }
+suspend fun main() = Korge(
+    KorgeConfig(
+        windowSize = Size(480, 640),
+        title = "2048",
+        backgroundColor = RGBA(253, 247, 240),
+    )
+) {
+    setupGame()
+    board = addBoard()
+    addStaticUi()
+    if (!history.isEmpty()) {
+        restoreField(history.currentElement)
+    } else {
+        generateBlockAndSave()
+    }
 
-        keys {
-            down {
-                when (it.key) {
-                    Key.LEFT -> moveBlocksTo(Direction.LEFT)
-                    Key.RIGHT -> moveBlocksTo(Direction.RIGHT)
-                    Key.UP -> moveBlocksTo(Direction.TOP)
-                    Key.DOWN -> moveBlocksTo(Direction.BOTTOM)
-                    else -> Unit
-                }
-            }
-        }
-        onSwipe(20.0) {
-            when (it.direction) {
-                SwipeDirection.LEFT -> moveBlocksTo(Direction.LEFT)
-                SwipeDirection.RIGHT -> moveBlocksTo(Direction.RIGHT)
-                SwipeDirection.TOP -> moveBlocksTo(Direction.TOP)
-                SwipeDirection.BOTTOM -> moveBlocksTo(Direction.BOTTOM)
+    keys {
+        down {
+            when (it.key) {
+                Key.LEFT -> moveBlocksTo(Direction.LEFT)
+                Key.RIGHT -> moveBlocksTo(Direction.RIGHT)
+                Key.UP -> moveBlocksTo(Direction.TOP)
+                Key.DOWN -> moveBlocksTo(Direction.BOTTOM)
+                else -> Unit
             }
         }
     }
+    onSwipe(20.0) {
+        when (it.direction) {
+            SwipeDirection.LEFT -> moveBlocksTo(Direction.LEFT)
+            SwipeDirection.RIGHT -> moveBlocksTo(Direction.RIGHT)
+            SwipeDirection.TOP -> moveBlocksTo(Direction.TOP)
+            SwipeDirection.BOTTOM -> moveBlocksTo(Direction.BOTTOM)
+        }
+    }
+}
 
 fun Stage.moveBlocksTo(direction: Direction) {
     if (isAnimationRunning) return
 
-    if (!map.hasAvailableMoves()) {
+    if (!MoveGenerator.hasAvailableMoves(map)) {
         if (!isGameOver) {
             isGameOver = true
             showGameOver {
@@ -85,16 +86,13 @@ fun Stage.moveBlocksTo(direction: Direction) {
         }
     }
 
-    val moves = mutableListOf<Pair<Int, Position>>()
-    val merges = mutableListOf<Triple<Int, Int, Position>>()
-
-    val newMap = map.calculateNewMap(direction, moves, merges)
+    val (newMap, moves) = MoveGenerator.moveMap(map, direction)
     if (map != newMap) {
         isAnimationRunning = true
         launchImmediately {
-            board.animate(moves, merges) {
+            board.animate(moves) {
                 map = newMap
-                val points = merges.sumOf { board.getPower(it.first).score }
+                val points = moves.filter { it.merge }.sumOf { map.power(it.to).score }
                 score.update(score.value + points)
                 generateBlockAndSave()
                 isAnimationRunning = false
@@ -143,10 +141,10 @@ fun restart() {
 }
 
 fun generateBlockAndSave() {
-    val position = map.getRandomFreePosition() ?: return
+    val index = map.getRandomFreeIndex() ?: return
     val power = if (Random.nextDouble() < 0.9) PowerOfTwo(1) else PowerOfTwo(2)
-    val newId = board.createNewBlock(power, position)
-    map[position.x, position.y] = newId
+    board.createNewBlock(power, index)
+    map[index] = power.power
     history.add(map.powers(), score.value)
 }
 
@@ -156,9 +154,8 @@ fun restoreField(historyElement: History.Element) {
     score.update(historyElement.score)
     historyElement.powers.forEachIndexed { i, power ->
         if (power > 0) {
-            val newId =
-                board.createNewBlock(PowerOfTwo(power), Position(i % 4, i / 4))
-            map[i % 4, i / 4] = newId
+            board.createNewBlock(PowerOfTwo(power), i)
+            map[i] = power
         }
     }
 }

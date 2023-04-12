@@ -1,8 +1,14 @@
 package io.github.smaugfm.game2048
 
 import korlibs.image.color.*
+import korlibs.korge.animate.Animator
+import korlibs.korge.animate.moveTo
+import korlibs.korge.animate.tween
+import korlibs.korge.tween.get
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
+import korlibs.time.seconds
 
 class Block(val power: PowerOfTwo) : Container() {
     init {
@@ -55,8 +61,40 @@ class Block(val power: PowerOfTwo) : Container() {
                 else cellSize * 3 / 10
             }
 
+    fun animateMove(animator: Animator, to: Position) =
+        animator.moveTo(this, to.columnX, to.rowY, 0.15.seconds, Easing.LINEAR)
+
+    fun animateScale(animator: Animator) {
+        animator.tween(
+            this::x[x - 4],
+            this::y[y - 4],
+            this::scale[scale + 0.1],
+            time = 0.1.seconds,
+            easing = Easing.LINEAR
+        )
+        animator.tween(
+            this::x[x],
+            this::y[y],
+            this::scale[scale],
+            time = 0.1.seconds,
+            easing = Easing.LINEAR
+        )
+    }
+
+
     companion object {
-        fun Container.addBlock(power: PowerOfTwo) =
-            Block(power).addTo(this)
+        private val Position.columnX get() = cellPadding + (cellSize + cellPadding) * x
+        private val Position.rowY get() = cellPadding + (cellSize + cellPadding) * y
+
+        private operator fun Scale.plus(d: Double): Scale =
+            Scale(scaleX + d, scaleY + d)
+
+        fun Container.addBlock(power: PowerOfTwo, pos: Position) =
+            Block(power)
+                .addTo(this)
+                .position(
+                    pos.columnX,
+                    pos.rowY,
+                )
     }
 }

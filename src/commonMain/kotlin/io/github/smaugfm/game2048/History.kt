@@ -11,10 +11,13 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
         get() = history.last()
 
     init {
-        from?.split(';')?.fastForEach {
-            val element = elementFromString(it)
-            history.add(element)
-        }
+        from
+            .takeUnless { it?.isBlank() == true }
+            ?.split(';')
+            ?.fastForEach {
+                val element = elementFromString(it)
+                history.add(element)
+            }
     }
 
     fun add(powers: IntArray, score: Int) {
