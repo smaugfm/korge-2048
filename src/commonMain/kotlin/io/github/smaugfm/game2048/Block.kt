@@ -1,13 +1,20 @@
 package io.github.smaugfm.game2048
 
-import korlibs.image.color.*
+import korlibs.image.color.Colors
+import korlibs.image.color.RGBA
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.moveTo
 import korlibs.korge.animate.tween
 import korlibs.korge.tween.get
-import korlibs.korge.view.*
-import korlibs.math.geom.*
-import korlibs.math.interpolation.*
+import korlibs.korge.view.Container
+import korlibs.korge.view.addTo
+import korlibs.korge.view.centerBetween
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.text
+import korlibs.math.geom.Scale
+import korlibs.math.geom.Size
+import korlibs.math.interpolation.Easing
 import korlibs.time.seconds
 
 class Block(val power: PowerOfTwo) : Container() {

@@ -2,21 +2,38 @@ package io.github.smaugfm.game2048
 
 import io.github.smaugfm.game2048.Board.Companion.addBoard
 import io.github.smaugfm.game2048.PositionMap.Companion.positionMap
-import korlibs.event.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.image.format.*
-import korlibs.io.async.*
+import korlibs.event.Key
+import korlibs.image.bitmap.Bitmap
+import korlibs.image.color.Colors
+import korlibs.image.color.RGBA
+import korlibs.image.font.Font
+import korlibs.image.font.readTtfFont
+import korlibs.image.format.readBitmap
 import korlibs.io.async.ObservableProperty
-import korlibs.io.file.std.*
-import korlibs.korge.*
-import korlibs.korge.input.*
+import korlibs.io.async.launchImmediately
+import korlibs.io.file.std.resourcesVfs
+import korlibs.korge.Korge
+import korlibs.korge.KorgeConfig
+import korlibs.korge.input.SwipeDirection
+import korlibs.korge.input.keys
+import korlibs.korge.input.onClick
+import korlibs.korge.input.onDown
+import korlibs.korge.input.onOut
+import korlibs.korge.input.onOver
+import korlibs.korge.input.onSwipe
+import korlibs.korge.input.onUp
 import korlibs.korge.service.storage.storage
-import korlibs.korge.view.*
-import korlibs.math.geom.*
-import kotlin.properties.*
-import kotlin.random.*
+import korlibs.korge.view.Container
+import korlibs.korge.view.Stage
+import korlibs.korge.view.centerOn
+import korlibs.korge.view.container
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.text
+import korlibs.math.geom.RectCorners
+import korlibs.math.geom.Size
+import kotlin.properties.Delegates
+import kotlin.random.Random
 
 var cellSize: Double = 0.0
 const val cellPadding = 10

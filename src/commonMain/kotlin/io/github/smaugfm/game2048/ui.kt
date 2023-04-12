@@ -1,11 +1,31 @@
 package io.github.smaugfm.game2048
 
-import korlibs.image.color.*
-import korlibs.image.text.*
-import korlibs.io.async.*
-import korlibs.korge.input.*
-import korlibs.korge.view.*
-import korlibs.math.geom.*
+import korlibs.image.color.Colors
+import korlibs.image.color.RGBA
+import korlibs.image.text.TextAlignment
+import korlibs.io.async.ObservableProperty
+import korlibs.korge.input.onClick
+import korlibs.korge.view.RoundRect
+import korlibs.korge.view.Stage
+import korlibs.korge.view.View
+import korlibs.korge.view.ViewDslMarker
+import korlibs.korge.view.alignLeftToLeftOf
+import korlibs.korge.view.alignRightToLeftOf
+import korlibs.korge.view.alignRightToRightOf
+import korlibs.korge.view.alignTopToBottomOf
+import korlibs.korge.view.alignTopToTopOf
+import korlibs.korge.view.centerOn
+import korlibs.korge.view.centerXOn
+import korlibs.korge.view.centerYOn
+import korlibs.korge.view.container
+import korlibs.korge.view.image
+import korlibs.korge.view.positionY
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.setText
+import korlibs.korge.view.size
+import korlibs.korge.view.text
+import korlibs.math.geom.Rectangle
+import korlibs.math.geom.Size
 
 fun Stage.addStaticUi() {
     val bgLogo = addLogo()
