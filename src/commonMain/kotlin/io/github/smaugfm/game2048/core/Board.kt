@@ -7,6 +7,10 @@ import korlibs.datastructure.IntArray2
 class Board(
     private val array: IntArray = IntArray(boardArraySize) { -1 }
 ) {
+    init {
+        require(array.size == boardArraySize)
+    }
+
     operator fun get(index: Int) = array[index]
 
     fun power(index: Int) = PowerOfTwo(get(index))
@@ -27,8 +31,4 @@ class Board(
 
     override fun toString() =
         IntArray2(boardSize, boardSize, array).toString()
-
-    companion object {
-        fun board() = Board()
-    }
 }

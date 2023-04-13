@@ -1,5 +1,49 @@
+import kotlinx.benchmark.gradle.BenchmarksExtension
+import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
+
 plugins {
     id("com.soywiz.korge") version "4.0.0-beta3"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.8.20"
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.7"
+}
+
+allOpen {
+    annotation("org.openjdk.jmh.annotations.State")
+}
+
+kotlin {
+    targets {
+        jvm {
+            val benchmarkCompilation = compilations
+                .create("benchmark")
+
+            val benchmarksSourceSetName: String = benchmarkCompilation.defaultSourceSet.name
+            val benchmarksExtension: BenchmarksExtension = the<BenchmarksExtension>()
+            val benchmarkTarget = KotlinJvmBenchmarkTarget(
+                extension = benchmarksExtension,
+                name = benchmarksSourceSetName,
+                compilation = benchmarkCompilation
+            ).apply {
+                jmhVersion = "1.36"
+            }
+            benchmarksExtension.targets.add(benchmarkTarget)
+        }
+    }
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
+            }
+        }
+        val jvmMain by getting
+        val commonBenchmark by creating {
+            dependsOn(commonMain)
+        }
+        val jvmBenchmark by getting {
+            dependsOn(commonBenchmark)
+            dependsOn(jvmMain)
+        }
+    }
 }
 
 korge {

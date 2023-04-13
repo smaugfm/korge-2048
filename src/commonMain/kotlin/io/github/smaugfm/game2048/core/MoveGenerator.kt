@@ -3,6 +3,7 @@ package io.github.smaugfm.game2048.core
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.toPosition
+import kotlin.random.Random
 
 object MoveGenerator {
 
@@ -23,6 +24,19 @@ object MoveGenerator {
         val board: Board,
         val moves: List<BoardMove>,
     )
+
+    data class RandomBlockResult(
+        val power: PowerOfTwo,
+        val index: Int
+    )
+
+    fun placeRandomBlock(board: Board): RandomBlockResult? {
+        val index = board.getRandomFreeIndex() ?: return null
+        val power = if (Random.nextDouble() < 0.9) PowerOfTwo(1) else PowerOfTwo(2)
+        board[index] = power.power
+
+        return RandomBlockResult(power, index)
+    }
 
     fun moveBoard(board: Board, direction: Direction): MoveBoardResult {
         val newBoard = Board()

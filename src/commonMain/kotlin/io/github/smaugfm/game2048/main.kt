@@ -1,6 +1,6 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.core.Board.Companion.board
+import io.github.smaugfm.game2048.core.Board
 import io.github.smaugfm.game2048.core.Direction
 import io.github.smaugfm.game2048.core.MoveGenerator
 import io.github.smaugfm.game2048.core.PowerOfTwo
@@ -39,7 +39,6 @@ import korlibs.korge.view.text
 import korlibs.math.geom.RectCorners
 import korlibs.math.geom.Size
 import kotlin.properties.Delegates
-import kotlin.random.Random
 
 const val cellPadding = 10
 const val rectRadius = 5.0
@@ -57,7 +56,7 @@ var isGameOver = false
 val score = ObservableProperty(0)
 val best = ObservableProperty(0)
 var uiBoard: UiBoard by Delegates.notNull()
-var board = board()
+var board = Board()
 
 suspend fun main() = Korge(
     KorgeConfig(
@@ -157,7 +156,7 @@ fun Container.showGameOver(onRestart: () -> Unit) = container {
 
 fun restart() {
     isGameOver = false
-    board = board()
+    board = Board()
     uiBoard.clear()
     score.update(0)
     history.clear()
@@ -165,21 +164,18 @@ fun restart() {
 }
 
 fun generateBlockAndSave() {
-    val index = board.getRandomFreeIndex() ?: return
-    val power = if (Random.nextDouble() < 0.9) PowerOfTwo(1) else PowerOfTwo(2)
+    val (power, index) = MoveGenerator.placeRandomBlock(board) ?: return
     uiBoard.createNewBlock(power, index)
-    board[index] = power.power
     history.add(board.powers(), score.value)
 }
 
 fun restoreField(historyElement: History.Element) {
     uiBoard.clear()
-    board = board()
+    board = Board(historyElement.powers)
     score.update(historyElement.score)
     historyElement.powers.forEachIndexed { i, power ->
         if (power > 0) {
             uiBoard.createNewBlock(PowerOfTwo(power), i)
-            board[i] = power
         }
     }
 }
