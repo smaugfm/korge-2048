@@ -1,28 +1,18 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.cellPadding
-import io.github.smaugfm.game2048.cellSize
+import io.github.smaugfm.game2048.*
 import io.github.smaugfm.game2048.core.Tile
 import io.github.smaugfm.game2048.core.TileIndex
-import io.github.smaugfm.game2048.font
-import io.github.smaugfm.game2048.rectCorners
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.moveTo
 import korlibs.korge.animate.tween
 import korlibs.korge.tween.get
-import korlibs.korge.view.Container
-import korlibs.korge.view.addTo
-import korlibs.korge.view.centerBetween
-import korlibs.korge.view.position
-import korlibs.korge.view.roundRect
-import korlibs.korge.view.text
+import korlibs.korge.view.*
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 import korlibs.math.interpolation.Easing
-import korlibs.time.seconds
 
 class UiBlock(private val power: Tile) : Container() {
     init {
@@ -76,7 +66,7 @@ class UiBlock(private val power: Tile) : Container() {
             }
 
     fun animateMove(animator: Animator, to: TileIndex) {
-        animator.moveTo(this, to.columnX, to.rowY, 0.15.seconds, Easing.LINEAR)
+        animator.moveTo(this, to.columnX, to.rowY, moveAnimationDuration, Easing.LINEAR)
     }
 
     fun animateScale(animator: Animator) {
@@ -84,14 +74,14 @@ class UiBlock(private val power: Tile) : Container() {
             this::x[x - 4],
             this::y[y - 4],
             this::scale[scale + 0.1],
-            time = 0.1.seconds,
+            time = scaleAnimationDuration / 2,
             easing = Easing.LINEAR
         )
         animator.tween(
             this::x[x],
             this::y[y],
             this::scale[scale],
-            time = 0.1.seconds,
+            time = scaleAnimationDuration / 2,
             easing = Easing.LINEAR
         )
     }

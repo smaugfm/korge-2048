@@ -19,10 +19,15 @@ class Board(
         array[x] = value.power
     }
 
-    fun getRandomFreeIndex(): Int? =
-        array.withIndex()
-            .filter { Tile(it.value).isEmpty }
-            .randomOrNull()?.index
+    fun getRandomFreeIndex(): Int? {
+        var i = 0
+        while (i < array.size) {
+            if (Tile(array[i]).isEmpty)
+                return i
+            i++
+        }
+        return null
+    }
 
     fun powers() = array.map(::Tile).toTypedArray()
 

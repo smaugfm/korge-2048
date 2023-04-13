@@ -1,5 +1,7 @@
 package io.github.smaugfm.game2048.ui
 
+import io.github.smaugfm.game2048.backgroundColor
+import io.github.smaugfm.game2048.backgroundColorLight
 import io.github.smaugfm.game2048.board
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
@@ -31,12 +33,12 @@ class UiBoard(virtualWidth: Int) : Container() {
         val boardSizePixels: Double = 50 + 4 * cellSize
         position((virtualWidth - boardSizePixels) / 2, 150.0)
         roundRect(
-            Size(boardSizePixels, boardSizePixels), rectCorners, Colors["#b9aea0"]
+            Size(boardSizePixels, boardSizePixels), rectCorners, backgroundColor,
         ) {
             graphics {
                 for (i in 0 until boardSize) {
                     for (j in 0 until boardSize) {
-                        fill(Colors["#cec0b2"]) {
+                        fill(backgroundColorLight) {
                             roundRect(
                                 cellPadding + i * (cellPadding + cellSize),
                                 cellPadding + j * (cellPadding + cellSize),

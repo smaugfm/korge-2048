@@ -1,51 +1,20 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.best
-import io.github.smaugfm.game2048.btnSize
-import io.github.smaugfm.game2048.cellSize
-import io.github.smaugfm.game2048.font
-import io.github.smaugfm.game2048.history
-import io.github.smaugfm.game2048.rectCorners
-import io.github.smaugfm.game2048.restart
-import io.github.smaugfm.game2048.restartImg
-import io.github.smaugfm.game2048.restoreField
-import io.github.smaugfm.game2048.score
-import io.github.smaugfm.game2048.uiBoard
-import io.github.smaugfm.game2048.undoImg
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
+import io.github.smaugfm.game2048.*
 import korlibs.image.text.TextAlignment
 import korlibs.io.async.ObservableProperty
 import korlibs.korge.input.onClick
-import korlibs.korge.view.RoundRect
-import korlibs.korge.view.Stage
-import korlibs.korge.view.View
-import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.alignLeftToLeftOf
-import korlibs.korge.view.alignRightToLeftOf
-import korlibs.korge.view.alignRightToRightOf
-import korlibs.korge.view.alignTopToBottomOf
-import korlibs.korge.view.alignTopToTopOf
-import korlibs.korge.view.centerOn
-import korlibs.korge.view.centerXOn
-import korlibs.korge.view.centerYOn
-import korlibs.korge.view.container
-import korlibs.korge.view.image
-import korlibs.korge.view.positionY
-import korlibs.korge.view.roundRect
-import korlibs.korge.view.setText
-import korlibs.korge.view.size
-import korlibs.korge.view.text
+import korlibs.korge.view.*
 import korlibs.math.geom.Rectangle
 import korlibs.math.geom.Size
 
 fun Stage.addStaticUi() {
     val bgLogo = addLogo()
-    val bgBest = addLabel("BEST", best) {
+    val bgBest = addStat("BEST", best) {
         alignRightToRightOf(uiBoard)
         alignTopToTopOf(bgLogo)
     }
-    addLabel("SCORE", score) {
+    addStat("SCORE", score) {
         alignRightToLeftOf(bgBest, 24)
         alignTopToTopOf(bgBest)
     }
@@ -59,7 +28,7 @@ private fun Stage.addButtons(
     bgField: View,
 ) {
     val restartBlock = container {
-        val bg = roundRect(Size(btnSize, btnSize), rectCorners, RGBA(185, 174, 160))
+        val bg = roundRect(Size(btnSize, btnSize), rectCorners, backgroundColor)
         alignTopToBottomOf(bgBest, 5)
         alignRightToRightOf(bgField)
         image(restartImg) {
@@ -67,11 +36,12 @@ private fun Stage.addButtons(
             centerOn(bg)
         }
         onClick {
-            restart()
+            if (!isAiPlaying.value)
+                restart()
         }
     }
-    container {
-        val bg = roundRect(Size(btnSize, btnSize), rectCorners, RGBA(185, 174, 160))
+    val undoBlock = container {
+        val bg = roundRect(Size(btnSize, btnSize), rectCorners, backgroundColor)
         alignTopToTopOf(restartBlock)
         alignRightToLeftOf(restartBlock, 5.0)
         image(undoImg) {
@@ -79,12 +49,34 @@ private fun Stage.addButtons(
             centerOn(bg)
         }
         onClick {
-            restoreField(history.undo())
+            if (!isAiPlaying.value)
+                restoreField(history.undo())
+        }
+    }
+    val aiBlock = container {
+        val bg = roundRect(
+            Size(btnSize, btnSize),
+            rectCorners,
+            backgroundColor
+        )
+        alignTopToTopOf(undoBlock)
+        alignRightToLeftOf(undoBlock, 5.0)
+        text("AI", (btnSize * 0.7).toFloat(), textColor, fontBold) {
+            centerXOn(bg)
+            alignTopToTopOf(bg, -1)
+        }
+        onClick {
+            isAiPlaying.update(!isAiPlaying.value)
+
+            bg.fill = if (isAiPlaying.value)
+                accentColor
+            else
+                backgroundColor
         }
     }
 }
 
-private fun Stage.addLabel(
+private fun Stage.addStat(
     label: String,
     prop: ObservableProperty<Int>,
     callback: @ViewDslMarker (RoundRect.() -> Unit) = {}
@@ -92,14 +84,14 @@ private fun Stage.addLabel(
     val bgStat = roundRect(
         Size(cellSize * 1.5, cellSize * 0.8),
         rectCorners,
-        Colors["#bbae9e"],
+        backgroundColor,
         callback = callback
     )
-    text(label, cellSize.toFloat() * 0.2f, RGBA(239, 226, 210), font) {
+    text(label, cellSize.toFloat() * 0.2f, labelColor, font) {
         centerXOn(bgStat)
         alignTopToTopOf(bgStat, 5)
     }
-    text(prop.value.toString(), cellSize.toFloat() * 0.35f, Colors.WHITE, font) {
+    text(prop.value.toString(), cellSize.toFloat() * 0.35f, textColor, font) {
         setTextBounds(Rectangle(0.0, 0.0, bgStat.width.toDouble(), cellSize - 24.0))
         alignment = TextAlignment.MIDDLE_CENTER
         alignTopToTopOf(bgStat, 14.0)
@@ -116,7 +108,7 @@ private fun Stage.addLogo(): RoundRect {
     val bgLogo = roundRect(
         Size(cellSize, cellSize),
         rectCorners,
-        Colors["#edc403"]
+        accentColor,
     ) {
         alignLeftToLeftOf(uiBoard)
         positionY(30)
@@ -124,7 +116,7 @@ private fun Stage.addLogo(): RoundRect {
     text(
         "2048",
         cellSize.toFloat() * 0.4f,
-        Colors.WHITE,
+        textColor,
         font,
     ) {
         centerYOn(bgLogo)
