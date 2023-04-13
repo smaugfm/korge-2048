@@ -124,7 +124,7 @@ class MoveGeneratorTest {
         val newBoard = Board()
         val moves = mutableListOf<MoveGenerator.BoardMove>()
         MoveGenerator.moveLine(
-            listOf(0, 1, 2, 3),
+            intArrayOf(0, 1, 2, 3),
             board,
             newBoard,
             moves

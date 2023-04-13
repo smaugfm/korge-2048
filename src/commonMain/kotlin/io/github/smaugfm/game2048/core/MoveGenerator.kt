@@ -3,29 +3,14 @@ package io.github.smaugfm.game2048.core
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.toPosition
+import korlibs.datastructure.toIntList
 import kotlin.random.Random
 
 object MoveGenerator {
 
     private val indices = 0 until boardArraySize
-    private val directionIndexesMap = mapOf(
-        Direction.TOP to
-            (0 until boardSize).associateWith {
-                (it until boardArraySize step boardSize).toList()
-            },
-        Direction.BOTTOM to
-            (0 until boardSize).associateWith {
-                (it until boardArraySize step boardSize).reversed().toList()
-            },
-        Direction.LEFT to
-            (0 until boardSize).associateWith {
-                (it * boardSize until ((it + 1) * boardSize)).toList()
-            },
-        Direction.RIGHT to
-            (0 until boardSize).associateWith {
-                (it * boardSize until ((it + 1) * boardSize)).reversed().toList()
-            },
-    )
+    private val directionIndexesMap: Array<Array<IntArray>> =
+        initDirectionIndexesMap()
 
     sealed interface BoardMove {
         data class Move(val from: Int, val to: Int) : BoardMove
@@ -64,7 +49,7 @@ object MoveGenerator {
         val newBoard = Board()
 
         for (i in (0 until boardSize)) {
-            val indexes = directionIndexesMap.getValue(direction).getValue(i)
+            val indexes = directionIndexesMap[direction.ordinal][i]
             moveLine(indexes, board, newBoard, addMove, addMerge)
         }
 
@@ -88,7 +73,7 @@ object MoveGenerator {
     }
 
     fun moveLine(
-        indexes: List<Int>,
+        indexes: IntArray,
         board: Board,
         newBoard: Board,
         moves: MutableList<BoardMove>
@@ -103,7 +88,7 @@ object MoveGenerator {
     }
 
     fun moveLine(
-        indexes: List<Int>,
+        indexes: IntArray,
         board: Board,
         newBoard: Board,
         addMove: (from: Int, to: Int) -> Unit,
@@ -142,7 +127,7 @@ object MoveGenerator {
         }
     }
 
-    private fun firstNotEmpty(board: Board, indexes: List<Int>, startFrom: Int? = -1): Int? {
+    private fun firstNotEmpty(board: Board, indexes: IntArray, startFrom: Int? = -1): Int? {
         if (startFrom == null)
             return null
         var i = startFrom + 1
@@ -170,4 +155,27 @@ object MoveGenerator {
             value == board.getXY(pos.x, pos.y - 1) ||
             value == board.getXY(pos.x, pos.y + 1)
     }
+
+    private fun initDirectionIndexesMap(): Array<Array<IntArray>> =
+        Direction.values().map { dir ->
+            (0 until boardSize).map {
+                when (dir) {
+                    Direction.TOP ->
+                        it until boardArraySize step boardSize
+
+                    Direction.BOTTOM ->
+                        (it until boardArraySize step boardSize).reversed()
+
+                    Direction.LEFT ->
+                        it * boardSize until ((it + 1) * boardSize)
+
+                    Direction.RIGHT ->
+                        (it * boardSize until ((it + 1) * boardSize)).reversed()
+                }
+                    .toList()
+                    .toIntList()
+                    .toIntArray()
+            }.toTypedArray()
+        }.toTypedArray()
+
 }
