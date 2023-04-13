@@ -42,6 +42,11 @@ object MoveGenerator {
         val index: Int
     )
 
+    fun hasAvailableMoves(board: Board): Boolean =
+        indices.any { i ->
+            hasAdjacentEqualPosition(board, i)
+        }
+
     fun placeRandomBlock(board: Board): RandomBlockResult? {
         val index = board.getRandomFreeIndex() ?: return null
         val power = if (Random.nextDouble() < 0.9) PowerOfTwo(1) else PowerOfTwo(2)
@@ -50,16 +55,91 @@ object MoveGenerator {
         return RandomBlockResult(power, index)
     }
 
-    fun moveBoard(board: Board, direction: Direction): MoveBoardResult {
+    fun moveBoard(
+        board: Board,
+        direction: Direction,
+        addMove: (from: Int, to: Int) -> Unit,
+        addMerge: (from1: Int, from2: Int, to: Int) -> Unit,
+    ): Board {
         val newBoard = Board()
-        val moves = mutableListOf<BoardMove>()
 
         for (i in (0 until boardSize)) {
             val indexes = directionIndexesMap.getValue(direction).getValue(i)
-            moveLine(indexes, board, newBoard, moves)
+            moveLine(indexes, board, newBoard, addMove, addMerge)
         }
 
+        return newBoard
+    }
+
+    fun moveBoard(
+        board: Board,
+        direction: Direction
+    ): MoveBoardResult {
+        val moves = mutableListOf<BoardMove>()
+
+        val newBoard = moveBoard(
+            board,
+            direction,
+            { from, to -> moves.add(BoardMove.Move(from, to)) },
+            { from1, from2, to -> moves.add(BoardMove.Merge(from1, from2, to)) }
+        )
+
         return MoveBoardResult(newBoard, moves)
+    }
+
+    fun moveLine(
+        indexes: List<Int>,
+        board: Board,
+        newBoard: Board,
+        moves: MutableList<BoardMove>
+    ) {
+        moveLine(indexes, board, newBoard, { from, to ->
+            moves.add(BoardMove.Move(from, to))
+        },
+            { from1, from2, to ->
+                moves.add(BoardMove.Merge(from1, from2, to))
+            }
+        )
+    }
+
+    fun moveLine(
+        indexes: List<Int>,
+        board: Board,
+        newBoard: Board,
+        addMove: (from: Int, to: Int) -> Unit,
+        addMerge: (from1: Int, from2: Int, to: Int) -> Unit,
+    ) {
+        var oldCursor1: Int? = firstNotEmpty(board, indexes) ?: return
+        var oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
+        var newCursor = 0
+
+        while (oldCursor1 != null) {
+            if (oldCursor2 != null && board[indexes[oldCursor1]] == board[indexes[oldCursor2]]) {
+                newBoard[indexes[newCursor]] = board[indexes[oldCursor1]] + 1
+                addMerge(
+                    indexes[oldCursor1],
+                    indexes[oldCursor2],
+                    indexes[newCursor]
+                )
+                oldCursor1 = firstNotEmpty(board, indexes, oldCursor2)
+                oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
+                newCursor++
+            } else {
+                newBoard[indexes[newCursor]] = board[indexes[oldCursor1]]
+                if (oldCursor1 != newCursor)
+                    addMove(
+                        indexes[oldCursor1],
+                        indexes[newCursor]
+                    )
+                newCursor++
+                if (oldCursor2 != null) {
+                    oldCursor1 = oldCursor2
+                    oldCursor2 = firstNotEmpty(board, indexes, oldCursor2)
+                } else {
+                    return
+                }
+            }
+        }
     }
 
     private fun firstNotEmpty(board: Board, indexes: List<Int>, startFrom: Int? = -1): Int? {
@@ -74,50 +154,6 @@ object MoveGenerator {
 
         return null
     }
-
-    fun moveLine(
-        indexes: List<Int>,
-        board: Board,
-        newBoard: Board,
-        moves: MutableList<BoardMove>
-    ) {
-        var oldCursor1: Int? = firstNotEmpty(board, indexes) ?: return
-        var oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
-        var newCursor = 0
-
-        while (oldCursor1 != null) {
-            if (oldCursor2 != null && board[indexes[oldCursor1]] == board[indexes[oldCursor2]]) {
-                newBoard[indexes[newCursor]] = board[indexes[oldCursor1]] + 1
-                moves.add(
-                    BoardMove.Merge(
-                        indexes[oldCursor1],
-                        indexes[oldCursor2],
-                        indexes[newCursor]
-                    )
-                )
-                oldCursor1 = firstNotEmpty(board, indexes, oldCursor2)
-                oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
-                newCursor++
-            } else {
-                newBoard[indexes[newCursor]] = board[indexes[oldCursor1]]
-                if (oldCursor1 != newCursor)
-                    moves.add(BoardMove.Move(indexes[oldCursor1], indexes[newCursor]))
-                newCursor++
-                if (oldCursor2 != null) {
-                    oldCursor1 = oldCursor2
-                    oldCursor2 = firstNotEmpty(board, indexes, oldCursor2)
-                } else {
-                    return
-                }
-            }
-        }
-    }
-
-
-    fun hasAvailableMoves(board: Board): Boolean =
-        indices.any { i ->
-            hasAdjacentEqualPosition(board, i)
-        }
 
     private fun Board.getXY(x: Int, y: Int): Int {
         val index = y * boardSize + x
