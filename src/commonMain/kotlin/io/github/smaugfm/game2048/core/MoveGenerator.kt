@@ -9,10 +9,22 @@ object MoveGenerator {
 
     private val indices = 0 until boardArraySize
     private val directionIndexesMap = mapOf(
-        Direction.TOP to { i: Int -> (i until boardArraySize step boardSize).toList() },
-        Direction.BOTTOM to { i: Int -> (i until boardArraySize step boardSize).reversed().toList() },
-        Direction.LEFT to { i: Int -> (i * boardSize until ((i + 1) * boardSize)).toList() },
-        Direction.RIGHT to { i: Int -> (i * boardSize until ((i + 1) * boardSize)).reversed().toList() },
+        Direction.TOP to
+            (0 until boardSize).associateWith {
+                (it until boardArraySize step boardSize).toList()
+            },
+        Direction.BOTTOM to
+            (0 until boardSize).associateWith {
+                (it until boardArraySize step boardSize).reversed().toList()
+            },
+        Direction.LEFT to
+            (0 until boardSize).associateWith {
+                (it * boardSize until ((it + 1) * boardSize)).toList()
+            },
+        Direction.RIGHT to
+            (0 until boardSize).associateWith {
+                (it * boardSize until ((it + 1) * boardSize)).reversed().toList()
+            },
     )
 
     sealed interface BoardMove {
@@ -43,7 +55,7 @@ object MoveGenerator {
         val moves = mutableListOf<BoardMove>()
 
         for (i in (0 until boardSize)) {
-            val indexes = directionIndexesMap[direction]!!(i)
+            val indexes = directionIndexesMap.getValue(direction).getValue(i)
             moveLine(indexes, board, newBoard, moves)
         }
 
@@ -76,7 +88,13 @@ object MoveGenerator {
         while (oldCursor1 != null) {
             if (oldCursor2 != null && board[indexes[oldCursor1]] == board[indexes[oldCursor2]]) {
                 newBoard[indexes[newCursor]] = board[indexes[oldCursor1]] + 1
-                moves.add(BoardMove.Merge(indexes[oldCursor1], indexes[oldCursor2], indexes[newCursor]))
+                moves.add(
+                    BoardMove.Merge(
+                        indexes[oldCursor1],
+                        indexes[oldCursor2],
+                        indexes[newCursor]
+                    )
+                )
                 oldCursor1 = firstNotEmpty(board, indexes, oldCursor2)
                 oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
                 newCursor++
