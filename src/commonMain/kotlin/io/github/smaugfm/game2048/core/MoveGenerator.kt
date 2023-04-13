@@ -2,12 +2,10 @@ package io.github.smaugfm.game2048.core
 
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.ui.UiBlock.Companion.toPosition
 import korlibs.datastructure.toIntList
 import kotlin.random.Random
 
 object MoveGenerator {
-
     private val indices = 0 until boardArraySize
     private val directionIndexesMap: Array<Array<IntArray>> =
         initDirectionIndexesMap()
@@ -23,8 +21,8 @@ object MoveGenerator {
     )
 
     data class RandomBlockResult(
-        val power: PowerOfTwo,
-        val index: Int
+        val power: Tile,
+        val index: TileIndex
     )
 
     fun hasAvailableMoves(board: Board): Boolean =
@@ -34,8 +32,8 @@ object MoveGenerator {
 
     fun placeRandomBlock(board: Board): RandomBlockResult? {
         val index = board.getRandomFreeIndex() ?: return null
-        val power = if (Random.nextDouble() < 0.9) PowerOfTwo(1) else PowerOfTwo(2)
-        board[index] = power.power
+        val power = if (Random.nextDouble() < 0.9) Tile(1) else Tile(2)
+        board[index] = power
 
         return RandomBlockResult(power, index)
     }
@@ -87,39 +85,39 @@ object MoveGenerator {
         )
     }
 
-    fun moveLine(
+    private fun moveLine(
         indexes: IntArray,
         board: Board,
         newBoard: Board,
         addMove: (from: Int, to: Int) -> Unit,
         addMerge: (from1: Int, from2: Int, to: Int) -> Unit,
     ) {
-        var oldCursor1: Int? = firstNotEmpty(board, indexes) ?: return
-        var oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
-        var newCursor = 0
+        var cur1: Int? = firstNotEmpty(board, indexes) ?: return
+        var cur2 = firstNotEmpty(board, indexes, cur1)
+        var newCur = 0
 
-        while (oldCursor1 != null) {
-            if (oldCursor2 != null && board[indexes[oldCursor1]] == board[indexes[oldCursor2]]) {
-                newBoard[indexes[newCursor]] = board[indexes[oldCursor1]] + 1
+        while (cur1 != null) {
+            if (cur2 != null && board[indexes[cur1]] == board[indexes[cur2]]) {
+                newBoard[indexes[newCur]] = board[indexes[cur1]].next()
                 addMerge(
-                    indexes[oldCursor1],
-                    indexes[oldCursor2],
-                    indexes[newCursor]
+                    indexes[cur1],
+                    indexes[cur2],
+                    indexes[newCur]
                 )
-                oldCursor1 = firstNotEmpty(board, indexes, oldCursor2)
-                oldCursor2 = firstNotEmpty(board, indexes, oldCursor1)
-                newCursor++
+                cur1 = firstNotEmpty(board, indexes, cur2)
+                cur2 = firstNotEmpty(board, indexes, cur1)
+                newCur++
             } else {
-                newBoard[indexes[newCursor]] = board[indexes[oldCursor1]]
-                if (oldCursor1 != newCursor)
+                newBoard[indexes[newCur]] = board[indexes[cur1]]
+                if (cur1 != newCur)
                     addMove(
-                        indexes[oldCursor1],
-                        indexes[newCursor]
+                        indexes[cur1],
+                        indexes[newCur]
                     )
-                newCursor++
-                if (oldCursor2 != null) {
-                    oldCursor1 = oldCursor2
-                    oldCursor2 = firstNotEmpty(board, indexes, oldCursor2)
+                newCur++
+                if (cur2 != null) {
+                    cur1 = cur2
+                    cur2 = firstNotEmpty(board, indexes, cur2)
                 } else {
                     return
                 }
@@ -127,12 +125,16 @@ object MoveGenerator {
         }
     }
 
-    private fun firstNotEmpty(board: Board, indexes: IntArray, startFrom: Int? = -1): Int? {
+    private fun firstNotEmpty(
+        board: Board,
+        indexes: IntArray,
+        startFrom: Int? = -1
+    ): Int? {
         if (startFrom == null)
             return null
         var i = startFrom + 1
         while (i < indexes.size) {
-            if (board[indexes[i]] > 0)
+            if (board[indexes[i]].isNotEmpty)
                 return i
             i++
         }
@@ -140,20 +142,21 @@ object MoveGenerator {
         return null
     }
 
-    private fun Board.getXY(x: Int, y: Int): Int {
+    private fun Board.getXY(x: Int, y: Int): Tile {
         val index = y * boardSize + x
         if (index < 0 || index >= boardSize)
-            return -1
+            return Tile.EMPTY
         return this[index]
     }
 
-    private fun hasAdjacentEqualPosition(board: Board, i: Int): Boolean {
+    private fun hasAdjacentEqualPosition(board: Board, i: TileIndex): Boolean {
         val value = board[i]
-        val pos = i.toPosition()
-        return value == board.getXY(pos.x - 1, pos.y) ||
-            value == board.getXY(pos.x + 1, pos.y) ||
-            value == board.getXY(pos.x, pos.y - 1) ||
-            value == board.getXY(pos.x, pos.y + 1)
+        val x = i % boardSize
+        val y = i / boardSize
+        return value == board.getXY(x - 1, y) ||
+            value == board.getXY(x + 1, y) ||
+            value == board.getXY(x, y - 1) ||
+            value == board.getXY(x, y + 1)
     }
 
     private fun initDirectionIndexesMap(): Array<Array<IntArray>> =

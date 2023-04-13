@@ -4,25 +4,27 @@ import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
 import korlibs.datastructure.IntArray2
 
+typealias TileIndex = Int
+
 class Board(
-    private val array: IntArray = IntArray(boardArraySize) { -1 }
+    private val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power }
 ) {
     init {
         require(array.size == boardArraySize)
     }
 
-    operator fun get(index: Int) = array[index]
+    operator fun get(index: TileIndex) = Tile(array[index])
 
-    fun power(index: Int) = PowerOfTwo(get(index))
-
-    operator fun set(x: Int, value: Int) {
-        array[x] = value
+    operator fun set(x: TileIndex, value: Tile) {
+        array[x] = value.power
     }
 
     fun getRandomFreeIndex(): Int? =
-        array.withIndex().filter { it.value < 0 }.randomOrNull()?.index
+        array.withIndex()
+            .filter { Tile(it.value).isEmpty }
+            .randomOrNull()?.index
 
-    fun powers() = array
+    fun powers() = array.map(::Tile).toTypedArray()
 
     override fun equals(other: Any?): Boolean =
         (other is Board) && this.array.contentEquals(other.array)

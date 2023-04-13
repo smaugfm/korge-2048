@@ -1,9 +1,10 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.core.PowerOfTwo
 import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.cellPadding
 import io.github.smaugfm.game2048.cellSize
+import io.github.smaugfm.game2048.core.Tile
+import io.github.smaugfm.game2048.core.TileIndex
 import io.github.smaugfm.game2048.font
 import io.github.smaugfm.game2048.rectCorners
 import korlibs.image.color.Colors
@@ -23,7 +24,7 @@ import korlibs.math.geom.Size
 import korlibs.math.interpolation.Easing
 import korlibs.time.seconds
 
-class UiBlock(private val power: PowerOfTwo) : Container() {
+class UiBlock(private val power: Tile) : Container() {
     init {
         roundRect(Size(cellSize, cellSize), rectCorners, fill = color)
         val textColor =
@@ -74,9 +75,8 @@ class UiBlock(private val power: PowerOfTwo) : Container() {
                 else cellSize * 3 / 10
             }
 
-    fun animateMove(animator: Animator, to: Int) {
-        val pos = to.toPosition()
-        animator.moveTo(this, pos.columnX, pos.rowY, 0.15.seconds, Easing.LINEAR)
+    fun animateMove(animator: Animator, to: TileIndex) {
+        animator.moveTo(this, to.columnX, to.rowY, 0.15.seconds, Easing.LINEAR)
     }
 
     fun animateScale(animator: Animator) {
@@ -96,26 +96,19 @@ class UiBlock(private val power: PowerOfTwo) : Container() {
         )
     }
 
-    data class Position(
-        val x: Int,
-        val y: Int
-    )
-
     companion object {
-        fun Int.toPosition() = Position(this % boardSize, this / boardSize)
-        private val Position.columnX get() = cellPadding + (cellSize + cellPadding) * x
-        private val Position.rowY get() = cellPadding + (cellSize + cellPadding) * y
+        private val TileIndex.columnX get() = cellPadding + (cellSize + cellPadding) * (this % boardSize)
+        private val TileIndex.rowY get() = cellPadding + (cellSize + cellPadding) * (this / boardSize)
 
         private operator fun Scale.plus(d: Double): Scale =
             Scale(scaleX + d, scaleY + d)
 
-        fun Container.addBlock(power: PowerOfTwo, index: Int): UiBlock {
-            val pos = index.toPosition()
+        fun Container.addBlock(power: Tile, index: TileIndex): UiBlock {
             return UiBlock(power)
                 .addTo(this)
                 .position(
-                    pos.columnX,
-                    pos.rowY,
+                    index.columnX,
+                    index.rowY,
                 )
         }
     }

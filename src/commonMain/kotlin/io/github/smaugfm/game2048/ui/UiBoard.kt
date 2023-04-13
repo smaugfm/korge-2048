@@ -6,7 +6,8 @@ import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.cellPadding
 import io.github.smaugfm.game2048.cellSize
 import io.github.smaugfm.game2048.core.MoveGenerator
-import io.github.smaugfm.game2048.core.PowerOfTwo
+import io.github.smaugfm.game2048.core.Tile
+import io.github.smaugfm.game2048.core.TileIndex
 import io.github.smaugfm.game2048.rectCorners
 import io.github.smaugfm.game2048.rectRadius
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
@@ -57,7 +58,7 @@ class UiBoard(virtualWidth: Int) : Container() {
         }
     }
 
-    fun createNewBlock(power: PowerOfTwo, index: Int): UiBlock {
+    fun createNewBlock(power: Tile, index: TileIndex): UiBlock {
         return addBlock(power, index)
             .also {
                 blocks[index] = it
@@ -97,7 +98,7 @@ class UiBoard(virtualWidth: Int) : Container() {
             block {
                 blocks[from1]!!.removeFromParent()
                 blocks[from2]!!.removeFromParent()
-                createNewBlock(board.power(from1).next(), to)
+                createNewBlock(board.get(from1).next(), to)
             }
             sequenceLazy {
                 blocks[to]!!.animateScale(this)

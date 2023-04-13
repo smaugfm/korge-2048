@@ -1,9 +1,11 @@
 package io.github.smaugfm.game2048.persistence
 
+import io.github.smaugfm.game2048.boardArraySize
+import io.github.smaugfm.game2048.core.Tile
 import korlibs.datastructure.iterators.fastForEach
 
 class History(from: String?, private val onUpdate: (History) -> Unit) {
-    class Element(val powers: IntArray, val score: Int)
+    class Element(val powers: Array<Tile>, val score: Int)
 
     private val history = mutableListOf<Element>()
 
@@ -20,7 +22,7 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
             }
     }
 
-    fun add(powers: IntArray, score: Int) {
+    fun add(powers: Array<Tile>, score: Int) {
         history.add(Element(powers, score))
         onUpdate(this)
     }
@@ -42,8 +44,8 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
 
     private fun elementFromString(string: String): Element {
         val powers = string.split(',').map { it.toInt() }
-        if (powers.size != 17) throw IllegalArgumentException("Incorrect history")
-        return Element(IntArray(16) { powers[it] }, powers[16])
+        if (powers.size != boardArraySize + 1) throw IllegalArgumentException("Incorrect history")
+        return Element(Array(boardArraySize) { Tile(powers[it]) }, powers[boardArraySize])
     }
 
     override fun toString(): String {

@@ -3,7 +3,6 @@ package io.github.smaugfm.game2048
 import io.github.smaugfm.game2048.core.Board
 import io.github.smaugfm.game2048.core.Direction
 import io.github.smaugfm.game2048.core.MoveGenerator
-import io.github.smaugfm.game2048.core.PowerOfTwo
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
@@ -115,7 +114,7 @@ fun Stage.moveBlocksTo(direction: Direction) {
                 board = newBoard
                 val points = moves
                     .filterIsInstance<MoveGenerator.BoardMove.Move>()
-                    .sumOf { board.power(it.to).score }
+                    .sumOf { board[it.to].score }
                 score.update(score.value + points)
                 generateBlockAndSave()
                 isAnimationRunning = false
@@ -171,11 +170,11 @@ fun generateBlockAndSave() {
 
 fun restoreField(historyElement: History.Element) {
     uiBoard.clear()
-    board = Board(historyElement.powers)
+    board = Board(historyElement.powers.map { it.power }.toIntArray())
     score.update(historyElement.score)
-    historyElement.powers.forEachIndexed { i, power ->
-        if (power > 0) {
-            uiBoard.createNewBlock(PowerOfTwo(power), i)
+    historyElement.powers.forEachIndexed { i, tile ->
+        if (tile.isNotEmpty) {
+            uiBoard.createNewBlock(tile, i)
         }
     }
 }
