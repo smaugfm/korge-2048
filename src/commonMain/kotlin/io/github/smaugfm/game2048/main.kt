@@ -16,14 +16,27 @@ import korlibs.image.font.Font
 import korlibs.image.font.readTtfFont
 import korlibs.image.format.readBitmap
 import korlibs.io.async.ObservableProperty
-import korlibs.io.async.launchAsap
+import korlibs.io.async.launch
 import korlibs.io.async.launchImmediately
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.Korge
 import korlibs.korge.KorgeConfig
-import korlibs.korge.input.*
+import korlibs.korge.input.SwipeDirection
+import korlibs.korge.input.keys
+import korlibs.korge.input.onClick
+import korlibs.korge.input.onDown
+import korlibs.korge.input.onOut
+import korlibs.korge.input.onOver
+import korlibs.korge.input.onSwipe
+import korlibs.korge.input.onUp
 import korlibs.korge.service.storage.storage
-import korlibs.korge.view.*
+import korlibs.korge.view.Container
+import korlibs.korge.view.Stage
+import korlibs.korge.view.centerOn
+import korlibs.korge.view.container
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.text
 import korlibs.math.geom.RectCorners
 import korlibs.math.geom.Size
 import korlibs.time.seconds
@@ -34,6 +47,7 @@ const val cellPadding = 10
 const val rectRadius = 5.0
 const val boardSize = 4
 const val boardArraySize = boardSize * boardSize
+const val maxAiDepth = 3
 var btnSize: Double = 0.0
 var cellSize: Double = 0.0
 val moveAnimationDuration = 0.15.seconds
@@ -56,7 +70,7 @@ val score = ObservableProperty(0)
 val best = ObservableProperty(0)
 var uiBoard: UiBoard by Delegates.notNull()
 var board = Board()
-var isAiPlaying = ObservableProperty(false)
+var isAiPlaying = ObservableProperty(true)
 
 suspend fun main() = Korge(
     KorgeConfig(
@@ -71,7 +85,7 @@ suspend fun main() = Korge(
     if (!history.isEmpty()) {
         restoreField(history.currentElement)
     } else {
-        generateBlockAndSave()
+        generateBlockAndSave(board)
     }
 
     keys {
@@ -79,10 +93,10 @@ suspend fun main() = Korge(
             if (isAiPlaying.value)
                 return@down
             when (it.key) {
-                Key.LEFT -> moveBlocksTo(Direction.LEFT)
-                Key.RIGHT -> moveBlocksTo(Direction.RIGHT)
-                Key.UP -> moveBlocksTo(Direction.TOP)
-                Key.DOWN -> moveBlocksTo(Direction.BOTTOM)
+                Key.LEFT -> handleMoveBlocks(Direction.LEFT)
+                Key.RIGHT -> handleMoveBlocks(Direction.RIGHT)
+                Key.UP -> handleMoveBlocks(Direction.TOP)
+                Key.DOWN -> handleMoveBlocks(Direction.BOTTOM)
                 else -> Unit
             }
         }
@@ -91,64 +105,105 @@ suspend fun main() = Korge(
         if (isAiPlaying.value)
             return@onSwipe
         when (it.direction) {
-            SwipeDirection.LEFT -> moveBlocksTo(Direction.LEFT)
-            SwipeDirection.RIGHT -> moveBlocksTo(Direction.RIGHT)
-            SwipeDirection.TOP -> moveBlocksTo(Direction.TOP)
-            SwipeDirection.BOTTOM -> moveBlocksTo(Direction.BOTTOM)
+            SwipeDirection.LEFT -> handleMoveBlocks(Direction.LEFT)
+            SwipeDirection.RIGHT -> handleMoveBlocks(Direction.RIGHT)
+            SwipeDirection.TOP -> handleMoveBlocks(Direction.TOP)
+            SwipeDirection.BOTTOM -> handleMoveBlocks(Direction.BOTTOM)
         }
     }
     isAiPlaying.observe {
         if (it)
             startAiPlay()
     }
+    if (isAiPlaying.value)
+        startAiPlay()
 }
 
 fun Stage.startAiPlay() {
-    launchAsap {
-        while (isAiPlaying.value) {
+    launch {
+        var moveResultDeferred = Ai.findBestMove(this, board)
+        var moveResult = moveResultDeferred.await()
+        while (true) {
             val waitForAnimation = CompletableDeferred<Unit>()
-            val dir = Ai.bestNextMove(board)
-            moveBlocksTo(dir) {
+
+            if (moveResult == null) {
+                isAiPlaying.update(false)
+                showGameOverIfNoMoves(false)
+                break
+            }
+            val (newBoard, moves) = moveResult
+            animateMoves(moves) {
                 waitForAnimation.complete(Unit)
             }
+            val newTile = MoveGenerator.placeRandomBlock(newBoard)
+            if (newTile == null) {
+                println("Should not BE HERE")
+                break
+            }
+
+            history.add(board.powers(), score.value)
+
+            if (!isAiPlaying.value) {
+                break
+            }
+            moveResultDeferred = Ai.findBestMove(this, newBoard)
             waitForAnimation.await()
+            uiBoard.createNewBlock(newTile.power, newTile.index)
+
+            board = newBoard
+            moveResult = moveResultDeferred.await()
         }
     }
 }
 
-fun Stage.moveBlocksTo(direction: Direction, onEnd: () -> Unit = {}) {
+fun Stage.handleMoveBlocks(direction: Direction) {
     if (isAnimationRunning) {
-        println("should not be here")
         return
     }
 
-    if (!MoveGenerator.hasAvailableMoves(board)) {
+    val (newBoard, moves) = MoveGenerator.moveBoard(board, direction)
+    if (board != newBoard) {
+        animateMoves(moves) {
+            board = newBoard
+            generateBlockAndSave(board)
+            showGameOverIfNoMoves(MoveGenerator.hasAvailableMoves(board))
+        }
+    }
+
+}
+
+private fun Stage.showGameOverIfNoMoves(hasMoves: Boolean): Boolean {
+    if (!hasMoves) {
         if (!isGameOver) {
             isGameOver = true
             showGameOver {
                 restart()
             }
+            return false
         }
     }
+    return true
+}
 
-    val (newBoard, moves) = MoveGenerator.moveBoard(board, direction)
-    if (board != newBoard) {
-        isAnimationRunning = true
-        launchImmediately {
-            uiBoard.animate(moves) {
-                board = newBoard
-                val points = moves
-                    .filterIsInstance<MoveGenerator.BoardMove.Move>()
-                    .sumOf { board[it.to].score }
-                score.update(score.value + points)
-                generateBlockAndSave()
-                isAnimationRunning = false
-            }
+private fun Stage.animateMoves(
+    moves: List<MoveGenerator.BoardMove>,
+    onEnd: () -> Unit = {}
+) {
+    isAnimationRunning = true
+    launchImmediately {
+        uiBoard.animate(moves) {
+            updateScore(moves)
+            isAnimationRunning = false
             onEnd()
         }
-    } else {
-        onEnd()
     }
+}
+
+private fun updateScore(moves: List<MoveGenerator.BoardMove>) {
+    val points = moves
+        .filterIsInstance<MoveGenerator.BoardMove.Merge>()
+        .sumOf { it.newTile.score }
+    score.update(score.value + points)
 }
 
 fun Container.showGameOver(onRestart: () -> Unit) = container {
@@ -187,10 +242,10 @@ fun restart() {
     uiBoard.clear()
     score.update(0)
     history.clear()
-    generateBlockAndSave()
+    generateBlockAndSave(board)
 }
 
-fun generateBlockAndSave() {
+fun generateBlockAndSave(board: Board) {
     val (power, index) = MoveGenerator.placeRandomBlock(board) ?: return
     uiBoard.createNewBlock(power, index)
     history.add(board.powers(), score.value)

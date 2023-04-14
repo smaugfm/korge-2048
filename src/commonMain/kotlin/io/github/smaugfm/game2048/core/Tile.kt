@@ -15,5 +15,7 @@ value class Tile(val power: Int) {
 
     companion object {
         val EMPTY = Tile(-1)
+        val TWO = Tile(1)
+        val FOUR = Tile(2)
     }
 }

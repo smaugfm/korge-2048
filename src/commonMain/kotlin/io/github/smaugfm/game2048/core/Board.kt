@@ -7,26 +7,17 @@ import korlibs.datastructure.IntArray2
 typealias TileIndex = Int
 
 class Board(
-    private val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power }
+    val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power }
 ) {
-    init {
-        require(array.size == boardArraySize)
-    }
+    constructor(other: Board) : this(other.array.copyOf())
 
-    operator fun get(index: TileIndex) = Tile(array[index])
-
-    operator fun set(x: TileIndex, value: Tile) {
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun get(index: TileIndex) = Tile(array[index])
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun get(x: Int, y: Int) = Tile(array[y * boardSize + x])
+    @Suppress("NOTHING_TO_INLINE")
+    inline operator fun set(x: TileIndex, value: Tile) {
         array[x] = value.power
-    }
-
-    fun getRandomFreeIndex(): Int? {
-        var i = 0
-        while (i < array.size) {
-            if (Tile(array[i]).isEmpty)
-                return i
-            i++
-        }
-        return null
     }
 
     fun powers() = array.map(::Tile).toTypedArray()

@@ -10,9 +10,10 @@ object MoveGenerator {
     private val directionIndexesMap: Array<Array<IntArray>> =
         initDirectionIndexesMap()
 
+
     sealed interface BoardMove {
         data class Move(val from: Int, val to: Int) : BoardMove
-        data class Merge(val from1: Int, val from2: Int, val to: Int) : BoardMove
+        data class Merge(val from1: Int, val from2: Int, val to: Int, val newTile: Tile) : BoardMove
     }
 
     data class MoveBoardResult(
@@ -31,8 +32,11 @@ object MoveGenerator {
         }
 
     fun placeRandomBlock(board: Board): RandomBlockResult? {
-        val index = board.getRandomFreeIndex() ?: return null
-        val power = if (Random.nextDouble() < 0.9) Tile(1) else Tile(2)
+        val index = board.array.withIndex()
+            .filter { Tile(it.value).isEmpty }
+            .randomOrNull()?.index ?: return null
+
+        val power = if (Random.nextDouble() < 0.9) Tile.TWO else Tile.FOUR
         board[index] = power
 
         return RandomBlockResult(power, index)
@@ -42,7 +46,7 @@ object MoveGenerator {
         board: Board,
         direction: Direction,
         addMove: (from: Int, to: Int) -> Unit,
-        addMerge: (from1: Int, from2: Int, to: Int) -> Unit,
+        addMerge: (from1: Int, from2: Int, to: Int, newTile: Tile) -> Unit,
     ): Board {
         val newBoard = Board()
 
@@ -64,7 +68,7 @@ object MoveGenerator {
             board,
             direction,
             { from, to -> moves.add(BoardMove.Move(from, to)) },
-            { from1, from2, to -> moves.add(BoardMove.Merge(from1, from2, to)) }
+            { from1, from2, to, newTile -> moves.add(BoardMove.Merge(from1, from2, to, newTile)) }
         )
 
         return MoveBoardResult(newBoard, moves)
@@ -79,8 +83,8 @@ object MoveGenerator {
         moveLine(indexes, board, newBoard, { from, to ->
             moves.add(BoardMove.Move(from, to))
         },
-            { from1, from2, to ->
-                moves.add(BoardMove.Merge(from1, from2, to))
+            { from1, from2, to, newTile ->
+                moves.add(BoardMove.Merge(from1, from2, to, newTile))
             }
         )
     }
@@ -90,7 +94,7 @@ object MoveGenerator {
         board: Board,
         newBoard: Board,
         addMove: (from: Int, to: Int) -> Unit,
-        addMerge: (from1: Int, from2: Int, to: Int) -> Unit,
+        addMerge: (from1: Int, from2: Int, to: Int, newTile: Tile) -> Unit,
     ) {
         var cur1: Int? = firstNotEmpty(board, indexes) ?: return
         var cur2 = firstNotEmpty(board, indexes, cur1)
@@ -102,7 +106,8 @@ object MoveGenerator {
                 addMerge(
                     indexes[cur1],
                     indexes[cur2],
-                    indexes[newCur]
+                    indexes[newCur],
+                    newBoard[indexes[newCur]]
                 )
                 cur1 = firstNotEmpty(board, indexes, cur2)
                 cur2 = firstNotEmpty(board, indexes, cur1)

@@ -31,7 +31,7 @@ class MoveGeneratorBenchmark {
     @Benchmark
     fun moveBoard(bh: Blackhole) {
         bh.consume(
-            MoveGenerator.moveBoard(board, Direction.LEFT, { _, _ -> }, { _, _, _ -> })
+            MoveGenerator.moveBoard(board, Direction.LEFT, { _, _ -> }, { _, _, _, _ -> })
         )
     }
 }

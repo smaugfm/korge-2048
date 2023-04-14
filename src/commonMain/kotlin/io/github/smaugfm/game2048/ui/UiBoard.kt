@@ -1,28 +1,14 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.backgroundColor
-import io.github.smaugfm.game2048.backgroundColorLight
-import io.github.smaugfm.game2048.board
-import io.github.smaugfm.game2048.boardArraySize
-import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.cellPadding
-import io.github.smaugfm.game2048.cellSize
+import io.github.smaugfm.game2048.*
 import io.github.smaugfm.game2048.core.MoveGenerator
 import io.github.smaugfm.game2048.core.Tile
 import io.github.smaugfm.game2048.core.TileIndex
-import io.github.smaugfm.game2048.rectCorners
-import io.github.smaugfm.game2048.rectRadius
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
-import korlibs.image.color.Colors
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
 import korlibs.korge.animate.block
-import korlibs.korge.view.Container
-import korlibs.korge.view.Stage
-import korlibs.korge.view.addTo
-import korlibs.korge.view.graphics
-import korlibs.korge.view.position
-import korlibs.korge.view.roundRect
+import korlibs.korge.view.*
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 
@@ -80,7 +66,7 @@ class UiBoard(virtualWidth: Int) : Container() {
                         }
 
                         is MoveGenerator.BoardMove.Merge -> {
-                            animateMerge(it.from1, it.from2, it.to)
+                            animateMerge(it.from1, it.from2, it.to, it.newTile)
                         }
                     }
                 }
@@ -91,7 +77,7 @@ class UiBoard(virtualWidth: Int) : Container() {
         }
     }
 
-    private fun Animator.animateMerge(from1: Int, from2: Int, to: Int) {
+    private fun Animator.animateMerge(from1: Int, from2: Int, to: Int, newTile: Tile) {
         sequence {
             parallel {
                 blocks[from1]!!.animateMove(this, to)
@@ -100,7 +86,7 @@ class UiBoard(virtualWidth: Int) : Container() {
             block {
                 blocks[from1]!!.removeFromParent()
                 blocks[from2]!!.removeFromParent()
-                createNewBlock(board.get(from1).next(), to)
+                createNewBlock(newTile, to)
             }
             sequenceLazy {
                 blocks[to]!!.animateScale(this)

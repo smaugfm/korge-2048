@@ -56,9 +56,10 @@ private fun Stage.addButtons(
     val aiBlock = container {
         val bg = roundRect(
             Size(btnSize, btnSize),
-            rectCorners,
-            backgroundColor
+            rectCorners
         )
+        updateAiBg(bg, isAiPlaying.value)
+
         alignTopToTopOf(undoBlock)
         alignRightToLeftOf(undoBlock, 5.0)
         text("AI", (btnSize * 0.7).toFloat(), textColor, fontBold) {
@@ -67,13 +68,18 @@ private fun Stage.addButtons(
         }
         onClick {
             isAiPlaying.update(!isAiPlaying.value)
-
-            bg.fill = if (isAiPlaying.value)
-                accentColor
-            else
-                backgroundColor
+        }
+        isAiPlaying.observe {
+            updateAiBg(bg, it)
         }
     }
+}
+
+private fun updateAiBg(bg: RoundRect, isAi: Boolean) {
+    bg.fill = if (isAi)
+        accentColor
+    else
+        backgroundColor
 }
 
 private fun Stage.addStat(
