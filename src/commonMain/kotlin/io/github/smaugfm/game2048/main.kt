@@ -1,7 +1,8 @@
 package io.github.smaugfm.game2048
 
 import io.github.smaugfm.game2048.ai.Ai
-import io.github.smaugfm.game2048.core.Board
+import io.github.smaugfm.game2048.core.GeneralBoard
+import io.github.smaugfm.game2048.core.BoardMove
 import io.github.smaugfm.game2048.core.Direction
 import io.github.smaugfm.game2048.core.MoveGenerator
 import io.github.smaugfm.game2048.persistence.History
@@ -69,7 +70,7 @@ var isGameOver = false
 val score = ObservableProperty(0)
 val best = ObservableProperty(0)
 var uiBoard: UiBoard by Delegates.notNull()
-var board = Board()
+var board = GeneralBoard()
 var isAiPlaying = ObservableProperty(true)
 
 suspend fun main() = Korge(
@@ -85,7 +86,7 @@ suspend fun main() = Korge(
     if (!history.isEmpty()) {
         restoreField(history.currentElement)
     } else {
-        generateBlockAndSave(board)
+        generateBlockAndSave()
     }
 
     keys {
@@ -131,7 +132,7 @@ fun Stage.startAiPlay() {
                 showGameOverIfNoMoves(false)
                 break
             }
-            val (newBoard, moves) = moveResult
+            var (newBoard, moves) = moveResult
             animateMoves(moves) {
                 waitForAnimation.complete(Unit)
             }
@@ -140,6 +141,7 @@ fun Stage.startAiPlay() {
                 println("Should not BE HERE")
                 break
             }
+            newBoard = newTile.board
 
             history.add(board.powers(), score.value)
 
@@ -165,7 +167,7 @@ fun Stage.handleMoveBlocks(direction: Direction) {
     if (board != newBoard) {
         animateMoves(moves) {
             board = newBoard
-            generateBlockAndSave(board)
+            generateBlockAndSave()
             showGameOverIfNoMoves(MoveGenerator.hasAvailableMoves(board))
         }
     }
@@ -186,7 +188,7 @@ private fun Stage.showGameOverIfNoMoves(hasMoves: Boolean): Boolean {
 }
 
 private fun Stage.animateMoves(
-    moves: List<MoveGenerator.BoardMove>,
+    moves: List<BoardMove>,
     onEnd: () -> Unit = {}
 ) {
     isAnimationRunning = true
@@ -199,9 +201,9 @@ private fun Stage.animateMoves(
     }
 }
 
-private fun updateScore(moves: List<MoveGenerator.BoardMove>) {
+private fun updateScore(moves: List<BoardMove>) {
     val points = moves
-        .filterIsInstance<MoveGenerator.BoardMove.Merge>()
+        .filterIsInstance<BoardMove.Merge>()
         .sumOf { it.newTile.score }
     score.update(score.value + points)
 }
@@ -238,22 +240,23 @@ fun Container.showGameOver(onRestart: () -> Unit) = container {
 
 fun restart() {
     isGameOver = false
-    board = Board()
+    board = GeneralBoard()
     uiBoard.clear()
     score.update(0)
     history.clear()
-    generateBlockAndSave(board)
+    generateBlockAndSave()
 }
 
-fun generateBlockAndSave(board: Board) {
-    val (power, index) = MoveGenerator.placeRandomBlock(board) ?: return
+fun generateBlockAndSave() {
+    val (newBoard, power, index) = MoveGenerator.placeRandomBlock(board) ?: return
+    board = newBoard
     uiBoard.createNewBlock(power, index)
     history.add(board.powers(), score.value)
 }
 
 fun restoreField(historyElement: History.Element) {
     uiBoard.clear()
-    board = Board(historyElement.powers.map { it.power }.toIntArray())
+    board = GeneralBoard(historyElement.powers.map { it.power }.toIntArray())
     score.update(historyElement.score)
     historyElement.powers.forEachIndexed { i, tile ->
         if (tile.isNotEmpty) {

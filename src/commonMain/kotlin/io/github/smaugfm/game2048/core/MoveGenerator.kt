@@ -1,67 +1,23 @@
 package io.github.smaugfm.game2048.core
 
 import io.github.smaugfm.game2048.boardArraySize
-import io.github.smaugfm.game2048.boardSize
-import korlibs.datastructure.toIntList
-import kotlin.random.Random
 
-object MoveGenerator {
-    private val indices = 0 until boardArraySize
-    private val directionIndexesMap: Array<Array<IntArray>> =
-        initDirectionIndexesMap()
-
-
-    sealed interface BoardMove {
-        data class Move(val from: Int, val to: Int) : BoardMove
-        data class Merge(val from1: Int, val from2: Int, val to: Int, val newTile: Tile) : BoardMove
-    }
-
-    data class MoveBoardResult(
-        val board: Board,
-        val moves: List<BoardMove>,
-    )
-
-    data class RandomBlockResult(
-        val power: Tile,
-        val index: TileIndex
-    )
-
-    fun hasAvailableMoves(board: Board): Boolean =
-        indices.any { i ->
-            hasAdjacentEqualPosition(board, i)
-        }
-
-    fun placeRandomBlock(board: Board): RandomBlockResult? {
-        val index = board.array.withIndex()
-            .filter { Tile(it.value).isEmpty }
-            .randomOrNull()?.index ?: return null
-
-        val power = if (Random.nextDouble() < 0.9) Tile.TWO else Tile.FOUR
-        board[index] = power
-
-        return RandomBlockResult(power, index)
-    }
+interface MoveGenerator<T : Board> {
+    fun hasAvailableMoves(board: T): Boolean
 
     fun moveBoard(
-        board: Board,
+        board: T,
         direction: Direction,
         addMove: (from: Int, to: Int) -> Unit,
         addMerge: (from1: Int, from2: Int, to: Int, newTile: Tile) -> Unit,
-    ): Board {
-        val newBoard = Board()
+    ): T
 
-        for (i in (0 until boardSize)) {
-            val indexes = directionIndexesMap[direction.ordinal][i]
-            moveLine(indexes, board, newBoard, addMove, addMerge)
-        }
-
-        return newBoard
-    }
+    fun placeRandomBlock(board: T): RandomBlockResult<T>?
 
     fun moveBoard(
-        board: Board,
+        board: T,
         direction: Direction
-    ): MoveBoardResult {
+    ): MoveBoardResult<T> {
         val moves = mutableListOf<BoardMove>()
 
         val newBoard = moveBoard(
@@ -71,119 +27,14 @@ object MoveGenerator {
             { from1, from2, to, newTile -> moves.add(BoardMove.Merge(from1, from2, to, newTile)) }
         )
 
-        return MoveBoardResult(newBoard, moves)
+        return MoveBoardResult<T>(newBoard, moves)
     }
 
-    fun moveLine(
-        indexes: IntArray,
-        board: Board,
-        newBoard: Board,
-        moves: MutableList<BoardMove>
-    ) {
-        moveLine(indexes, board, newBoard, { from, to ->
-            moves.add(BoardMove.Move(from, to))
-        },
-            { from1, from2, to, newTile ->
-                moves.add(BoardMove.Merge(from1, from2, to, newTile))
-            }
-        )
+
+    companion object : MoveGenerator<GeneralBoard> by GeneralMoveGenerator {
+        val directions = Direction.values().toList().toTypedArray()
+        val boardIndexes = 0 until boardArraySize
+        val emptyAddMove = { _: Int, _: Int -> }
+        val emptyAddMerge = { _: Int, _: Int, _: Int, _: Tile -> }
     }
-
-    private fun moveLine(
-        indexes: IntArray,
-        board: Board,
-        newBoard: Board,
-        addMove: (from: Int, to: Int) -> Unit,
-        addMerge: (from1: Int, from2: Int, to: Int, newTile: Tile) -> Unit,
-    ) {
-        var cur1: Int? = firstNotEmpty(board, indexes) ?: return
-        var cur2 = firstNotEmpty(board, indexes, cur1)
-        var newCur = 0
-
-        while (cur1 != null) {
-            if (cur2 != null && board[indexes[cur1]] == board[indexes[cur2]]) {
-                newBoard[indexes[newCur]] = board[indexes[cur1]].next()
-                addMerge(
-                    indexes[cur1],
-                    indexes[cur2],
-                    indexes[newCur],
-                    newBoard[indexes[newCur]]
-                )
-                cur1 = firstNotEmpty(board, indexes, cur2)
-                cur2 = firstNotEmpty(board, indexes, cur1)
-                newCur++
-            } else {
-                newBoard[indexes[newCur]] = board[indexes[cur1]]
-                if (cur1 != newCur)
-                    addMove(
-                        indexes[cur1],
-                        indexes[newCur]
-                    )
-                newCur++
-                if (cur2 != null) {
-                    cur1 = cur2
-                    cur2 = firstNotEmpty(board, indexes, cur2)
-                } else {
-                    return
-                }
-            }
-        }
-    }
-
-    private fun firstNotEmpty(
-        board: Board,
-        indexes: IntArray,
-        startFrom: Int? = -1
-    ): Int? {
-        if (startFrom == null)
-            return null
-        var i = startFrom + 1
-        while (i < indexes.size) {
-            if (board[indexes[i]].isNotEmpty)
-                return i
-            i++
-        }
-
-        return null
-    }
-
-    private fun Board.getXY(x: Int, y: Int): Tile {
-        val index = y * boardSize + x
-        if (index < 0 || index >= boardSize)
-            return Tile.EMPTY
-        return this[index]
-    }
-
-    private fun hasAdjacentEqualPosition(board: Board, i: TileIndex): Boolean {
-        val value = board[i]
-        val x = i % boardSize
-        val y = i / boardSize
-        return value == board.getXY(x - 1, y) ||
-            value == board.getXY(x + 1, y) ||
-            value == board.getXY(x, y - 1) ||
-            value == board.getXY(x, y + 1)
-    }
-
-    private fun initDirectionIndexesMap(): Array<Array<IntArray>> =
-        Direction.values().map { dir ->
-            (0 until boardSize).map {
-                when (dir) {
-                    Direction.TOP ->
-                        it until boardArraySize step boardSize
-
-                    Direction.BOTTOM ->
-                        (it until boardArraySize step boardSize).reversed()
-
-                    Direction.LEFT ->
-                        it * boardSize until ((it + 1) * boardSize)
-
-                    Direction.RIGHT ->
-                        (it * boardSize until ((it + 1) * boardSize)).reversed()
-                }
-                    .toList()
-                    .toIntList()
-                    .toIntArray()
-            }.toTypedArray()
-        }.toTypedArray()
-
 }

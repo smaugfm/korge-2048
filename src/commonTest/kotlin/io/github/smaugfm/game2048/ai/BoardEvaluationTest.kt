@@ -1,6 +1,6 @@
 package io.github.smaugfm.game2048.ai
 
-import io.github.smaugfm.game2048.core.Board
+import io.github.smaugfm.game2048.core.GeneralBoard
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -9,7 +9,7 @@ class BoardEvaluationTest {
     @Test
     fun monotonicityTest() {
         val maxScoreBoards = listOf(
-            Board(
+            GeneralBoard(
                 intArrayOf(
                     4, 3, 2, 1,
                     3, 3, 2, 1,
@@ -17,7 +17,7 @@ class BoardEvaluationTest {
                     1, 1, 1, 1
                 )
             ),
-            Board(
+            GeneralBoard(
                 intArrayOf(
                     1, 2, 3, 4,
                     1, 2, 3, 3,
@@ -25,7 +25,7 @@ class BoardEvaluationTest {
                     1, 1, 1, 1
                 )
             ),
-            Board(
+            GeneralBoard(
                 intArrayOf(
                     1, 1, 1, 1,
                     1, 2, 2, 2,
@@ -33,7 +33,7 @@ class BoardEvaluationTest {
                     1, 2, 3, 4
                 )
             ),
-            Board(
+            GeneralBoard(
                 intArrayOf(
                     1, 1, 1, 1,
                     2, 2, 2, 1,
@@ -54,7 +54,7 @@ class BoardEvaluationTest {
 
         println(
             Heuristics.monotonicityHeuristic(
-                Board(
+                GeneralBoard(
                     intArrayOf(
                         1, 1, 1, 1,
                         1, 2, 2, 2,
@@ -66,7 +66,7 @@ class BoardEvaluationTest {
         )
         println(
             Heuristics.monotonicityHeuristic(
-                Board(
+                GeneralBoard(
                     intArrayOf(
                         4, 3, 2, 1,
                         4, 3, 2, 1,
@@ -79,7 +79,7 @@ class BoardEvaluationTest {
 
         println(
             Heuristics.monotonicityHeuristic(
-                Board(
+                GeneralBoard(
                     intArrayOf(
                         1, 1, 1, 1,
                         1, 2, 2, 1,

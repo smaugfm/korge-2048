@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.ui
 
 import io.github.smaugfm.game2048.*
-import io.github.smaugfm.game2048.core.MoveGenerator
+import io.github.smaugfm.game2048.core.BoardMove
 import io.github.smaugfm.game2048.core.Tile
 import io.github.smaugfm.game2048.core.TileIndex
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
@@ -54,18 +54,18 @@ class UiBoard(virtualWidth: Int) : Container() {
     }
 
     suspend fun animate(
-        boardMoves: List<MoveGenerator.BoardMove>,
+        boardMoves: List<BoardMove>,
         onEnd: () -> Unit
     ): Animator {
         return animate {
             parallel {
                 boardMoves.forEach {
                     when (it) {
-                        is MoveGenerator.BoardMove.Move -> {
+                        is BoardMove.Move -> {
                             animateMove(it.from, it.to)
                         }
 
-                        is MoveGenerator.BoardMove.Merge -> {
+                        is BoardMove.Merge -> {
                             animateMerge(it.from1, it.from2, it.to, it.newTile)
                         }
                     }

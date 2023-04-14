@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.ai
 
 import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.core.Board
+import io.github.smaugfm.game2048.core.GeneralBoard
 
 object Heuristics {
     private val weights = intArrayOf(
@@ -11,7 +11,7 @@ object Heuristics {
         -5, -5, -10, -15
     )
 
-    fun evaluate(board: Board): Long {
+    fun evaluate(board: GeneralBoard): Long {
         var i = 0
         var sum = 0L
         while (i < boardSize) {
@@ -22,7 +22,7 @@ object Heuristics {
         return sum
     }
 
-    fun monotonicityHeuristic(board: Board): Long {
+    fun monotonicityHeuristic(board: GeneralBoard): Long {
         var best = 0L
 
         (right(board) + down(board)).let {
@@ -50,7 +50,7 @@ object Heuristics {
     //2 --->
     //3 --->
     //4 --->
-    private fun right(board: Board): Long {
+    private fun right(board: GeneralBoard): Long {
         var current = 0L
         for (row in (0 until boardSize)) {
             for (col in (0 until boardSize - 1)) {
@@ -68,7 +68,7 @@ object Heuristics {
     //2 <---
     //3 <---
     //4 <---
-    private fun left(board: Board): Long {
+    private fun left(board: GeneralBoard): Long {
         var current = 0L
         for (row in (0 until boardSize)) {
             for (col in (0 until boardSize - 1)) {
@@ -88,7 +88,7 @@ object Heuristics {
     //| | | |
     //| | | |
     //↓ ↓ ↓ ↓
-    private fun down(board: Board): Long {
+    private fun down(board: GeneralBoard): Long {
         var current = 0L
         for (col in (0 until boardSize)) {
             for (row in (0 until boardSize - 1)) {
@@ -107,7 +107,7 @@ object Heuristics {
     //| | | |
     //| | | |
     //| | | |
-    private fun up(board: Board): Long {
+    private fun up(board: GeneralBoard): Long {
         var current = 0L
         for (col in (0 until boardSize)) {
             for (row in (0 until boardSize - 1)) {
@@ -121,11 +121,11 @@ object Heuristics {
         return current
     }
 
-    private fun smoothnessHeuristic(board: Board): Long {
+    private fun smoothnessHeuristic(board: GeneralBoard): Long {
         TODO("Not yet implemented")
     }
 
-    private fun emptyTilesHeuristic(board: Board): Long {
+    private fun emptyTilesHeuristic(board: GeneralBoard): Long {
         TODO("Not yet implemented")
     }
 }

@@ -1,15 +1,16 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.core.Board
+import io.github.smaugfm.game2048.core.BoardMove
+import io.github.smaugfm.game2048.core.GeneralBoard
 import io.github.smaugfm.game2048.core.Direction
-import io.github.smaugfm.game2048.core.MoveGenerator
+import io.github.smaugfm.game2048.core.GeneralMoveGenerator
 import org.junit.Test
 import kotlin.test.*
 
-class MoveGeneratorTest {
+class GeneralMoveGeneratorTest {
     @Test
     fun testMap1() {
-        val board = Board(
+        val board = GeneralBoard(
             intArrayOf(
                 2, 2, -1, 3,
                 2, 3, -1, -1,
@@ -17,9 +18,9 @@ class MoveGeneratorTest {
                 1, 2, 3, -1
             )
         )
-        val (board1, moves1) = MoveGenerator.moveBoard(board, Direction.LEFT)
+        val (board1, moves1) = GeneralMoveGenerator.moveBoard(board, Direction.LEFT)
         assertEquals(
-            Board(
+            GeneralBoard(
                 intArrayOf(
                     3, 3, -1, -1,
                     2, 3, -1, -1,
@@ -29,9 +30,9 @@ class MoveGeneratorTest {
             ), board1
         )
 
-        val (board2, moves2) = MoveGenerator.moveBoard(board1, Direction.TOP)
+        val (board2, moves2) = GeneralMoveGenerator.moveBoard(board1, Direction.TOP)
         assertEquals(
-            Board(
+            GeneralBoard(
                 intArrayOf(
                     3, 4, 4, -1,
                     2, 3, -1, -1,
@@ -117,13 +118,13 @@ class MoveGeneratorTest {
     }
 
     private fun posMapOneLine(array: IntArray) =
-        Board(array + IntArray(boardArraySize - array.size) { -1 })
+        GeneralBoard(array + IntArray(boardArraySize - array.size) { -1 })
 
-    private fun genPosMapForOneLine(array: IntArray): Board {
+    private fun genPosMapForOneLine(array: IntArray): GeneralBoard {
         val board = posMapOneLine(array)
-        val newBoard = Board()
-        val moves = mutableListOf<MoveGenerator.BoardMove>()
-        MoveGenerator.moveLine(
+        val newBoard = GeneralBoard()
+        val moves = mutableListOf<BoardMove>()
+        GeneralMoveGenerator.moveLine(
             intArrayOf(0, 1, 2, 3),
             board,
             newBoard,
