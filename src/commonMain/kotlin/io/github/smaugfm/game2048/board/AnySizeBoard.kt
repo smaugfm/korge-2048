@@ -17,6 +17,8 @@ class AnySizeBoard(
 
     fun powers() = array.map(::Tile).toTypedArray()
 
+    fun copy() = AnySizeBoard(array.copyOf())
+
     operator fun get(x: Int, y: Int) =
         Tile(this.array[x * boardSize + y])
 
@@ -74,23 +76,29 @@ class AnySizeBoard(
         onEmpty: (emptySpaceIndex: Int) -> Tile?
     ): Sequence<Pair<AnySizeBoard, TileIndex>> {
         var emptyIndex = 0
-        return indices.asSequence()
-            .mapNotNull { i ->
-                if (Tile(array[i]).isNotEmpty)
-                    null
-                else {
-                    onEmpty(emptyIndex)?.let { tile ->
+        return sequence {
+            var i = 0
+            while (i < boardArraySize) {
+                val tile = this@AnySizeBoard[i]
+                if (tile.isNotEmpty) {
+                    i++
+                    continue
+                }
+
+                onEmpty(emptyIndex)?.let {
+                    yield(
                         Pair(
-                            AnySizeBoard(array).also {
+                            this@AnySizeBoard.copy().also {
                                 it.array[i] = tile.power
                             },
-                            i
+                            emptyIndex
                         )
-                    }.also {
-                        emptyIndex++
-                    }
+                    )
                 }
+                emptyIndex++
+                i++
             }
+        }
     }
 
     fun moveLineToStart(

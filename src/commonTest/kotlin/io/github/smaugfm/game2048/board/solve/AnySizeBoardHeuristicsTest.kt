@@ -6,11 +6,35 @@ import org.junit.Test
 import kotlin.math.roundToLong
 
 class AnySizeBoardHeuristicsTest {
-//    private val heuristics = NneonneoAnySizeHeuristics()
+    //    private val heuristics = NneonneoAnySizeHeuristics()
     private val heuristics = SleepyCoderAnySizeHeuristic()
 
     @Test
     fun evaluateTest() {
+        show(
+            intArrayOf(
+                4, 5, 3, 0,
+                4, 0, 0, 0,
+                8, 1, 0, 0,
+                9, 0, 0, 0,
+            )
+        )
+        show(
+            intArrayOf(
+                5, 5, 3, 0,
+                8, 1, 0, 0,
+                9, 2, 0, 0,
+                0, 0, 0, 0,
+            )
+        )
+        show(
+            intArrayOf(
+                0, 0, 0, 0,
+                5, 5, 0, 0,
+                8, 1, 0, 0,
+                9, 2, 3, 0,
+            )
+        )
         show(
             intArrayOf(
                 0, 0, 0, 0,
@@ -81,6 +105,30 @@ class AnySizeBoardHeuristicsTest {
                 0, 2, 5, 9,
                 0, 2, 3, 1,
                 0, 0, 0, 0,
+            )
+        )
+        show(
+            intArrayOf(
+                0, 2, 0, 9,
+                0, 2, 5, 10,
+                0, 2, 3, 1,
+                0, 0, 0, 0,
+            )
+        )
+        show(
+            intArrayOf(
+                0, 2, 0, 9,
+                0, 2, 5, 1,
+                0, 2, 3, 10,
+                0, 0, 0, 0,
+            )
+        )
+        show(
+            intArrayOf(
+                0, 2, 0, 9,
+                0, 2, 5, 1,
+                0, 2, 3, 0,
+                0, 0, 0, 10,
             )
         )
     }

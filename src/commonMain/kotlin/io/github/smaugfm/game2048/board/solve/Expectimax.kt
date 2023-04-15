@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.roundToLong
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -55,46 +56,74 @@ class Expectimax<T : Board<T>>(
     ): List<Direction> =
         directions.map {
             scope.async(dispatcher) {
-                it to score(board, it)
+                it to topLevelNode(board, it)
             }
         }
             .awaitAll()
-            .sortedByDescending { it.second }
+            .sortedByDescending { it.second.first }
+            .also { results ->
+                println("moves:\n")
+                results.forEach {
+                    println("${it.first} - ${it.second.first.roundToLong()}")
+                    println(it.second.second)
+                }
+            }
             .map { it.first }
 
-    private fun score(board: T, it: Direction): Double {
+    private fun topLevelNode(
+        board: T,
+        it: Direction
+    ): Pair<Double, T> {
         val newBoard = board.move(it)
         if (newBoard == board)
-            return Double.NEGATIVE_INFINITY
+            return Pair(Double.NEGATIVE_INFINITY, board)
 
-        return recursiveScore(newBoard, 0, maxAiDepth)
+        return expectimaxNode(newBoard, 0, 1.0, maxAiDepth) to newBoard
     }
 
-    private fun recursiveScore(board: T, currentDepth: Int, maxDepth: Int): Double {
-        if (currentDepth == maxDepth)
+    private fun expectimaxNode(
+        board: T,
+        depth: Int,
+        prob: Double,
+        maxDepth: Int
+    ): Double {
+        if (prob < PROBABILITY_THRESHOLD || depth >= maxDepth)
             return heuristics.evaluate(board)
 
-        return board.iterateEveryEmptySpace { Tile.TWO }.zip(
-            board.iterateEveryEmptySpace { Tile.FOUR }
+        val emptyCount = board.countEmptyTiles()
+        val emptyTileProb = prob / emptyCount
+
+        return board.iterateEveryEmptySpace(emptyCount) { Tile.TWO }.zip(
+            board.iterateEveryEmptySpace(emptyCount) { Tile.FOUR }
         ).map { it.first.first to it.second.first }
             .map { (boardWithTwo, boardWithFour) ->
-                val scoreBoard2 = calculateMoveScore(boardWithTwo, currentDepth, maxDepth)
+                val scoreBoard2 =
+                    moveNode(boardWithTwo, depth, emptyTileProb * 0.9, maxDepth) * 0.9
                 val scoreBoard4 =
-                    calculateMoveScore(boardWithFour, currentDepth, maxDepth)
+                    moveNode(boardWithFour, depth, emptyTileProb * 0.1, maxDepth) * 0.1
 
-                (scoreBoard2 / 10) * 9 + scoreBoard4 / 10
-            }.sum()
+                scoreBoard2 + scoreBoard4
+            }.sum() / emptyCount
     }
 
-    private fun calculateMoveScore(board: T, currentDepth: Int, maxDepth: Int): Double {
+    private fun moveNode(
+        board: T,
+        depth: Int,
+        prob: Double,
+        maxDepth: Int
+    ): Double {
         return directions
             .map {
                 val newBoard = board.move(it)
+                moveBoardCounter.incrementAndGet()
+
                 if (newBoard == board)
                     return@map Double.NEGATIVE_INFINITY
-
-                moveBoardCounter.incrementAndGet()
-                recursiveScore(newBoard, currentDepth + 1, maxDepth)
+                expectimaxNode(newBoard, depth + 1, prob, maxDepth)
             }.max()
+    }
+
+    companion object {
+        private const val PROBABILITY_THRESHOLD = 0.0001
     }
 }
