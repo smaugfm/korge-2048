@@ -7,16 +7,13 @@ interface Board<out T : Board<T>> {
     fun hasAvailableMoves(): Boolean
     fun moveBoard(direction: Direction): T
     fun moveBoardGenerateMoves(direction: Direction): MoveBoardResult<T>
-    fun placeRandomBlock(): RandomBlockResult<T>?
+    fun placeRandomBlock(): TilePlacementResult<T>?
 
     fun countEmptyTiles(): Int
     fun iterateEveryEmptySpace(
         emptyTilesCount: Int = this.countEmptyTiles(),
         onEmpty: (emptySpaceIndex: Int) -> Tile?
     ): Sequence<Pair<T, TileIndex>>
-
-    fun evaluate(): Double
-    fun evaluateLine(indexes: IntArray): Double
 
     companion object {
         const val SCORE_POW = 3.5

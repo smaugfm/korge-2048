@@ -2,17 +2,9 @@ package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.board.Board.Companion.EMPTY_WEIGHT
-import io.github.smaugfm.game2048.board.Board.Companion.MERGES_WEIGHT
-import io.github.smaugfm.game2048.board.Board.Companion.MONO_POW
-import io.github.smaugfm.game2048.board.Board.Companion.MONO_WEIGHT
-import io.github.smaugfm.game2048.board.Board.Companion.SCORE_POW
-import io.github.smaugfm.game2048.board.Board.Companion.SCORE_WEIGHT
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.datastructure.toIntList
-import kotlin.math.min
-import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
@@ -47,7 +39,7 @@ class AnySizeBoard(
         return MoveBoardResult(newBoard, moves)
     }
 
-    override fun placeRandomBlock(): RandomBlockResult<AnySizeBoard>? {
+    override fun placeRandomBlock(): TilePlacementResult<AnySizeBoard>? {
         val index = powers()
             .withIndex()
             .filter { it.value.isEmpty }
@@ -56,7 +48,7 @@ class AnySizeBoard(
         val tile = if (FastRandom.nextDouble() < 0.9) Tile.TWO else Tile.FOUR
         this.array[index] = tile.power
 
-        return RandomBlockResult(this, tile, index)
+        return TilePlacementResult(this, tile, index)
     }
 
     override fun countEmptyTiles(): Int =
@@ -84,52 +76,6 @@ class AnySizeBoard(
                     }
                 }
             }
-    }
-
-    override fun evaluate(): Double =
-        (0 until boardSize).sumOf { i ->
-            evaluateLine(directionIndexesMap[Direction.LEFT.ordinal][i]) +
-                evaluateLine(directionIndexesMap[Direction.TOP.ordinal][i])
-        }
-
-    override fun evaluateLine(indexes: IntArray): Double {
-        var empty = 0
-        var merges = 0
-        var score = 0.0
-
-        var prevTile: Tile? = null
-        var rowMerges = 0
-        var monoLeft = 0.0
-        var monoRight = 0.0
-
-        for (index in indexes) {
-            val tile = Tile(this.array[index])
-            score += tile.power.toDouble().pow(SCORE_POW)
-            if (tile.isEmpty) {
-                empty++
-            } else {
-                if (prevTile == tile) {
-                    rowMerges++
-                } else if (rowMerges > 0) {
-                    merges += 1 + rowMerges;
-                    rowMerges = 0;
-                }
-                if (prevTile != null) {
-                    if (prevTile.power > tile.power) {
-                        monoLeft += (prevTile.power.toDouble().pow(MONO_POW) - tile.power.toDouble().pow(MONO_POW))
-                    } else {
-                        monoRight += (tile.power.toDouble().pow(MONO_POW) - prevTile.power.toDouble().pow(MONO_POW))
-                    }
-                }
-
-                prevTile = tile
-            }
-        }
-        if (rowMerges > 0)
-            merges += 1 + rowMerges
-
-        return EMPTY_WEIGHT * empty + MERGES_WEIGHT * merges + MONO_WEIGHT *
-            min(monoLeft, monoRight) + SCORE_WEIGHT * score
     }
 
     fun moveLineLeft(
@@ -254,10 +200,10 @@ class AnySizeBoard(
         ).toString()
 
     companion object {
-        private val directionIndexesMap: Array<Array<IntArray>> =
+        val directionIndexesMap: Array<Array<IntArray>> =
             initDirectionIndexesMap()
 
-        private fun initDirectionIndexesMap(): Array<Array<IntArray>> =
+        fun initDirectionIndexesMap(): Array<Array<IntArray>> =
             Direction.values().map { dir ->
                 (0 until boardSize).map {
                     when (dir) {

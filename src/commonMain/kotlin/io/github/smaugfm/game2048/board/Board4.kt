@@ -1,24 +1,16 @@
-package io.github.smaugfm.game2048.board.optimized
+package io.github.smaugfm.game2048.board
 
-import io.github.smaugfm.game2048.board.AnySizeBoard
-import io.github.smaugfm.game2048.board.Board
-import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
-import io.github.smaugfm.game2048.board.MoveBoardResult
-import io.github.smaugfm.game2048.board.RandomBlockResult
-import io.github.smaugfm.game2048.board.Tile
-import io.github.smaugfm.game2048.board.TileIndex
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 
 @OptIn(ExperimentalUnsignedTypes::class)
 @JvmInline
-value class Board4(val packed: ULong) : Board<Board4> {
+value class Board4(val bits: ULong) : Board<Board4> {
     fun transpose(): Board4 {
-        val x = this.packed
-        val a1 = x and 0xF0F00F0FF0F00F0FUL
-        val a2 = x and 0x0000F0F00000F0F0UL
-        val a3 = x and 0x0F0F00000F0F0000UL
+        val a1 = bits and 0xF0F00F0FF0F00F0FUL
+        val a2 = bits and 0x0000F0F00000F0F0UL
+        val a3 = bits and 0x0F0F00000F0F0000UL
         val a = a1 or (a2 shl 12) or (a3 shr 12)
         val b1 = a and 0xFF00FF0000FF00FFUL
         val b2 = a and 0x00FF00FF00000000UL
@@ -31,7 +23,7 @@ value class Board4(val packed: ULong) : Board<Board4> {
             moveBoard(it) != this
         }
 
-    override fun placeRandomBlock(): RandomBlockResult<Board4>? {
+    override fun placeRandomBlock(): TilePlacementResult<Board4>? {
         val emptyTilesCount = countEmptyTiles()
         val randomIndex = FastRandom.Default.nextInt(emptyTilesCount)
         val tile = (if (FastRandom.nextDouble() < 0.9) Tile.TWO else Tile.FOUR)
@@ -39,7 +31,7 @@ value class Board4(val packed: ULong) : Board<Board4> {
         return iterateEveryEmptySpace(emptyTilesCount) { emptyIndex ->
             tile.takeIf { emptyIndex == randomIndex }
         }.firstOrNull()?.let { (newBoard, tileIndex) ->
-            RandomBlockResult(newBoard, tile, tileIndex)
+            TilePlacementResult(newBoard, tile, tileIndex)
         }
     }
 
@@ -57,20 +49,20 @@ value class Board4(val packed: ULong) : Board<Board4> {
         direction: Direction
     ): Board4 = when (direction) {
         Direction.LEFT ->
-            lookupRows(Tables4.leftLinesTable)
+            lookupRows(PrecomputedTables4.leftLinesTable)
 
         Direction.RIGHT ->
-            lookupRows(Tables4.rightLinesTable)
+            lookupRows(PrecomputedTables4.rightLinesTable)
 
         Direction.TOP -> {
             val t = transpose()
-            val result = t.lookupRows(Tables4.leftLinesTable)
+            val result = t.lookupRows(PrecomputedTables4.leftLinesTable)
             result.transpose()
         }
 
         Direction.BOTTOM -> {
             val t = transpose()
-            val result = t.lookupRows(Tables4.rightLinesTable)
+            val result = t.lookupRows(PrecomputedTables4.rightLinesTable)
             result.transpose()
         }
     }
@@ -80,13 +72,13 @@ value class Board4(val packed: ULong) : Board<Board4> {
     ): Board4 {
         var result = 0UL
         result = result or
-            ((table[((packed shr 0) and ROW_MASK).toInt()].toULong()) shl 0)
+            ((table[((bits shr 0) and ROW_MASK).toInt()].toULong()) shl 0)
         result = result or
-            ((table[((packed shr 16) and ROW_MASK).toInt()].toULong()) shl 16)
+            ((table[((bits shr 16) and ROW_MASK).toInt()].toULong()) shl 16)
         result = result or
-            ((table[((packed shr 32) and ROW_MASK).toInt()].toULong()) shl 32)
+            ((table[((bits shr 32) and ROW_MASK).toInt()].toULong()) shl 32)
         result = result or
-            ((table[((packed shr 48) and ROW_MASK).toInt()].toULong()) shl 48)
+            ((table[((bits shr 48) and ROW_MASK).toInt()].toULong()) shl 48)
 
         return Board4(result)
     }
@@ -95,10 +87,10 @@ value class Board4(val packed: ULong) : Board<Board4> {
         return IntArray2(4, 4, toIntArray()).toString()
     }
 
-    operator fun get(i: Int): ULong = (packed shr (i * 4)) and 0xFUL
+    operator fun get(i: Int): ULong = (bits shr (i * 4)) and 0xFUL
 
     fun set(i: Int, value: Int): Board4 =
-        Board4(packed or ((value.toULong() and 0xFUL) shl (i * 4)))
+        Board4(bits or ((value.toULong() and 0xFUL) shl (i * 4)))
 
     override fun iterateEveryEmptySpace(
         emptyTilesCount: Int,
@@ -108,7 +100,7 @@ value class Board4(val packed: ULong) : Board<Board4> {
             return emptySequence()
 
         return sequence {
-            var temp = packed
+            var temp = bits
 
             var i = 0
             var emptyIndex = 0
@@ -122,7 +114,7 @@ value class Board4(val packed: ULong) : Board<Board4> {
                 val tile = onEmpty(emptyIndex)
                 if (tile != null)
                     yield(
-                        Board4(temp or (tile.power.toULong() shl (4 * i))) to i
+                        Board4(bits or (tile.power.toULong() shl (4 * i))) to i
                     )
 
                 temp = temp shr 4
@@ -133,18 +125,10 @@ value class Board4(val packed: ULong) : Board<Board4> {
         }
     }
 
-    override fun evaluate(): Double {
-        TODO("Not yet implemented")
-    }
-
-    override fun evaluateLine(indexes: IntArray): Double {
-        TODO("Not yet implemented")
-    }
-
     override fun countEmptyTiles(): Int {
-        assert(packed != 0UL)
+        assert(bits != 0UL)
 
-        var x = packed
+        var x = bits
         x = x or ((x shr 2) and 0x3333333333333333UL)
         x = x or (x shr 1)
         x = x.inv() and 0x1111111111111111UL

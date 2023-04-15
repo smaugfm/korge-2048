@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048.ai
+package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.Board
 import io.github.smaugfm.game2048.board.Direction
@@ -19,7 +19,9 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 @OptIn(ExperimentalTime::class)
-class Expectimax<T : Board<T>> {
+class Expectimax<T : Board<T>>(
+    private val heuristics: Heuristics<T>
+) {
     private val dispatcher = Dispatchers.createFixedThreadDispatcher("ai", directions.size)
 
     private val moveBoardCounter = AtomicLong(0)
@@ -66,7 +68,7 @@ class Expectimax<T : Board<T>> {
 
     private fun recursiveScore(board: T, currentDepth: Int, maxDepth: Int): Double {
         if (currentDepth == maxDepth)
-            return board.evaluate()
+            return heuristics.evaluate(board)
 
         return board.iterateEveryEmptySpace { Tile.TWO }.zip(
             board.iterateEveryEmptySpace { Tile.FOUR }
@@ -89,5 +91,4 @@ class Expectimax<T : Board<T>> {
 
                 recursiveScore(newBoard, currentDepth + 1, maxDepth)
             }.max()
-
 }

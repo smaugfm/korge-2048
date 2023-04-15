@@ -1,17 +1,13 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.board
 
-import io.github.smaugfm.game2048.board.BoardMove
-import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.Tile
-import io.github.smaugfm.game2048.board.optimized.Board4
-import io.github.smaugfm.game2048.board.AnySizeBoard
+import io.github.smaugfm.game2048.boardArraySize
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
-import kotlin.test.assertEquals
 
-class MoveGeneratorTest {
+class AnySizeBoardTest {
     @Test
     fun testMap1() {
-        val board = Board4.fromArray(
+        val board = AnySizeBoard(
             intArrayOf(
                 2, 2, 0, 3,
                 2, 3, 0, 0,
@@ -21,7 +17,7 @@ class MoveGeneratorTest {
         )
         val (board1, moves1) = board.moveBoardGenerateMoves(Direction.LEFT)
         assertEquals(
-            Board4.fromArray(
+            AnySizeBoard(
                 intArrayOf(
                     3, 3, 0, 0,
                     2, 3, 0, 0,
@@ -31,9 +27,9 @@ class MoveGeneratorTest {
             ), board1
         )
 
-        val (board2, moves2) = board.moveBoardGenerateMoves(Direction.TOP)
+        val (board2, moves2) = board1.moveBoardGenerateMoves(Direction.TOP)
         assertEquals(
-            Board4.fromArray(
+            AnySizeBoard(
                 intArrayOf(
                     3, 4, 4, 0,
                     2, 3, 0, 0,

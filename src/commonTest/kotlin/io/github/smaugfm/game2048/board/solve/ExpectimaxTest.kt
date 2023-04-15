@@ -1,10 +1,10 @@
-package io.github.smaugfm.game2048.ai
+package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
-class GeneralAiTest {
+class ExpectimaxTest {
 
     @Test
     fun test() {
@@ -17,7 +17,8 @@ class GeneralAiTest {
                     -1, -1, -1, -1,
                 )
             )
-            Expectimax.findBestMove(this, board).await()
+            Expectimax(AnySizeBoardHeuristics())
+                .findBestMove(this, board).await()
         }
     }
 }
