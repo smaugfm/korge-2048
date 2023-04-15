@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.persistence
 
 import io.github.smaugfm.game2048.boardArraySize
-import io.github.smaugfm.game2048.core.Tile
+import io.github.smaugfm.game2048.board.Tile
 import korlibs.datastructure.iterators.fastForEach
 
 class History(from: String?, private val onUpdate: (History) -> Unit) {

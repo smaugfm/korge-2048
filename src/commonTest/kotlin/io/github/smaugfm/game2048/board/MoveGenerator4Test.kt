@@ -1,6 +1,6 @@
-package io.github.smaugfm.game2048.core
+package io.github.smaugfm.game2048.board
 
-import io.github.smaugfm.game2048.core.four.Board4
+import io.github.smaugfm.game2048.board.optimized.Board4
 import org.junit.Test
 import kotlin.test.assertTrue
 import kotlin.test.fail

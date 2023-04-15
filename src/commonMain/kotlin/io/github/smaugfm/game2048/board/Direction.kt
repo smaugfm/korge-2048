@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048.core
+package io.github.smaugfm.game2048.board
 
 enum class Direction {
     LEFT, RIGHT, TOP, BOTTOM;

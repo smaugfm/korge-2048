@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048.core
+package io.github.smaugfm.game2048.board
 
 @JvmInline
 value class Tile(val power: Int) {

@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048.core
+package io.github.smaugfm.game2048.board
 
 sealed interface BoardMove {
     data class Move(val from: Int, val to: Int) : BoardMove

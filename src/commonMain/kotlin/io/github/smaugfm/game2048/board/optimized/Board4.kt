@@ -1,13 +1,13 @@
-package io.github.smaugfm.game2048.core.four
+package io.github.smaugfm.game2048.board.optimized
 
-import io.github.smaugfm.game2048.core.Board
-import io.github.smaugfm.game2048.core.Direction
-import io.github.smaugfm.game2048.core.Direction.Companion.directions
-import io.github.smaugfm.game2048.core.MoveBoardResult
-import io.github.smaugfm.game2048.core.RandomBlockResult
-import io.github.smaugfm.game2048.core.Tile
-import io.github.smaugfm.game2048.core.TileIndex
-import io.github.smaugfm.game2048.core.general.GeneralBoard
+import io.github.smaugfm.game2048.board.AnySizeBoard
+import io.github.smaugfm.game2048.board.Board
+import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Direction.Companion.directions
+import io.github.smaugfm.game2048.board.MoveBoardResult
+import io.github.smaugfm.game2048.board.RandomBlockResult
+import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.TileIndex
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 
@@ -44,7 +44,7 @@ value class Board4(val packed: ULong) : Board<Board4> {
     }
 
     override fun moveBoardGenerateMoves(direction: Direction): MoveBoardResult<Board4> =
-        GeneralBoard(toIntArray())
+        AnySizeBoard(toIntArray())
             .moveBoardGenerateMoves(direction)
             .let {
                 MoveBoardResult(
@@ -131,6 +131,14 @@ value class Board4(val packed: ULong) : Board<Board4> {
             }
 
         }
+    }
+
+    override fun evaluate(): Double {
+        TODO("Not yet implemented")
+    }
+
+    override fun evaluateLine(indexes: IntArray): Double {
+        TODO("Not yet implemented")
     }
 
     override fun countEmptyTiles(): Int {

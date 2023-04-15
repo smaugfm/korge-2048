@@ -1,10 +1,9 @@
 package io.github.smaugfm.game2048
 
 import io.github.smaugfm.game2048.ai.Expectimax
-import io.github.smaugfm.game2048.ai.general.GeneralHeuristics
-import io.github.smaugfm.game2048.core.BoardMove
-import io.github.smaugfm.game2048.core.Direction
-import io.github.smaugfm.game2048.core.general.GeneralBoard
+import io.github.smaugfm.game2048.board.BoardMove
+import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
@@ -72,8 +71,8 @@ val best = ObservableProperty(0)
 var uiBoard: UiBoard by Delegates.notNull()
 var isAiPlaying = ObservableProperty(false)
 
-var board = GeneralBoard()
-var expectimax = Expectimax(GeneralHeuristics())
+var board = AnySizeBoard()
+var expectimax = Expectimax<AnySizeBoard>()
 
 suspend fun main() = Korge(
     KorgeConfig(
@@ -242,7 +241,7 @@ fun Container.showGameOver(onRestart: () -> Unit) = container {
 
 fun restart() {
     isGameOver = false
-    board = GeneralBoard()
+    board = AnySizeBoard()
     uiBoard.clear()
     score.update(0)
     history.clear()
@@ -258,7 +257,7 @@ fun generateBlockAndSave() {
 
 fun restoreField(historyElement: History.Element) {
     uiBoard.clear()
-    board = GeneralBoard(historyElement.powers.map { it.power }.toIntArray())
+    board = AnySizeBoard(historyElement.powers.map { it.power }.toIntArray())
     score.update(historyElement.score)
     historyElement.powers.forEachIndexed { i, tile ->
         if (tile.isNotEmpty) {

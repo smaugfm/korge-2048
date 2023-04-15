@@ -1,6 +1,6 @@
-package io.github.smaugfm.game2048.core.four
+package io.github.smaugfm.game2048.board.optimized
 
-import io.github.smaugfm.game2048.core.general.GeneralBoard
+import io.github.smaugfm.game2048.board.AnySizeBoard
 
 @OptIn(ExperimentalUnsignedTypes::class)
 object Tables4 {
@@ -9,7 +9,7 @@ object Tables4 {
 
     init {
         for (line in (0u until 65536u)) {
-            val generalBoard = GeneralBoard(
+            val generalBoard = AnySizeBoard(
                 uintArrayOf(
                     (line shr 0) and 0xFu,
                     (line shr 4) and 0xFu,
@@ -18,7 +18,7 @@ object Tables4 {
                 ).toIntArray()
             )
 
-            val newBoard = GeneralBoard(
+            val newBoard = AnySizeBoard(
                 intArrayOf(0, 0, 0, 0)
             )
             generalBoard.moveLineLeft(

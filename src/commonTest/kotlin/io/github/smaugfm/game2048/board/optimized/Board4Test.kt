@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048.core.four
+package io.github.smaugfm.game2048.board.optimized
 
 import org.junit.Test
 import kotlin.test.assertEquals

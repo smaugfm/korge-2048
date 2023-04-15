@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.ai
 
 import io.github.smaugfm.game2048.ai.general.GeneralHeuristics
-import io.github.smaugfm.game2048.core.general.GeneralBoard
+import io.github.smaugfm.game2048.board.AnySizeBoard
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -10,7 +10,7 @@ class GeneralHeuristicsTest {
     @Test
     fun monotonicityTest() {
         val maxScoreBoards = listOf(
-            GeneralBoard(
+            AnySizeBoard(
                 intArrayOf(
                     4, 3, 2, 1,
                     3, 3, 2, 1,
@@ -18,7 +18,7 @@ class GeneralHeuristicsTest {
                     1, 1, 1, 1
                 )
             ),
-            GeneralBoard(
+            AnySizeBoard(
                 intArrayOf(
                     1, 2, 3, 4,
                     1, 2, 3, 3,
@@ -26,7 +26,7 @@ class GeneralHeuristicsTest {
                     1, 1, 1, 1
                 )
             ),
-            GeneralBoard(
+            AnySizeBoard(
                 intArrayOf(
                     1, 1, 1, 1,
                     1, 2, 2, 2,
@@ -34,7 +34,7 @@ class GeneralHeuristicsTest {
                     1, 2, 3, 4
                 )
             ),
-            GeneralBoard(
+            AnySizeBoard(
                 intArrayOf(
                     1, 1, 1, 1,
                     2, 2, 2, 1,
@@ -55,7 +55,7 @@ class GeneralHeuristicsTest {
 
         println(
             GeneralHeuristics.monotonicityHeuristic(
-                GeneralBoard(
+                AnySizeBoard(
                     intArrayOf(
                         1, 1, 1, 1,
                         1, 2, 2, 2,
@@ -67,7 +67,7 @@ class GeneralHeuristicsTest {
         )
         println(
             GeneralHeuristics.monotonicityHeuristic(
-                GeneralBoard(
+                AnySizeBoard(
                     intArrayOf(
                         4, 3, 2, 1,
                         4, 3, 2, 1,
@@ -80,7 +80,7 @@ class GeneralHeuristicsTest {
 
         println(
             GeneralHeuristics.monotonicityHeuristic(
-                GeneralBoard(
+                AnySizeBoard(
                     intArrayOf(
                         1, 1, 1, 1,
                         1, 2, 2, 1,

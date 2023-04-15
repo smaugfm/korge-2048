@@ -1,10 +1,10 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.core.BoardMove
-import io.github.smaugfm.game2048.core.Direction
-import io.github.smaugfm.game2048.core.Tile
-import io.github.smaugfm.game2048.core.four.Board4
-import io.github.smaugfm.game2048.core.general.GeneralBoard
+import io.github.smaugfm.game2048.board.BoardMove
+import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.optimized.Board4
+import io.github.smaugfm.game2048.board.AnySizeBoard
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -19,7 +19,7 @@ class MoveGeneratorTest {
                 1, 2, 3, 0
             )
         )
-        val (board1, moves1) = MoveGenerator4.moveBoardGenerateMoves(board, Direction.LEFT)
+        val (board1, moves1) = board.moveBoardGenerateMoves(Direction.LEFT)
         assertEquals(
             Board4.fromArray(
                 intArrayOf(
@@ -31,7 +31,7 @@ class MoveGeneratorTest {
             ), board1
         )
 
-        val (board2, moves2) = MoveGenerator4.moveBoardGenerateMoves(board1, Direction.TOP)
+        val (board2, moves2) = board.moveBoardGenerateMoves(Direction.TOP)
         assertEquals(
             Board4.fromArray(
                 intArrayOf(
@@ -119,15 +119,14 @@ class MoveGeneratorTest {
     }
 
     private fun posMapOneLine(array: IntArray) =
-        GeneralBoard(array + IntArray(boardArraySize - array.size) { Tile.EMPTY.power })
+        AnySizeBoard(array + IntArray(boardArraySize - array.size) { Tile.EMPTY.power })
 
-    private fun genPosMapForOneLine(array: IntArray): GeneralBoard {
+    private fun genPosMapForOneLine(array: IntArray): AnySizeBoard {
         val board = posMapOneLine(array)
-        val newBoard = GeneralBoard()
+        val newBoard = AnySizeBoard()
         val moves = mutableListOf<BoardMove>()
-        GeneralMoveGenerator.moveLineLeftGenerateMoves(
+        board.moveLineLeftGenerateMoves(
             intArrayOf(0, 1, 2, 3),
-            board,
             newBoard,
             moves
         )

@@ -1,8 +1,8 @@
 package io.github.smaugfm.game2048.ui
 
 import io.github.smaugfm.game2048.*
-import io.github.smaugfm.game2048.core.Tile
-import io.github.smaugfm.game2048.core.TileIndex
+import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.TileIndex
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.korge.animate.Animator
