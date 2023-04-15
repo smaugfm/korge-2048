@@ -1,10 +1,11 @@
 package io.github.smaugfm.game2048.ai
 
-import io.github.smaugfm.game2048.core.GeneralBoard
+import io.github.smaugfm.game2048.ai.general.GeneralHeuristics
+import io.github.smaugfm.game2048.core.general.GeneralBoard
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class BoardEvaluationTest {
+class GeneralHeuristicsTest {
 
     @Test
     fun monotonicityTest() {
@@ -44,7 +45,7 @@ class BoardEvaluationTest {
         )
 
         val scores = maxScoreBoards.map {
-            Heuristics.monotonicityHeuristic(it)
+            GeneralHeuristics.monotonicityHeuristic(it)
         }
         assertEquals(1, scores.toSet().size)
     }
@@ -53,7 +54,7 @@ class BoardEvaluationTest {
     fun test() {
 
         println(
-            Heuristics.monotonicityHeuristic(
+            GeneralHeuristics.monotonicityHeuristic(
                 GeneralBoard(
                     intArrayOf(
                         1, 1, 1, 1,
@@ -65,7 +66,7 @@ class BoardEvaluationTest {
             )
         )
         println(
-            Heuristics.monotonicityHeuristic(
+            GeneralHeuristics.monotonicityHeuristic(
                 GeneralBoard(
                     intArrayOf(
                         4, 3, 2, 1,
@@ -78,7 +79,7 @@ class BoardEvaluationTest {
         )
 
         println(
-            Heuristics.monotonicityHeuristic(
+            GeneralHeuristics.monotonicityHeuristic(
                 GeneralBoard(
                     intArrayOf(
                         1, 1, 1, 1,

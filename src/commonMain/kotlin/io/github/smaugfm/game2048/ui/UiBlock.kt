@@ -14,16 +14,16 @@ import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 import korlibs.math.interpolation.Easing
 
-class UiBlock(private val power: Tile) : Container() {
+class UiBlock(private val tile: Tile) : Container() {
     init {
         roundRect(Size(cellSize, cellSize), rectCorners, fill = color)
         val textColor =
-            if (power.isLowest)
+            if (tile == Tile.TWO || tile == Tile.FOUR)
                 Colors.BLACK
             else
                 Colors.WHITE
         text(
-            power.score.toString(),
+            tile.score.toString(),
             textSize.toFloat(),
             textColor,
             font
@@ -33,7 +33,7 @@ class UiBlock(private val power: Tile) : Container() {
     }
 
     private val color
-        get() = when (power.power) {
+        get() = when (tile.power) {
             1 -> RGBA(240, 228, 218)
             2 -> RGBA(236, 224, 201)
             3 -> RGBA(255, 178, 120)
@@ -57,7 +57,7 @@ class UiBlock(private val power: Tile) : Container() {
 
     private val textSize
         get() =
-            with(power) {
+            with(tile) {
                 if (power <= 6) cellSize / 2
                 else if (power <= 9) cellSize * 4 / 9
                 else if (power <= 13) cellSize * 2 / 5

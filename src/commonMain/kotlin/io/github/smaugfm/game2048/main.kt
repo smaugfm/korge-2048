@@ -1,10 +1,10 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.ai.Ai
-import io.github.smaugfm.game2048.core.GeneralBoard
+import io.github.smaugfm.game2048.ai.Expectimax
+import io.github.smaugfm.game2048.ai.general.GeneralHeuristics
 import io.github.smaugfm.game2048.core.BoardMove
 import io.github.smaugfm.game2048.core.Direction
-import io.github.smaugfm.game2048.core.MoveGenerator
+import io.github.smaugfm.game2048.core.general.GeneralBoard
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
@@ -48,7 +48,7 @@ const val cellPadding = 10
 const val rectRadius = 5.0
 const val boardSize = 4
 const val boardArraySize = boardSize * boardSize
-const val maxAiDepth = 3
+const val maxAiDepth = 4
 var btnSize: Double = 0.0
 var cellSize: Double = 0.0
 val moveAnimationDuration = 0.15.seconds
@@ -70,8 +70,10 @@ var isGameOver = false
 val score = ObservableProperty(0)
 val best = ObservableProperty(0)
 var uiBoard: UiBoard by Delegates.notNull()
+var isAiPlaying = ObservableProperty(false)
+
 var board = GeneralBoard()
-var isAiPlaying = ObservableProperty(true)
+var expectimax = Expectimax(GeneralHeuristics())
 
 suspend fun main() = Korge(
     KorgeConfig(
@@ -122,7 +124,7 @@ suspend fun main() = Korge(
 
 fun Stage.startAiPlay() {
     launch {
-        var moveResultDeferred = Ai.findBestMove(this, board)
+        var moveResultDeferred = expectimax.findBestMove(this, board)
         var moveResult = moveResultDeferred.await()
         while (true) {
             val waitForAnimation = CompletableDeferred<Unit>()
@@ -136,19 +138,19 @@ fun Stage.startAiPlay() {
             animateMoves(moves) {
                 waitForAnimation.complete(Unit)
             }
-            val newTile = MoveGenerator.placeRandomBlock(newBoard)
+            val newTile = newBoard.placeRandomBlock()
             if (newTile == null) {
                 println("Should not BE HERE")
                 break
             }
-            newBoard = newTile.board
+            newBoard = newTile.newBoard
 
             history.add(board.powers(), score.value)
 
             if (!isAiPlaying.value) {
                 break
             }
-            moveResultDeferred = Ai.findBestMove(this, newBoard)
+            moveResultDeferred = expectimax.findBestMove(this, newBoard)
             waitForAnimation.await()
             uiBoard.createNewBlock(newTile.power, newTile.index)
 
@@ -163,12 +165,12 @@ fun Stage.handleMoveBlocks(direction: Direction) {
         return
     }
 
-    val (newBoard, moves) = MoveGenerator.moveBoard(board, direction)
+    val (newBoard, moves) = board.moveBoardGenerateMoves(direction)
     if (board != newBoard) {
         animateMoves(moves) {
             board = newBoard
             generateBlockAndSave()
-            showGameOverIfNoMoves(MoveGenerator.hasAvailableMoves(board))
+            showGameOverIfNoMoves(board.hasAvailableMoves())
         }
     }
 
@@ -248,7 +250,7 @@ fun restart() {
 }
 
 fun generateBlockAndSave() {
-    val (newBoard, power, index) = MoveGenerator.placeRandomBlock(board) ?: return
+    val (newBoard, power, index) = board.placeRandomBlock() ?: return
     board = newBoard
     uiBoard.createNewBlock(power, index)
     history.add(board.powers(), score.value)

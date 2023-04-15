@@ -1,6 +1,6 @@
 package io.github.smaugfm.game2048.ai
 
-import io.github.smaugfm.game2048.core.GeneralBoard
+import io.github.smaugfm.game2048.core.general.GeneralBoard
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
@@ -17,7 +17,7 @@ class GeneralAiTest {
                     -1, -1, -1, -1,
                 )
             )
-            GeneralAi.findBestMove(this, board).await()
+            Expectimax.findBestMove(this, board).await()
         }
     }
 }

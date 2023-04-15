@@ -1,6 +1,8 @@
 .gradle
 gradle-app.setting
 build/
+/ref.cpp
+/ref.h
 
 .idea/
 *.ipr

@@ -1,8 +1,7 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.core.GeneralBoard
 import io.github.smaugfm.game2048.core.Direction
-import io.github.smaugfm.game2048.core.MoveGenerator
+import io.github.smaugfm.game2048.core.general.GeneralBoard
 import kotlinx.benchmark.*
 
 @State(Scope.Benchmark)
@@ -13,7 +12,7 @@ import kotlinx.benchmark.*
 )
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.Throughput)
-class MoveGeneratorBenchmark {
+class GeneralMoveGeneratorBenchmark {
     private lateinit var board: GeneralBoard
 
     @Setup
@@ -31,7 +30,7 @@ class MoveGeneratorBenchmark {
     @Benchmark
     fun moveBoard(bh: Blackhole) {
         bh.consume(
-            MoveGenerator.moveBoard(board, Direction.LEFT, { _, _ -> }, { _, _, _, _ -> })
+            GeneralMoveGenerator.moveBoard(board, Direction.LEFT)
         )
     }
 }
