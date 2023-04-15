@@ -22,10 +22,10 @@ class AnySizeBoard(
             hasAdjacentEqualPosition(i)
         }
 
-    override fun moveBoard(direction: Direction): AnySizeBoard =
+    override fun move(direction: Direction): AnySizeBoard =
         moveBoardInternal(direction, emptyAddMove, emptyAddMerge)
 
-    override fun moveBoardGenerateMoves(
+    override fun moveGenerateMoves(
         direction: Direction
     ): MoveBoardResult<AnySizeBoard> {
         val moves = mutableListOf<BoardMove>()
@@ -33,7 +33,16 @@ class AnySizeBoard(
         val newBoard = moveBoardInternal(
             direction,
             { from, to -> moves.add(BoardMove.Move(from, to)) },
-            { from1, from2, to, newTile -> moves.add(BoardMove.Merge(from1, from2, to, newTile)) }
+            { from1, from2, to, newTile ->
+                moves.add(
+                    BoardMove.Merge(
+                        from1,
+                        from2,
+                        to,
+                        newTile
+                    )
+                )
+            }
         )
 
         return MoveBoardResult(newBoard, moves)
@@ -78,12 +87,12 @@ class AnySizeBoard(
             }
     }
 
-    fun moveLineLeft(
+    fun moveLineToStart(
         indexes: IntArray,
         newBoard: AnySizeBoard,
     ) = moveLineLeftInternal(indexes, newBoard, emptyAddMove, emptyAddMerge)
 
-    fun moveLineLeftGenerateMoves(
+    fun moveLineToStartGenerateMoves(
         indexes: IntArray,
         newBoard: AnySizeBoard,
         moves: MutableList<BoardMove>
@@ -109,7 +118,8 @@ class AnySizeBoard(
 
         while (cur1 != null) {
             if (cur2 != null && Tile(this.array[indexes[cur1]]) == Tile(this.array[indexes[cur2]])) {
-                newBoard.array[indexes[newCur]] = Tile(this.array[indexes[cur1]]).next().power
+                newBoard.array[indexes[newCur]] =
+                    Tile(this.array[indexes[cur1]]).next().power
                 addMerge(
                     indexes[cur1],
                     indexes[cur2],

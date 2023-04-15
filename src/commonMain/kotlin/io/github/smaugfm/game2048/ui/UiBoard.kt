@@ -1,14 +1,26 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.*
+import io.github.smaugfm.game2048.backgroundColor
+import io.github.smaugfm.game2048.backgroundColorLight
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
+import io.github.smaugfm.game2048.boardArraySize
+import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.cellPadding
+import io.github.smaugfm.game2048.cellSize
+import io.github.smaugfm.game2048.rectCorners
+import io.github.smaugfm.game2048.rectRadius
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
 import korlibs.korge.animate.block
-import korlibs.korge.view.*
+import korlibs.korge.view.Container
+import korlibs.korge.view.Stage
+import korlibs.korge.view.addTo
+import korlibs.korge.view.graphics
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 

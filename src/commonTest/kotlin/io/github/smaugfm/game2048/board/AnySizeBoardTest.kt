@@ -15,7 +15,7 @@ class AnySizeBoardTest {
                 1, 2, 3, 0
             )
         )
-        val (board1, moves1) = board.moveBoardGenerateMoves(Direction.LEFT)
+        val (board1, moves1) = board.moveGenerateMoves(Direction.LEFT)
         assertEquals(
             AnySizeBoard(
                 intArrayOf(
@@ -27,7 +27,7 @@ class AnySizeBoardTest {
             ), board1
         )
 
-        val (board2, moves2) = board1.moveBoardGenerateMoves(Direction.TOP)
+        val (board2, moves2) = board1.moveGenerateMoves(Direction.TOP)
         assertEquals(
             AnySizeBoard(
                 intArrayOf(
@@ -121,7 +121,7 @@ class AnySizeBoardTest {
         val board = posMapOneLine(array)
         val newBoard = AnySizeBoard()
         val moves = mutableListOf<BoardMove>()
-        board.moveLineLeftGenerateMoves(
+        board.moveLineToStartGenerateMoves(
             intArrayOf(0, 1, 2, 3),
             newBoard,
             moves

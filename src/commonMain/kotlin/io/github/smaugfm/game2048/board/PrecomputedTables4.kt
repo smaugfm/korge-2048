@@ -14,7 +14,7 @@ object PrecomputedTables4 {
             val newBoard = AnySizeBoard(
                 intArrayOf(0, 0, 0, 0)
             )
-            generalBoard.moveLineLeft(
+            generalBoard.moveLineToStart(
                 intArrayOf(0, 1, 2, 3),
                 newBoard
             )

@@ -2,14 +2,15 @@ package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.board.AnySizeBoard.Companion.directionIndexesMap
-import io.github.smaugfm.game2048.board.Board.Companion.EMPTY_WEIGHT
-import io.github.smaugfm.game2048.board.Board.Companion.MERGES_WEIGHT
-import io.github.smaugfm.game2048.board.Board.Companion.MONO_POW
-import io.github.smaugfm.game2048.board.Board.Companion.MONO_WEIGHT
-import io.github.smaugfm.game2048.board.Board.Companion.SCORE_POW
-import io.github.smaugfm.game2048.board.Board.Companion.SCORE_WEIGHT
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.solve.Heuristics.Companion.EMPTY_WEIGHT
+import io.github.smaugfm.game2048.board.solve.Heuristics.Companion.LOST_PENALTY
+import io.github.smaugfm.game2048.board.solve.Heuristics.Companion.MERGES_WEIGHT
+import io.github.smaugfm.game2048.board.solve.Heuristics.Companion.MONO_POW
+import io.github.smaugfm.game2048.board.solve.Heuristics.Companion.MONO_WEIGHT
+import io.github.smaugfm.game2048.board.solve.Heuristics.Companion.SCORE_POW
+import io.github.smaugfm.game2048.board.solve.Heuristics.Companion.SCORE_WEIGHT
 import io.github.smaugfm.game2048.boardSize
 import kotlin.math.min
 import kotlin.math.pow
@@ -41,14 +42,17 @@ class AnySizeBoardHeuristics : Heuristics<AnySizeBoard> {
                 if (prevTile == tile) {
                     rowMerges++
                 } else if (rowMerges > 0) {
-                    merges += 1 + rowMerges;
-                    rowMerges = 0;
+                    merges += 1 + rowMerges
+                    rowMerges = 0
                 }
                 if (prevTile != null) {
                     if (prevTile.power > tile.power) {
-                        monoLeft += (prevTile.power.toDouble().pow(MONO_POW) - tile.power.toDouble().pow(MONO_POW))
+                        monoLeft +=
+                            (prevTile.power.toDouble()
+                                .pow(MONO_POW) - tile.power.toDouble().pow(MONO_POW))
                     } else {
-                        monoRight += (tile.power.toDouble().pow(MONO_POW) - prevTile.power.toDouble().pow(MONO_POW))
+                        monoRight += (tile.power.toDouble()
+                            .pow(MONO_POW) - prevTile.power.toDouble().pow(MONO_POW))
                     }
                 }
 
@@ -57,6 +61,9 @@ class AnySizeBoardHeuristics : Heuristics<AnySizeBoard> {
         }
         if (rowMerges > 0)
             merges += 1 + rowMerges
+
+        if (empty == 0 && merges == 0)
+            return LOST_PENALTY
 
         return EMPTY_WEIGHT * empty + MERGES_WEIGHT * merges + MONO_WEIGHT *
             min(monoLeft, monoRight) + SCORE_WEIGHT * score

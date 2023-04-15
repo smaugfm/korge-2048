@@ -22,7 +22,8 @@ import kotlin.time.measureTimedValue
 class Expectimax<T : Board<T>>(
     private val heuristics: Heuristics<T>
 ) {
-    private val dispatcher = Dispatchers.createFixedThreadDispatcher("ai", directions.size)
+    private val dispatcher =
+        Dispatchers.createFixedThreadDispatcher("ai", directions.size)
 
     private val moveBoardCounter = AtomicLong(0)
     private val Duration.mpm: String
@@ -37,7 +38,7 @@ class Expectimax<T : Board<T>>(
             moveBoardCounter.set(0)
             measureTimedValue {
                 findBestDirection(scope, board)
-                    .map { board.moveBoardGenerateMoves(it) }
+                    .map { board.moveGenerateMoves(it) }
                     .firstOrNull { it.board != board }
             }.also {
                 println(
@@ -48,7 +49,10 @@ class Expectimax<T : Board<T>>(
             }.value
         }
 
-    private suspend fun findBestDirection(scope: CoroutineScope, board: T): List<Direction> =
+    private suspend fun findBestDirection(
+        scope: CoroutineScope,
+        board: T
+    ): List<Direction> =
         directions.map {
             scope.async(dispatcher) {
                 it to score(board, it)
@@ -59,7 +63,7 @@ class Expectimax<T : Board<T>>(
             .map { it.first }
 
     private fun score(board: T, it: Direction): Double {
-        val newBoard = board.moveBoard(it)
+        val newBoard = board.move(it)
         if (newBoard == board)
             return 0.0
 
@@ -75,7 +79,8 @@ class Expectimax<T : Board<T>>(
         ).map { it.first.first to it.second.first }
             .map { (boardWithTwo, boardWithFour) ->
                 val scoreBoard2 = calculateMoveScore(boardWithTwo, currentDepth, maxDepth)
-                val scoreBoard4 = calculateMoveScore(boardWithFour, currentDepth, maxDepth)
+                val scoreBoard4 =
+                    calculateMoveScore(boardWithFour, currentDepth, maxDepth)
 
                 (scoreBoard2 / 10) * 9 + scoreBoard4 / 10
             }.sum()
@@ -84,7 +89,7 @@ class Expectimax<T : Board<T>>(
     private fun calculateMoveScore(board: T, currentDepth: Int, maxDepth: Int): Double =
         directions
             .map {
-                val newBoard = board.moveBoard(it)
+                val newBoard = board.move(it)
                 moveBoardCounter.incrementAndGet()
                 if (newBoard == board)
                     return@map 0.0

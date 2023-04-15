@@ -20,7 +20,7 @@ value class Board4(val bits: ULong) : Board<Board4> {
 
     override fun hasAvailableMoves(): Boolean =
         directions.any {
-            moveBoard(it) != this
+            move(it) != this
         }
 
     override fun placeRandomBlock(): TilePlacementResult<Board4>? {
@@ -35,9 +35,9 @@ value class Board4(val bits: ULong) : Board<Board4> {
         }
     }
 
-    override fun moveBoardGenerateMoves(direction: Direction): MoveBoardResult<Board4> =
+    override fun moveGenerateMoves(direction: Direction): MoveBoardResult<Board4> =
         AnySizeBoard(toIntArray())
-            .moveBoardGenerateMoves(direction)
+            .moveGenerateMoves(direction)
             .let {
                 MoveBoardResult(
                     fromArray(it.board.array),
@@ -45,7 +45,7 @@ value class Board4(val bits: ULong) : Board<Board4> {
                 )
             }
 
-    override fun moveBoard(
+    override fun move(
         direction: Direction
     ): Board4 = when (direction) {
         Direction.LEFT ->

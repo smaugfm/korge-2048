@@ -38,6 +38,7 @@ class AnySizeBoardHeuristicsTest {
         show(intArrayOf(0, 0, 5, 6))
         show(intArrayOf(6, 5, 5, 6))
         show(intArrayOf(6, 2, 2, 6))
+        show(intArrayOf(1, 2, 3, 4))
     }
 
     private fun show(it: IntArray) {

@@ -165,7 +165,7 @@ fun Stage.handleMoveBlocks(direction: Direction) {
         return
     }
 
-    val (newBoard, moves) = board.moveBoardGenerateMoves(direction)
+    val (newBoard, moves) = board.moveGenerateMoves(direction)
     if (board != newBoard) {
         animateMoves(moves) {
             board = newBoard

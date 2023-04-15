@@ -23,7 +23,7 @@ class PrecomputedTables4Test {
 
             val board = AnySizeBoard(array.toIntArray())
             val newBoard = AnySizeBoard(intArrayOf(0, 0, 0, 0))
-            board.moveLineLeft(intArrayOf(0, 1, 2, 3), newBoard)
+            board.moveLineToStart(intArrayOf(0, 1, 2, 3), newBoard)
             val expected = newBoard.array.toUIntArray().packArray().toUShort()
 
             assertEquals(

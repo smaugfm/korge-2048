@@ -83,7 +83,7 @@ class Board4Test {
                 1, 2, 3, 0
             )
         )
-        val (board1, moves1) = board.moveBoardGenerateMoves(Direction.LEFT)
+        val (board1, moves1) = board.moveGenerateMoves(Direction.LEFT)
         assertEquals(
             Board4.fromArray(
                 intArrayOf(
@@ -95,7 +95,7 @@ class Board4Test {
             ), board1
         )
 
-        val (board2, moves2) = board1.moveBoardGenerateMoves(Direction.TOP)
+        val (board2, moves2) = board1.moveGenerateMoves(Direction.TOP)
         assertEquals(
             Board4.fromArray(
                 intArrayOf(
