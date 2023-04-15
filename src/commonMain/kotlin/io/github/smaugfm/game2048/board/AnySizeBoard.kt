@@ -17,6 +17,12 @@ class AnySizeBoard(
 
     fun powers() = array.map(::Tile).toTypedArray()
 
+    operator fun get(x: Int, y: Int) =
+        Tile(this.array[x * boardSize + y])
+
+    operator fun get(i: Int) =
+        Tile(this.array[i])
+
     override fun hasAvailableMoves(): Boolean =
         indices.any { i ->
             hasAdjacentEqualPosition(i)

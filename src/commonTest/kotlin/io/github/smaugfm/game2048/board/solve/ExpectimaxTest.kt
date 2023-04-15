@@ -17,7 +17,7 @@ class ExpectimaxTest {
                     -1, -1, -1, -1,
                 )
             )
-            Expectimax(AnySizeBoardHeuristics())
+            Expectimax(NneonneoAnySizeHeuristics())
                 .findBestMove(this, board).await()
         }
     }

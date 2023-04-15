@@ -65,7 +65,7 @@ class Expectimax<T : Board<T>>(
     private fun score(board: T, it: Direction): Double {
         val newBoard = board.move(it)
         if (newBoard == board)
-            return 0.0
+            return Double.NEGATIVE_INFINITY
 
         return recursiveScore(newBoard, 0, maxAiDepth)
     }
@@ -86,14 +86,15 @@ class Expectimax<T : Board<T>>(
             }.sum()
     }
 
-    private fun calculateMoveScore(board: T, currentDepth: Int, maxDepth: Int): Double =
-        directions
+    private fun calculateMoveScore(board: T, currentDepth: Int, maxDepth: Int): Double {
+        return directions
             .map {
                 val newBoard = board.move(it)
-                moveBoardCounter.incrementAndGet()
                 if (newBoard == board)
-                    return@map 0.0
+                    return@map Double.NEGATIVE_INFINITY
 
+                moveBoardCounter.incrementAndGet()
                 recursiveScore(newBoard, currentDepth + 1, maxDepth)
             }.max()
+    }
 }

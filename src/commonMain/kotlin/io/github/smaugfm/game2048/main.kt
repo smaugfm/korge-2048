@@ -3,8 +3,10 @@ package io.github.smaugfm.game2048
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.solve.AnySizeBoardHeuristics
+import io.github.smaugfm.game2048.board.solve.AzakyAnySizeHeuristics
+import io.github.smaugfm.game2048.board.solve.NneonneoAnySizeHeuristics
 import io.github.smaugfm.game2048.board.solve.Expectimax
+import io.github.smaugfm.game2048.board.solve.SleepyCoderAnySizeHeuristic
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
@@ -51,8 +53,8 @@ const val boardArraySize = boardSize * boardSize
 const val maxAiDepth = 3
 var btnSize: Double = 0.0
 var cellSize: Double = 0.0
-val moveAnimationDuration = 0.15.seconds
-val scaleAnimationDuration = 0.2.seconds
+val moveAnimationDuration = 0.0375.seconds
+val scaleAnimationDuration = 0.05.seconds
 val accentColor = Colors["#edc403"]
 val backgroundColor = Colors["#bbae9e"]
 val backgroundColorLight = Colors["#cec0b2"]
@@ -73,7 +75,7 @@ var uiBoard: UiBoard by Delegates.notNull()
 var isAiPlaying = ObservableProperty(false)
 
 var board = AnySizeBoard()
-var expectimax = Expectimax(AnySizeBoardHeuristics())
+var expectimax = Expectimax(SleepyCoderAnySizeHeuristic())
 
 suspend fun main() = Korge(
     KorgeConfig(
