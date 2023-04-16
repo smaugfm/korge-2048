@@ -13,11 +13,9 @@ import kotlin.math.sqrt
 class AnySizeBoard(
     val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power }
 ) : Board<AnySizeBoard> {
-    private val emptyAddMove = { _: Int, _: Int -> }
-    private val emptyAddMerge = { _: Int, _: Int, _: Int, _: Tile -> }
-    private val indices = (0 until boardArraySize).toList().toIntArray()
 
-    fun powers() = array.map(::Tile).toTypedArray()
+    fun powers() =
+        array.map(::Tile).toTypedArray()
 
     operator fun get(x: Int, y: Int) =
         Tile(this.array[x * boardSize + y])
@@ -218,6 +216,10 @@ class AnySizeBoard(
         ).toString()
 
     companion object {
+        private val emptyAddMove = { _: Int, _: Int -> }
+        private val emptyAddMerge = { _: Int, _: Int, _: Int, _: Tile -> }
+        private val indices = (0 until boardArraySize).toList().toIntArray()
+
         val directionIndexesMap: Array<Array<IntArray>> =
             Direction.values().map { dir ->
                 (0 until boardSize).map {
