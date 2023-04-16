@@ -2,7 +2,7 @@ import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
 
 plugins {
-    id("com.soywiz.korge") version "4.0.0-beta3"
+    id("com.soywiz.korge") version "4.0.0-rc"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.8.20"
     id("org.jetbrains.kotlinx.benchmark") version "0.4.7"
 }
@@ -57,7 +57,7 @@ korge {
 //    targetDefault()
 
     targetJvm()
-//    targetJs()
+    targetJs()
 //    targetDesktop()
 //    targetIos()
 //    targetAndroid()

@@ -17,7 +17,7 @@ import korlibs.korge.animate.tween
 import korlibs.korge.tween.get
 import korlibs.korge.view.Container
 import korlibs.korge.view.addTo
-import korlibs.korge.view.centerBetween
+import korlibs.korge.view.align.centerBetween
 import korlibs.korge.view.position
 import korlibs.korge.view.roundRect
 import korlibs.korge.view.text

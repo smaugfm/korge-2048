@@ -33,7 +33,7 @@ import korlibs.korge.input.onUp
 import korlibs.korge.service.storage.storage
 import korlibs.korge.view.Container
 import korlibs.korge.view.Stage
-import korlibs.korge.view.centerOn
+import korlibs.korge.view.align.centerOn
 import korlibs.korge.view.container
 import korlibs.korge.view.position
 import korlibs.korge.view.roundRect
@@ -76,7 +76,7 @@ val best = ObservableProperty(0)
 var uiBoard: UiBoard by Delegates.notNull()
 var isAiPlaying = ObservableProperty(false)
 
-var board = AnySizeBoard()
+var globalBoard = AnySizeBoard()
 var expectimax = Expectimax(SleepyCoderAnySizeHeuristic())
 
 suspend fun main() = Korge(
@@ -128,7 +128,7 @@ suspend fun main() = Korge(
 
 fun Stage.startAiPlay() {
     launch {
-        var moveResultDeferred = expectimax.findBestMove(this, board)
+        var moveResultDeferred = expectimax.findBestMove(this, globalBoard)
         var moveResult = moveResultDeferred.await()
         while (true) {
             val waitForAnimation = CompletableDeferred<Unit>()
@@ -149,7 +149,7 @@ fun Stage.startAiPlay() {
             }
             newBoard = newTile.newBoard
 
-            history.add(board.powers(), score.value)
+            history.add(globalBoard.powers(), score.value)
 
             if (!isAiPlaying.value) {
                 break
@@ -158,7 +158,7 @@ fun Stage.startAiPlay() {
             waitForAnimation.await()
             uiBoard.createNewBlock(newTile.tile, newTile.index)
 
-            board = newBoard
+            globalBoard = newBoard
             moveResult = moveResultDeferred.await()
         }
     }
@@ -169,12 +169,12 @@ fun Stage.handleMoveBlocks(direction: Direction) {
         return
     }
 
-    val (newBoard, moves) = board.moveGenerateMoves(direction)
-    if (board != newBoard) {
+    val (newBoard, moves) = globalBoard.moveGenerateMoves(direction)
+    if (globalBoard != newBoard) {
         animateMoves(moves) {
-            board = newBoard
+            globalBoard = newBoard
             generateBlockAndSave()
-            showGameOverIfNoMoves(board.hasAvailableMoves())
+            showGameOverIfNoMoves(globalBoard.hasAvailableMoves())
         }
     }
 
@@ -246,7 +246,7 @@ fun Container.showGameOver(onRestart: () -> Unit) = container {
 
 fun restart() {
     isGameOver = false
-    board = AnySizeBoard()
+    globalBoard = AnySizeBoard()
     uiBoard.clear()
     score.update(0)
     history.clear()
@@ -254,15 +254,15 @@ fun restart() {
 }
 
 fun generateBlockAndSave() {
-    val (newBoard, power, index) = board.placeRandomBlock() ?: return
-    board = newBoard
+    val (newBoard, power, index) = globalBoard.placeRandomBlock() ?: return
+    globalBoard = newBoard
     uiBoard.createNewBlock(power, index)
-    history.add(board.powers(), score.value)
+    history.add(globalBoard.powers(), score.value)
 }
 
 fun restoreField(historyElement: History.Element) {
     uiBoard.clear()
-    board = AnySizeBoard(historyElement.powers.map { it.power }.toIntArray())
+    globalBoard = AnySizeBoard(historyElement.powers.map { it.power }.toIntArray())
     score.update(historyElement.score)
     historyElement.powers.forEachIndexed { i, tile ->
         if (tile.isNotEmpty) {
