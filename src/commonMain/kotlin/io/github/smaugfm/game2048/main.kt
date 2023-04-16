@@ -3,8 +3,6 @@ package io.github.smaugfm.game2048
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.solve.AzakyAnySizeHeuristics
-import io.github.smaugfm.game2048.board.solve.NneonneoAnySizeHeuristics
 import io.github.smaugfm.game2048.board.solve.Expectimax
 import io.github.smaugfm.game2048.board.solve.SleepyCoderAnySizeHeuristic
 import io.github.smaugfm.game2048.persistence.History
@@ -55,8 +53,10 @@ var btnSize: Double = 0.0
 var cellSize: Double = 0.0
 //val moveAnimationDuration = 0.0375.seconds
 //val scaleAnimationDuration = 0.05.seconds
-val moveAnimationDuration = 0.15.seconds
-val scaleAnimationDuration = 0.2.seconds
+val moveAnimationDuration = 0.075.seconds
+val scaleAnimationDuration = 0.1.seconds
+//val moveAnimationDuration = 0.15.seconds
+//val scaleAnimationDuration = 0.2.seconds
 val accentColor = Colors["#edc403"]
 val backgroundColor = Colors["#bbae9e"]
 val backgroundColorLight = Colors["#cec0b2"]
@@ -156,7 +156,7 @@ fun Stage.startAiPlay() {
             }
             moveResultDeferred = expectimax.findBestMove(this, newBoard)
             waitForAnimation.await()
-            uiBoard.createNewBlock(newTile.power, newTile.index)
+            uiBoard.createNewBlock(newTile.tile, newTile.index)
 
             board = newBoard
             moveResult = moveResultDeferred.await()

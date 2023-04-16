@@ -93,9 +93,9 @@ class Expectimax<T : Board<T>>(
         val emptyCount = board.countEmptyTiles()
         val emptyTileProb = prob / emptyCount
 
-        return board.iterateEveryEmptySpace(emptyCount) { Tile.TWO }.zip(
-            board.iterateEveryEmptySpace(emptyCount) { Tile.FOUR }
-        ).map { it.first.first to it.second.first }
+        return board.placeEveryEmpty(emptyCount) { Tile.TWO }.zip(
+            board.placeEveryEmpty(emptyCount) { Tile.FOUR }
+        ).map { it.first.newBoard to it.second.newBoard }
             .map { (boardWithTwo, boardWithFour) ->
                 val scoreBoard2 =
                     moveNode(boardWithTwo, depth, emptyTileProb * 0.9, maxDepth) * 0.9

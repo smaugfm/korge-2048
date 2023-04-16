@@ -71,10 +71,10 @@ class AnySizeBoard(
     override fun countEmptyTiles(): Int =
         array.count { Tile(it).isEmpty }
 
-    override fun iterateEveryEmptySpace(
+    override fun placeEveryEmpty(
         emptyTilesCount: Int,
         onEmpty: (emptySpaceIndex: Int) -> Tile?
-    ): Sequence<Pair<AnySizeBoard, TileIndex>> {
+    ): Sequence<TilePlacementResult<AnySizeBoard>> {
         var emptyIndex = 0
         return sequence {
             var i = 0
@@ -85,12 +85,13 @@ class AnySizeBoard(
                     continue
                 }
 
-                onEmpty(emptyIndex)?.let {
+                onEmpty(emptyIndex)?.let { newTile ->
                     yield(
-                        Pair(
-                            this@AnySizeBoard.copy().also {
-                                it.array[i] = tile.power
+                        TilePlacementResult(
+                            this@AnySizeBoard.copy().also { newBoard ->
+                                newBoard.array[i] = newTile.power
                             },
+                            newTile,
                             emptyIndex
                         )
                     )

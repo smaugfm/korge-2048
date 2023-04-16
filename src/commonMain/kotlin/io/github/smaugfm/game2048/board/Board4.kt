@@ -28,11 +28,9 @@ value class Board4(val bits: ULong) : Board<Board4> {
         val randomIndex = FastRandom.Default.nextInt(emptyTilesCount)
         val tile = (if (FastRandom.nextDouble() < 0.9) Tile.TWO else Tile.FOUR)
 
-        return iterateEveryEmptySpace(emptyTilesCount) { emptyIndex ->
+        return placeEveryEmpty(emptyTilesCount) { emptyIndex ->
             tile.takeIf { emptyIndex == randomIndex }
-        }.firstOrNull()?.let { (newBoard, tileIndex) ->
-            TilePlacementResult(newBoard, tile, tileIndex)
-        }
+        }.firstOrNull()
     }
 
     override fun moveGenerateMoves(direction: Direction): MoveBoardResult<Board4> =
@@ -92,10 +90,10 @@ value class Board4(val bits: ULong) : Board<Board4> {
     fun set(i: Int, value: Int): Board4 =
         Board4(bits or ((value.toULong() and 0xFUL) shl (i * 4)))
 
-    override fun iterateEveryEmptySpace(
+    override fun placeEveryEmpty(
         emptyTilesCount: Int,
         onEmpty: (emptySpaceIndex: Int) -> Tile?
-    ): Sequence<Pair<Board4, TileIndex>> {
+    ): Sequence<TilePlacementResult<Board4>> {
         if (emptyTilesCount == 0)
             return emptySequence()
 
@@ -111,11 +109,18 @@ value class Board4(val bits: ULong) : Board<Board4> {
                 }
                 if (i >= 16)
                     break
-                val tile = onEmpty(emptyIndex)
-                if (tile != null)
+                val newTile = onEmpty(emptyIndex)
+                if (newTile != null) {
+                    val newBoard =
+                        Board4(bits or (newTile.power.toULong() shl (4 * i)))
                     yield(
-                        Board4(bits or (tile.power.toULong() shl (4 * i))) to i
+                        TilePlacementResult(
+                            newBoard,
+                            newTile,
+                            i
+                        )
                     )
+                }
 
                 temp = temp shr 4
                 emptyIndex++

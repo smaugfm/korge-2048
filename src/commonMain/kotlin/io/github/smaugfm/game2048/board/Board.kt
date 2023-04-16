@@ -10,8 +10,8 @@ interface Board<out T : Board<T>> {
     fun placeRandomBlock(): TilePlacementResult<T>?
 
     fun countEmptyTiles(): Int
-    fun iterateEveryEmptySpace(
+    fun placeEveryEmpty(
         emptyTilesCount: Int = this.countEmptyTiles(),
         onEmpty: (emptySpaceIndex: Int) -> Tile?
-    ): Sequence<Pair<T, TileIndex>>
+    ): Sequence<TilePlacementResult<T>>
 }
