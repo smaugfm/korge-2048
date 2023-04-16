@@ -1,18 +1,19 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.MoveBoardResult
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
 import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
+import io.github.smaugfm.game2048.input.InputEvent
+import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UIConstants
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
 import io.github.smaugfm.game2048.ui.addStaticUi
 import io.github.smaugfm.game2048.ui.showGameOver
-import korlibs.event.Key
 import korlibs.image.color.RGBA
 import korlibs.io.async.ObservableProperty
 import korlibs.io.async.async
@@ -21,13 +22,9 @@ import korlibs.io.async.launchImmediately
 import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.korge.Korge
 import korlibs.korge.KorgeConfig
-import korlibs.korge.input.SwipeDirection
-import korlibs.korge.input.keys
-import korlibs.korge.input.onSwipe
 import korlibs.korge.service.storage.storage
 import korlibs.korge.view.Container
 import korlibs.korge.view.Stage
-import korlibs.korge.view.Views
 import korlibs.math.geom.Size
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +48,7 @@ var isGameOverModal = false
 val score = ObservableProperty(0)
 val best = ObservableProperty(0)
 var isAiPlaying = ObservableProperty(false)
+var inputManager: KorgeInputManager by Delegates.notNull()
 
 suspend fun main() = Korge(
     KorgeConfig(
@@ -59,7 +57,7 @@ suspend fun main() = Korge(
         backgroundColor = RGBA(253, 247, 240),
     )
 ) {
-    setupGame(views)
+    setupGame()
     uiBoard = addBoard()
     addStaticUi()
     if (!uiConstants.history.isEmpty()) {
@@ -68,29 +66,27 @@ suspend fun main() = Korge(
         generateBlockAndSave()
     }
 
-    keys {
-        down {
-            if (isAiPlaying.value)
-                return@down
-            when (it.key) {
-                Key.LEFT -> handleMoveBlocks(Direction.LEFT)
-                Key.RIGHT -> handleMoveBlocks(Direction.RIGHT)
-                Key.UP -> handleMoveBlocks(Direction.TOP)
-                Key.DOWN -> handleMoveBlocks(Direction.BOTTOM)
-                else -> Unit
-            }
+    inputManager.eventsFlow().collect { inputEvent ->
+        when (inputEvent) {
+            InputEvent.ClickInput.AiToggleClick ->
+                isAiPlaying.update(!isAiPlaying.value)
+
+            InputEvent.ClickInput.RestartClick ->
+                restart()
+
+            InputEvent.ClickInput.TryAgainClick ->
+                restart()
+
+            InputEvent.ClickInput.UndoClick ->
+                if (!isAiPlaying.value)
+                    restoreField(uiConstants.history.undo())
+
+            is InputEvent.DirectionInput.AiDirection -> TODO()
+            is InputEvent.DirectionInput.UserDirection ->
+                handleMoveBlocks(inputEvent.dir)
         }
     }
-    onSwipe(20.0) {
-        if (isAiPlaying.value)
-            return@onSwipe
-        when (it.direction) {
-            SwipeDirection.LEFT -> handleMoveBlocks(Direction.LEFT)
-            SwipeDirection.RIGHT -> handleMoveBlocks(Direction.RIGHT)
-            SwipeDirection.TOP -> handleMoveBlocks(Direction.TOP)
-            SwipeDirection.BOTTOM -> handleMoveBlocks(Direction.BOTTOM)
-        }
-    }
+
     isAiPlaying.observe {
         if (it)
             startAiPlay()
@@ -209,8 +205,9 @@ fun restoreField(historyElement: History.Element) {
     }
 }
 
-private suspend fun setupGame(views: Views) {
+private suspend fun Stage.setupGame() {
     val storage = views.storage
+    inputManager = KorgeInputManager(this)
     uiConstants = UIConstants.create(views)
 
     best.update(storage.getOrNull("best")?.toInt() ?: 0)

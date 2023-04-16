@@ -1,6 +1,7 @@
 package io.github.smaugfm.game2048.ui
 
 import io.github.smaugfm.game2048.best
+import io.github.smaugfm.game2048.inputManager
 import io.github.smaugfm.game2048.isAiPlaying
 import io.github.smaugfm.game2048.restart
 import io.github.smaugfm.game2048.restoreField
@@ -81,6 +82,7 @@ private fun Stage.addButtons(
             centerOn(bg)
         }
         onClick {
+            inputManager.handleRestartClick()
             if (!isAiPlaying.value)
                 restart()
         }
@@ -98,8 +100,7 @@ private fun Stage.addButtons(
             centerOn(bg)
         }
         onClick {
-            if (!isAiPlaying.value)
-                restoreField(uiConstants.history.undo())
+            inputManager.handleUndoClick()
         }
     }
     container {
@@ -121,7 +122,7 @@ private fun Stage.addButtons(
             alignTopToTopOf(bg, -1)
         }
         onClick {
-            isAiPlaying.update(!isAiPlaying.value)
+            inputManager.handleAiClick()
         }
         isAiPlaying.observe {
             updateAiBg(bg, it)
@@ -194,7 +195,10 @@ fun Container.showGameOver(onRestartClick: () -> Unit) = container {
             onOut { color = RGBA(0, 0, 0) }
             onDown { color = RGBA(120, 120, 120) }
             onUp { color = RGBA(120, 120, 120) }
-            onClick { restart() }
+
+            onClick {
+                inputManager.handleTryAgainClick()
+            }
         }
     }
     keys.down {
