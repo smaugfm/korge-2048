@@ -1,11 +1,13 @@
 package io.github.smaugfm.game2048.ui
 
+import io.github.smaugfm.game2048.accentColor
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.cellPadding
 import io.github.smaugfm.game2048.cellSize
 import io.github.smaugfm.game2048.font
+import io.github.smaugfm.game2048.labelBackgroundColor
 import io.github.smaugfm.game2048.moveAnimationDuration
 import io.github.smaugfm.game2048.rectCorners
 import io.github.smaugfm.game2048.scaleAnimationDuration
@@ -45,24 +47,23 @@ class UiBlock(private val tile: Tile) : Container() {
 
     private val color
         get() = when (tile.power) {
-            1 -> RGBA(240, 228, 218)
-            2 -> RGBA(236, 224, 201)
-            3 -> RGBA(255, 178, 120)
-            4 -> RGBA(254, 150, 92)
-            5 -> RGBA(247, 123, 97)
-            6 -> RGBA(235, 88, 55)
-            7 -> RGBA(236, 220, 146)
-            8 -> RGBA(240, 212, 121)
-            9 -> RGBA(244, 206, 96)
-            10 -> RGBA(248, 200, 71)
-            11 -> RGBA(256, 194, 46)
-            12 -> RGBA(104, 130, 249)
-            13 -> RGBA(51, 85, 247)
-            14 -> RGBA(10, 47, 222)
-            15 -> RGBA(9, 43, 202)
-            16 -> RGBA(181, 37, 188)
-            17 -> RGBA(166, 34, 172)
-            else -> RGBA(166, 34, 172)
+            1 -> Colors["#F0E4DA"]
+            2 -> Colors["#ECE0C9"]
+            3 -> Colors["#FFB278"]
+            4 -> Colors["#FE965C"]
+            5 -> Colors["#F77B61"]
+            6 -> Colors["#EB5837"]
+            7 -> Colors["#F6DC92"]
+            8 -> Colors["#F0D479"]
+            9 -> Colors["#F4CE60"]
+            10 -> Colors["#F8C847"]
+            11 -> accentColor
+            12 -> labelBackgroundColor
+            13 -> Colors["#3B3631"]
+            14 -> Colors["#332F2A"]
+            15 -> Colors["#3D4354"]
+            16 -> Colors["#343947"]
+            else -> Colors["#252933"]
         }
 
 
@@ -71,9 +72,9 @@ class UiBlock(private val tile: Tile) : Container() {
             with(tile) {
                 if (power <= 6) cellSize / 2
                 else if (power <= 9) cellSize * 4 / 9
-                else if (power <= 13) cellSize * 2 / 5
-                else if (power <= 16) cellSize * 7 / 20
-                else cellSize * 3 / 10
+                else if (power <= 13) cellSize * 3 / 8
+                else if (power <= 16) cellSize * 7 / 22
+                else cellSize * 3 / 12
             }
 
     fun animateMove(animator: Animator, to: TileIndex) {

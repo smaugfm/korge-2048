@@ -13,7 +13,7 @@ class AzakyAnySizeHeuristics : Heuristics<AnySizeBoard> {
     companion object {
         private const val EMPTY_WEIGHT = 4096
         private const val SMOOTHNESS_WEIGHT = 10
-        private const val BORDER_DISTANCE_WEIGHT = 10
+        private const val BORDER_DISTANCE_WEIGHT = 100
     }
 
     override fun evaluate(board: AnySizeBoard): Double {
@@ -38,6 +38,8 @@ class AzakyAnySizeHeuristics : Heuristics<AnySizeBoard> {
                 }
             }
         }
+        if (empty == 0)
+            return Double.NEGATIVE_INFINITY
 
         return (empty * EMPTY_WEIGHT -
             diffs * SMOOTHNESS_WEIGHT -

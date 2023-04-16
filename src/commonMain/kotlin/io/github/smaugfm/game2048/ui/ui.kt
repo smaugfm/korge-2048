@@ -9,6 +9,7 @@ import io.github.smaugfm.game2048.font
 import io.github.smaugfm.game2048.fontBold
 import io.github.smaugfm.game2048.history
 import io.github.smaugfm.game2048.isAiPlaying
+import io.github.smaugfm.game2048.labelBackgroundColor
 import io.github.smaugfm.game2048.labelColor
 import io.github.smaugfm.game2048.rectCorners
 import io.github.smaugfm.game2048.restart
@@ -125,7 +126,7 @@ private fun Stage.addStat(
     val bgStat = roundRect(
         Size(cellSize * 1.5, cellSize * 0.8),
         rectCorners,
-        backgroundColor,
+        labelBackgroundColor,
         callback = callback
     )
     text(label, cellSize.toFloat() * 0.2f, labelColor, font) {

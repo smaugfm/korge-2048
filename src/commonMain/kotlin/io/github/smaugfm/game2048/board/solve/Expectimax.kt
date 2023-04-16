@@ -57,7 +57,7 @@ class Expectimax<T : Board<T>>(
             .also { results ->
                 println("moves:\n")
                 results.forEach {
-                    println("${it.first} - ${it.second.first.roundToLong()}")
+                    println("${it.first} ${it.second.first.roundToLong()}")
                     println(it.second.second)
                 }
             }

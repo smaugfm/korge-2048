@@ -3,8 +3,8 @@ package io.github.smaugfm.game2048
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.solve.AzakyAnySizeHeuristics
 import io.github.smaugfm.game2048.board.solve.Expectimax
-import io.github.smaugfm.game2048.board.solve.SleepyCoderAnySizeHeuristic
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
@@ -51,15 +51,17 @@ const val boardArraySize = boardSize * boardSize
 const val maxAiDepth = 3
 var btnSize: Double = 0.0
 var cellSize: Double = 0.0
+
 //val moveAnimationDuration = 0.0375.seconds
 //val scaleAnimationDuration = 0.05.seconds
-val moveAnimationDuration = 0.075.seconds
-val scaleAnimationDuration = 0.1.seconds
-//val moveAnimationDuration = 0.15.seconds
-//val scaleAnimationDuration = 0.2.seconds
-val accentColor = Colors["#edc403"]
-val backgroundColor = Colors["#bbae9e"]
-val backgroundColorLight = Colors["#cec0b2"]
+//val moveAnimationDuration = 0.075.seconds
+//val scaleAnimationDuration = 0.1.seconds
+val moveAnimationDuration = 0.15.seconds
+val scaleAnimationDuration = 0.2.seconds
+val accentColor = Colors["#EDC403"]
+val backgroundColor = Colors["#BBAE9E"]
+val backgroundColorLight = Colors["#CEC0B2"]
+val labelBackgroundColor = Colors["#47413B"]
 val labelColor = RGBA(239, 226, 210)
 val textColor = Colors.WHITE
 val gameOverTextColor = Colors.BLACK
@@ -77,7 +79,7 @@ var uiBoard: UiBoard by Delegates.notNull()
 var isAiPlaying = ObservableProperty(false)
 
 var globalBoard = AnySizeBoard()
-var expectimax = Expectimax(SleepyCoderAnySizeHeuristic())
+var expectimax = Expectimax(AzakyAnySizeHeuristics())
 
 suspend fun main() = Korge(
     KorgeConfig(
@@ -264,7 +266,7 @@ fun restoreField(historyElement: History.Element) {
     uiBoard.clear()
     globalBoard = AnySizeBoard(historyElement.powers.map { it.power }.toIntArray())
     score.update(historyElement.score)
-    historyElement.powers.forEachIndexed { i, tile ->
+    globalBoard.powers().forEachIndexed { i, tile ->
         if (tile.isNotEmpty) {
             uiBoard.createNewBlock(tile, i)
         }

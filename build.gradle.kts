@@ -56,7 +56,7 @@ korge {
 //    targetDefault()
 
     targetJvm()
-    targetJs()
+//    targetJs()
 //    targetDesktop()
 //    targetIos()
 //    targetAndroid()
