@@ -5,6 +5,7 @@ import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.solve.AzakyAnySizeHeuristics
 import io.github.smaugfm.game2048.board.solve.Expectimax
+import io.github.smaugfm.game2048.board.solve.NneonneoAnySizeHeuristics
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
@@ -79,7 +80,7 @@ var uiBoard: UiBoard by Delegates.notNull()
 var isAiPlaying = ObservableProperty(false)
 
 var globalBoard = AnySizeBoard()
-var expectimax = Expectimax(AzakyAnySizeHeuristics())
+var expectimax = Expectimax(NneonneoAnySizeHeuristics())
 
 suspend fun main() = Korge(
     KorgeConfig(

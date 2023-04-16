@@ -8,9 +8,9 @@ import kotlin.math.roundToLong
 import kotlin.test.Test
 
 class AnySizeBoardHeuristicsTest {
-    //    private val heuristics = NneonneoAnySizeHeuristics()
+        private val heuristics = NneonneoAnySizeHeuristics()
 //private val heuristics = SleepyCoderAnySizeHeuristic()
-    private val heuristics = AzakyAnySizeHeuristics()
+//    private val heuristics = AzakyAnySizeHeuristics()
 
     private val expectimax = Expectimax(heuristics)
 

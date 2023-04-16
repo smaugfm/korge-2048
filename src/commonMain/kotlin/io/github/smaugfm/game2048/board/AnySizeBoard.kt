@@ -19,8 +19,6 @@ class AnySizeBoard(
 
     fun powers() = array.map(::Tile).toTypedArray()
 
-    fun copy() = AnySizeBoard(array.copyOf())
-
     operator fun get(x: Int, y: Int) =
         Tile(this.array[x * boardSize + y])
 
@@ -83,11 +81,11 @@ class AnySizeBoard(
                 val tile = this@AnySizeBoard[i]
                 if (tile.isEmpty) {
                     onEmpty(emptyIndex)?.let { newTile ->
+                        val arr = array.copyOf()
+                        arr[i] = newTile.power
                         yield(
                             TilePlacementResult(
-                                this@AnySizeBoard.copy().also { newBoard ->
-                                    newBoard.array[i] = newTile.power
-                                },
+                                AnySizeBoard(arr),
                                 newTile,
                                 emptyIndex
                             )
@@ -129,20 +127,20 @@ class AnySizeBoard(
         var newCur = 0
 
         while (cur1 != null) {
-            if (cur2 != null && Tile(this.array[indexes[cur1]]) == Tile(this.array[indexes[cur2]])) {
+            if (cur2 != null && this[indexes[cur1]] == this[indexes[cur2]]) {
                 newBoard.array[indexes[newCur]] =
-                    Tile(this.array[indexes[cur1]]).next().power
+                    this[indexes[cur1]].next().power
                 addMerge(
                     indexes[cur1],
                     indexes[cur2],
                     indexes[newCur],
-                    Tile(newBoard.array[indexes[newCur]])
+                    newBoard[indexes[newCur]]
                 )
                 cur1 = firstNotEmpty(indexes, cur2)
                 cur2 = firstNotEmpty(indexes, cur1)
                 newCur++
             } else {
-                newBoard.array[indexes[newCur]] = Tile(this.array[indexes[cur1]]).power
+                newBoard.array[indexes[newCur]] = this[indexes[cur1]].power
                 if (cur1 != newCur)
                     addMove(
                         indexes[cur1],
@@ -181,7 +179,7 @@ class AnySizeBoard(
         if (startFrom == null)
             return null
         fastForLoop(startFrom + 1, indexes.size) { i ->
-            if (Tile(this.array[indexes[i]]).isNotEmpty)
+            if (this[indexes[i]].isNotEmpty)
                 return i
         }
 
@@ -199,7 +197,7 @@ class AnySizeBoard(
             value == this.getXY(x, y + 1)
     }
 
-    private fun AnySizeBoard.getXY(x: Int, y: Int): Tile {
+    private fun getXY(x: Int, y: Int): Tile {
         val index = y * boardSize + x
         if (index < 0 || index >= boardSize)
             return Tile.EMPTY
@@ -221,9 +219,6 @@ class AnySizeBoard(
 
     companion object {
         val directionIndexesMap: Array<Array<IntArray>> =
-            initDirectionIndexesMap()
-
-        fun initDirectionIndexesMap(): Array<Array<IntArray>> =
             Direction.values().map { dir ->
                 (0 until boardSize).map {
                     when (dir) {
@@ -242,7 +237,7 @@ class AnySizeBoard(
                         .toList()
                         .toIntList()
                         .toIntArray()
-                }.toTypedArray()
-            }.toTypedArray()
+                }.toTypedArray<IntArray>()
+            }.toTypedArray<Array<IntArray>>()
     }
 }

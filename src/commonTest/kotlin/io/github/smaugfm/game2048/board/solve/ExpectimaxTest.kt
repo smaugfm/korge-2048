@@ -5,7 +5,6 @@ import korlibs.io.async.runBlockingNoJs
 import kotlin.test.Test
 
 class ExpectimaxTest {
-
     @Test
     fun test() {
         runBlockingNoJs {
