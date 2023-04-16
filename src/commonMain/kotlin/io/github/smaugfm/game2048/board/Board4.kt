@@ -4,7 +4,6 @@ import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.io.lang.assert
-import kotlin.jvm.JvmInline
 
 @OptIn(ExperimentalUnsignedTypes::class)
 @JvmInline
@@ -25,15 +24,40 @@ value class Board4(val bits: ULong) : Board<Board4> {
             move(it) != this
         }
 
-    override fun placeRandomBlock(): TilePlacementResult<Board4>? {
+    override fun placeRandomTile(): TilePlacementResult<Board4>? {
         val emptyTilesCount = countEmptyTiles()
         val randomIndex = FastRandom.Default.nextInt(emptyTilesCount)
-        val tile = (if (FastRandom.nextDouble() < 0.9) Tile.TWO else Tile.FOUR)
+        val tile = Tile.randomNewTile()
 
-        return placeEveryEmpty(emptyTilesCount) { emptyIndex ->
-            tile.takeIf { emptyIndex == randomIndex }
-        }.firstOrNull()
+        iterateEmptyTiles { index, emptyIndex ->
+            if (emptyIndex == randomIndex) {
+                return TilePlacementResult(
+                    placeTile(tile, index),
+                    tile,
+                    index
+                )
+            }
+        }
+
+        return null
     }
+
+    override fun placeTile(tile: Tile, i: TileIndex): Board4 =
+        Board4(bits or (tile.power.toULong() shl (4 * i)))
+
+    override fun tiles(): Array<Tile> {
+        val array = Array(16) { Tile.EMPTY }
+
+        array.indices.forEach {
+            array[it] = Tile(get(it).toInt())
+        }
+        return array
+    }
+
+    fun toIntArray(): IntArray {
+        return tiles().map { it.power }.toIntArray()
+    }
+
 
     override fun moveGenerateMoves(direction: Direction): MoveBoardResult<Board4> =
         AnySizeBoard(toIntArray())
@@ -92,43 +116,25 @@ value class Board4(val bits: ULong) : Board<Board4> {
     fun set(i: Int, value: Int): Board4 =
         Board4(bits or ((value.toULong() and 0xFUL) shl (i * 4)))
 
-    override fun placeEveryEmpty(
-        emptyTilesCount: Int,
-        onEmpty: (emptySpaceIndex: Int) -> Tile?
-    ): Sequence<TilePlacementResult<Board4>> {
-        if (emptyTilesCount == 0)
-            return emptySequence()
+    inline fun iterateEmptyTiles(
+        onEmpty: (tileIndex: TileIndex, emptyTileIndex: TileIndex) -> Unit,
+    ) {
+        var temp = bits
 
-        return sequence {
-            var temp = bits
-
-            var i = 0
-            var emptyIndex = 0
-            while (true) {
-                while (temp and 0xFUL != 0UL) {
-                    temp = temp shr 4
-                    i++
-                }
-                if (i >= 16)
-                    break
-                val newTile = onEmpty(emptyIndex)
-                if (newTile != null) {
-                    val newBoard =
-                        Board4(bits or (newTile.power.toULong() shl (4 * i)))
-                    yield(
-                        TilePlacementResult(
-                            newBoard,
-                            newTile,
-                            i
-                        )
-                    )
-                }
-
+        var i = 0
+        var emptyIndex = 0
+        while (true) {
+            while (temp and 0xFUL != 0UL) {
                 temp = temp shr 4
-                emptyIndex++
                 i++
             }
+            if (i >= 16)
+                break
+            onEmpty(i, emptyIndex)
 
+            temp = temp shr 4
+            emptyIndex++
+            i++
         }
     }
 
@@ -149,15 +155,6 @@ value class Board4(val bits: ULong) : Board<Board4> {
 
     companion object {
         private const val ROW_MASK = 0xFFFFUL
-
-        fun Board4.toIntArray(): IntArray {
-            val array = IntArray(16) { Tile.EMPTY.power }
-
-            array.indices.forEach {
-                array[it] = get(it).toInt()
-            }
-            return array
-        }
 
         fun fromArray(array: IntArray): Board4 {
             var result = Board4(0UL)

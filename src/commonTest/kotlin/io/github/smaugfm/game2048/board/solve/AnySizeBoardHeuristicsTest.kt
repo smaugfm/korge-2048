@@ -3,7 +3,6 @@ package io.github.smaugfm.game2048.board.solve
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.board.Direction
 import korlibs.datastructure.IntArray2
-import korlibs.io.async.runBlockingNoJs
 import kotlin.math.roundToLong
 import kotlin.test.Test
 
@@ -26,9 +25,7 @@ class AnySizeBoardHeuristicsTest {
         )
         val right = b.move(Direction.RIGHT)
         val rightScore = heuristics.evaluate(right)
-        runBlockingNoJs {
-            expectimax.findBestMove(this, b).await()!!
-        }
+        expectimax.findBestMove(b)
         println("Right score: $rightScore")
     }
 

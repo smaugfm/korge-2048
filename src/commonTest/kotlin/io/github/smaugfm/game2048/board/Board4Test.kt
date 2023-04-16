@@ -57,7 +57,7 @@ class Board4Test {
         )
 
         repeat(1000) {
-            val (newBoard, power, index) = board.placeRandomBlock() ?: fail()
+            val (newBoard, power, index) = board.placeRandomTile() ?: fail()
             assertTrue {
                 board[index] == 0UL
             }

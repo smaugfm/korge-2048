@@ -2,7 +2,6 @@ package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.util.fastRepeat
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -21,8 +20,8 @@ class AzakyAnySizeHeuristics : Heuristics<AnySizeBoard> {
         var diffs = 0
         var distances = 0
 
-        fastRepeat(boardSize) { row ->
-            fastRepeat(boardSize) { col ->
+        repeat(boardSize) { row: Int ->
+            repeat(boardSize) { col: Int ->
                 val tile = board[row, col]
                 if (tile.isEmpty) empty++
                 val borderDistance =

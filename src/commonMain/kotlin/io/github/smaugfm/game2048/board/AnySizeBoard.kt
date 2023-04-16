@@ -1,9 +1,8 @@
 package io.github.smaugfm.game2048.board
 
+import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.util.fastForLoop
-import io.github.smaugfm.game2048.util.fastRepeat
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.datastructure.toIntList
@@ -14,7 +13,7 @@ class AnySizeBoard(
     val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power }
 ) : Board<AnySizeBoard> {
 
-    fun powers() =
+    override fun tiles() =
         array.map(::Tile).toTypedArray()
 
     operator fun get(x: Int, y: Int) =
@@ -54,45 +53,28 @@ class AnySizeBoard(
         return MoveBoardResult(newBoard, moves)
     }
 
-    override fun placeRandomBlock(): TilePlacementResult<AnySizeBoard>? {
-        val index = powers()
+    override fun placeRandomTile(): TilePlacementResult<AnySizeBoard>? {
+        val index = tiles()
             .withIndex()
             .filter { it.value.isEmpty }
             .randomOrNull()?.index ?: return null
+        val tile =
+            if (FastRandom.nextDouble() < TILE_FOUR_PROBABILITY)
+                Tile.TWO
+            else
+                Tile.FOUR
 
-        val tile = if (FastRandom.nextDouble() < 0.9) Tile.TWO else Tile.FOUR
-        this.array[index] = tile.power
-
-        return TilePlacementResult(this, tile, index)
+        return TilePlacementResult(placeTile(tile, index), tile, index)
     }
 
     override fun countEmptyTiles(): Int =
         array.count { Tile(it).isEmpty }
 
-    override fun placeEveryEmpty(
-        emptyTilesCount: Int,
-        onEmpty: (emptySpaceIndex: Int) -> Tile?
-    ): Sequence<TilePlacementResult<AnySizeBoard>> {
-        var emptyIndex = 0
-        return sequence {
-            fastRepeat(boardArraySize) { i ->
-                val tile = this@AnySizeBoard[i]
-                if (tile.isEmpty) {
-                    onEmpty(emptyIndex)?.let { newTile ->
-                        val arr = array.copyOf()
-                        arr[i] = newTile.power
-                        yield(
-                            TilePlacementResult(
-                                AnySizeBoard(arr),
-                                newTile,
-                                emptyIndex
-                            )
-                        )
-                    }
-                    emptyIndex++
-                }
-            }
-        }
+    override fun placeTile(tile: Tile, i: TileIndex): AnySizeBoard {
+        val copy = array.copyOf()
+        copy[i] = tile.power
+
+        return AnySizeBoard(copy)
     }
 
     fun moveLineToStart(
@@ -162,7 +144,7 @@ class AnySizeBoard(
     ): AnySizeBoard {
         val newBoard = AnySizeBoard()
 
-        fastRepeat(boardSize) { i ->
+        repeat(boardSize) { i: Int ->
             val indexes = directionIndexesMap[direction.ordinal][i]
             moveLineLeftInternal(indexes, newBoard, addMove, addMerge)
         }
@@ -176,9 +158,11 @@ class AnySizeBoard(
     ): Int? {
         if (startFrom == null)
             return null
-        fastForLoop(startFrom + 1, indexes.size) { i ->
+        var i = startFrom + 1
+        while (i < indexes.size) {
             if (this[indexes[i]].isNotEmpty)
                 return i
+            i++
         }
 
         return null

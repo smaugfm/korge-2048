@@ -45,6 +45,20 @@ kotlin {
     }
 }
 
+benchmark {
+    configurations {
+        register("expectimax") {
+            include(".*ExpectimaxBenchmark.*")
+        }
+        register("board4") {
+            include(".*ExpectimaxBenchmark.*")
+        }
+        register("anysize") {
+            include(".*ExpectimaxBenchmark.*")
+        }
+    }
+}
+
 korge {
     id = "io.github.smaugfm.game2048"
     name = "game2048"

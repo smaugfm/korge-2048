@@ -3,8 +3,8 @@ package io.github.smaugfm.game2048
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.solve.AzakyAnySizeHeuristics
-import io.github.smaugfm.game2048.board.solve.Expectimax
+import io.github.smaugfm.game2048.board.MoveBoardResult
+import io.github.smaugfm.game2048.board.solve.AnySizeExpectimax
 import io.github.smaugfm.game2048.board.solve.NneonneoAnySizeHeuristics
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.UiBoard
@@ -18,8 +18,10 @@ import korlibs.image.font.Font
 import korlibs.image.font.readTtfFont
 import korlibs.image.format.readBitmap
 import korlibs.io.async.ObservableProperty
+import korlibs.io.async.async
 import korlibs.io.async.launch
 import korlibs.io.async.launchImmediately
+import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.Korge
 import korlibs.korge.KorgeConfig
@@ -43,6 +45,8 @@ import korlibs.math.geom.RectCorners
 import korlibs.math.geom.Size
 import korlibs.time.seconds
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlin.properties.Delegates
 
 const val cellPadding = 10
@@ -80,7 +84,8 @@ var uiBoard: UiBoard by Delegates.notNull()
 var isAiPlaying = ObservableProperty(false)
 
 var globalBoard = AnySizeBoard()
-var expectimax = Expectimax(NneonneoAnySizeHeuristics())
+var expectimax = AnySizeExpectimax(NneonneoAnySizeHeuristics())
+private val aiDispatcher = Dispatchers.createFixedThreadDispatcher("ai", 2)
 
 suspend fun main() = Korge(
     KorgeConfig(
@@ -130,9 +135,9 @@ suspend fun main() = Korge(
 }
 
 fun Stage.startAiPlay() {
-    launch {
-        var moveResultDeferred = expectimax.findBestMove(this, globalBoard)
-        var moveResult = moveResultDeferred.await()
+    launch(aiDispatcher) {
+        var moveResultDeferred: Deferred<MoveBoardResult<AnySizeBoard>?>
+        var moveResult = expectimax.findBestMove(globalBoard)
         while (true) {
             val waitForAnimation = CompletableDeferred<Unit>()
 
@@ -145,19 +150,17 @@ fun Stage.startAiPlay() {
             animateMoves(moves) {
                 waitForAnimation.complete(Unit)
             }
-            val newTile = newBoard.placeRandomBlock()
-            if (newTile == null) {
-                println("Should not BE HERE")
-                break
-            }
+            val newTile = newBoard.placeRandomTile() ?: break
             newBoard = newTile.newBoard
 
-            history.add(globalBoard.powers(), score.value)
+            history.add(globalBoard.tiles(), score.value)
 
             if (!isAiPlaying.value) {
                 break
             }
-            moveResultDeferred = expectimax.findBestMove(this, newBoard)
+            moveResultDeferred = async(aiDispatcher) {
+                expectimax.findBestMove(newBoard)
+            }
             waitForAnimation.await()
             uiBoard.createNewBlock(newTile.tile, newTile.index)
 
@@ -257,17 +260,17 @@ fun restart() {
 }
 
 fun generateBlockAndSave() {
-    val (newBoard, power, index) = globalBoard.placeRandomBlock() ?: return
+    val (newBoard, power, index) = globalBoard.placeRandomTile() ?: return
     globalBoard = newBoard
     uiBoard.createNewBlock(power, index)
-    history.add(globalBoard.powers(), score.value)
+    history.add(globalBoard.tiles(), score.value)
 }
 
 fun restoreField(historyElement: History.Element) {
     uiBoard.clear()
-    globalBoard = AnySizeBoard(historyElement.powers.map { it.power }.toIntArray())
+    globalBoard = AnySizeBoard(historyElement.tiles.map { it.power }.toIntArray())
     score.update(historyElement.score)
-    globalBoard.powers().forEachIndexed { i, tile ->
+    globalBoard.tiles().forEachIndexed { i, tile ->
         if (tile.isNotEmpty) {
             uiBoard.createNewBlock(tile, i)
         }

@@ -4,61 +4,47 @@ import io.github.smaugfm.game2048.board.Board
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.MoveBoardResult
-import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.maxAiDepth
-import korlibs.io.concurrent.atomic.KorAtomicLong
-import korlibs.io.concurrent.atomic.incrementAndGet
-import korlibs.io.concurrent.createFixedThreadDispatcher
-import kotlinx.coroutines.*
 import kotlin.math.roundToLong
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 @OptIn(ExperimentalTime::class)
-class Expectimax<T : Board<T>>(
-    private val heuristics: Heuristics<T>
+abstract class Expectimax<T : Board<T>>(
+    protected val heuristics: Heuristics<T>,
+    private val log: Boolean = true
 ) {
-    private val dispatcher =
-        Dispatchers.createFixedThreadDispatcher("ai", directions.size)
+    private var moveBoardCounter = 0L
 
-    private val moveBoardCounter = KorAtomicLong(0)
-
-    suspend fun findBestMove(
-        scope: CoroutineScope,
-        board: T
-    ): Deferred<MoveBoardResult<T>?> =
-        scope.async {
-            moveBoardCounter.value = 0
-            measureTimedValue {
-                findBestDirection(scope, board)
-                    .map { board.moveGenerateMoves(it) }
-                    .firstOrNull { it.board != board }
-            }.also {
+    fun findBestMove(board: T): MoveBoardResult<T>? {
+        moveBoardCounter = 0
+        return measureTimedValue {
+            findBestDirection(board)
+                .map { board.moveGenerateMoves(it) }
+                .firstOrNull { it.board != board }
+        }.also {
+            if (log)
                 println(
                     "findBestMove: ${it.duration}, " +
-                        "moves: ${moveBoardCounter.value}, " +
-                        "speed: ${it.duration.mpm(moveBoardCounter.value)} m/s"
+                        "moves: ${moveBoardCounter}, " +
+                        "speed: ${it.duration.mpm(moveBoardCounter)} m/s"
                 )
-            }.value
-        }
+        }.value
+    }
 
-    private suspend fun findBestDirection(
-        scope: CoroutineScope,
+    private fun findBestDirection(
         board: T
     ): List<Direction> =
-        directions.map {
-            scope.async(dispatcher) {
-                it to topLevelNode(board, it)
-            }
-        }
-            .awaitAll()
+        directions.map { it to topLevelNode(board, it) }
             .sortedByDescending { it.second.first }
             .also { results ->
-                println("moves:\n")
-                results.forEach {
-                    println("${it.first} ${it.second.first.roundToLong()}")
-                    println(it.second.second)
+                if (log) {
+                    println("moves:\n")
+                    results.forEach {
+                        println("${it.first} ${it.second.first.roundToLong()}")
+                        println(it.second.second)
+                    }
                 }
             }
             .map { it.first }
@@ -86,29 +72,26 @@ class Expectimax<T : Board<T>>(
         val emptyCount = board.countEmptyTiles()
         val emptyTileProb = prob / emptyCount
 
-        return board.placeEveryEmpty(emptyCount) { Tile.TWO }.zip(
-            board.placeEveryEmpty(emptyCount) { Tile.FOUR }
-        ).map { it.first.newBoard to it.second.newBoard }
-            .map { (boardWithTwo, boardWithFour) ->
-                val scoreBoard2 =
-                    moveNode(boardWithTwo, depth, emptyTileProb * 0.9, maxDepth) * 0.9
-                val scoreBoard4 =
-                    moveNode(boardWithFour, depth, emptyTileProb * 0.1, maxDepth) * 0.1
-
-                scoreBoard2 + scoreBoard4
-            }.sum() / emptyCount
+        return emptyTilesScoresSum(board, emptyTileProb, depth, maxDepth) / emptyCount
     }
 
-    private fun moveNode(
+    protected abstract fun emptyTilesScoresSum(
         board: T,
+        emptyTileProb: Double,
         depth: Int,
+        maxDepth: Int
+    ): Double
+
+    protected fun moveNode(
+        board: T,
         prob: Double,
+        depth: Int,
         maxDepth: Int
     ): Double {
         return directions
             .map {
                 val newBoard = board.move(it)
-                moveBoardCounter.incrementAndGet()
+                moveBoardCounter++
 
                 if (newBoard == board)
                     return@map Double.NEGATIVE_INFINITY
@@ -117,7 +100,7 @@ class Expectimax<T : Board<T>>(
     }
 
     companion object {
-        private const val PROBABILITY_THRESHOLD = 0.0001
+        const val PROBABILITY_THRESHOLD = 0.0001
 
         private fun Duration.mpm(moves: Long): String {
             return ((moves.toDouble() / inWholeMilliseconds) * 1000)

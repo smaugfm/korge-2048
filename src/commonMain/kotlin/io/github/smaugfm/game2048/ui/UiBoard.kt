@@ -12,7 +12,6 @@ import io.github.smaugfm.game2048.cellSize
 import io.github.smaugfm.game2048.rectCorners
 import io.github.smaugfm.game2048.rectRadius
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
-import io.github.smaugfm.game2048.util.fastRepeat
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
 import korlibs.korge.animate.block
@@ -35,8 +34,8 @@ class UiBoard(virtualWidth: Int) : Container() {
             Size(boardSizePixels, boardSizePixels), rectCorners, backgroundColor,
         ) {
             graphics {
-                fastRepeat(boardSize) { i ->
-                    fastRepeat(boardSize) { j ->
+                repeat(boardSize) { i: Int ->
+                    repeat(boardSize) { j: Int ->
                         fill(backgroundColorLight) {
                             roundRect(
                                 cellPadding + i * (cellPadding + cellSize),

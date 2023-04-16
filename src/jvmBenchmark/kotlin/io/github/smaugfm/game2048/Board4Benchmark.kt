@@ -12,7 +12,7 @@ import kotlinx.benchmark.*
 )
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.Throughput)
-class MoveGenerator4Benchmark {
+class Board4Benchmark {
     private var board: Board4 = Board4.fromArray(
         intArrayOf(
             2, 2, -1, 3,

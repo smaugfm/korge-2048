@@ -7,11 +7,10 @@ interface Board<out T : Board<T>> {
     fun hasAvailableMoves(): Boolean
     fun move(direction: Direction): T
     fun moveGenerateMoves(direction: Direction): MoveBoardResult<T>
-    fun placeRandomBlock(): TilePlacementResult<T>?
+    fun placeRandomTile(): TilePlacementResult<T>?
+    fun placeTile(tile: Tile, i: TileIndex): T
+
+    fun tiles(): Array<Tile>
 
     fun countEmptyTiles(): Int
-    fun placeEveryEmpty(
-        emptyTilesCount: Int = this.countEmptyTiles(),
-        onEmpty: (emptySpaceIndex: Int) -> Tile?
-    ): Sequence<TilePlacementResult<T>>
 }

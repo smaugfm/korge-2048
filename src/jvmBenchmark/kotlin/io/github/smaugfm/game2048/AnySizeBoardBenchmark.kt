@@ -12,7 +12,7 @@ import kotlinx.benchmark.*
 )
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.Throughput)
-class GeneralMoveGeneratorBenchmark {
+class AnySizeBoardBenchmark {
     private lateinit var board: AnySizeBoard
 
     @Setup

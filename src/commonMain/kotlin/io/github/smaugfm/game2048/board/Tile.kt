@@ -1,6 +1,6 @@
 package io.github.smaugfm.game2048.board
 
-import kotlin.jvm.JvmInline
+import korlibs.datastructure.random.FastRandom
 
 @JvmInline
 value class Tile(val power: Int) {
@@ -19,5 +19,11 @@ value class Tile(val power: Int) {
         val EMPTY = Tile(EMPTY_POWER)
         val TWO = Tile(1)
         val FOUR = Tile(2)
+
+        fun randomNewTile() =
+            if (FastRandom.nextDouble() < TILE_TWO_PROBABILITY) TWO else FOUR
+
+        const val TILE_TWO_PROBABILITY = 0.9
+        const val TILE_FOUR_PROBABILITY = 0.1
     }
 }

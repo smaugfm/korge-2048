@@ -5,7 +5,7 @@ import io.github.smaugfm.game2048.boardArraySize
 import korlibs.datastructure.iterators.fastForEach
 
 class History(from: String?, private val onUpdate: (History) -> Unit) {
-    class Element(val powers: Array<Tile>, val score: Int)
+    class Element(val tiles: Array<Tile>, val score: Int)
 
     private val history = mutableListOf<Element>()
 
@@ -22,8 +22,8 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
             }
     }
 
-    fun add(powers: Array<Tile>, score: Int) {
-        history.add(Element(powers, score))
+    fun add(tiles: Array<Tile>, score: Int) {
+        history.add(Element(tiles, score))
         onUpdate(this)
     }
 
@@ -43,14 +43,14 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
     fun isEmpty() = history.isEmpty()
 
     private fun elementFromString(string: String): Element {
-        val powers = string.split(',').map { it.toInt() }
-        if (powers.size != boardArraySize + 1) throw IllegalArgumentException("Incorrect history")
-        return Element(Array(boardArraySize) { Tile(powers[it]) }, powers[boardArraySize])
+        val tiles = string.split(',').map { it.toInt() }
+        if (tiles.size != boardArraySize + 1) throw IllegalArgumentException("Incorrect history")
+        return Element(Array(boardArraySize) { Tile(tiles[it]) }, tiles[boardArraySize])
     }
 
     override fun toString(): String {
         return history.joinToString(";") {
-            it.powers.joinToString(",") + "," + it.score
+            it.tiles.joinToString(",") + "," + it.score
         }
     }
 }
