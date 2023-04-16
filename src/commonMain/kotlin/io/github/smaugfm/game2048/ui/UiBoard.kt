@@ -1,26 +1,19 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.backgroundColor
-import io.github.smaugfm.game2048.backgroundColorLight
+import io.github.smaugfm.game2048.*
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
-import io.github.smaugfm.game2048.boardArraySize
-import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.cellPadding
-import io.github.smaugfm.game2048.cellSize
-import io.github.smaugfm.game2048.rectCorners
-import io.github.smaugfm.game2048.rectRadius
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColorLight
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.cellPadding
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.rectCorners
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.rectRadius
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
 import korlibs.korge.animate.block
-import korlibs.korge.view.Container
-import korlibs.korge.view.Stage
-import korlibs.korge.view.addTo
-import korlibs.korge.view.graphics
-import korlibs.korge.view.position
-import korlibs.korge.view.roundRect
+import korlibs.korge.view.*
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 
@@ -28,7 +21,7 @@ class UiBoard(virtualWidth: Int) : Container() {
     private val blocks = arrayOfNulls<UiBlock>(boardArraySize)
 
     init {
-        val boardSizePixels: Double = 50 + 4 * cellSize
+        val boardSizePixels: Double = 50 + 4 * uiConstants.cellSize
         position((virtualWidth - boardSizePixels) / 2, 150.0)
         roundRect(
             Size(boardSizePixels, boardSizePixels), rectCorners, backgroundColor,
@@ -38,10 +31,10 @@ class UiBoard(virtualWidth: Int) : Container() {
                     repeat(boardSize) { j: Int ->
                         fill(backgroundColorLight) {
                             roundRect(
-                                cellPadding + i * (cellPadding + cellSize),
-                                cellPadding + j * (cellPadding + cellSize),
-                                cellSize,
-                                cellSize,
+                                cellPadding + i * (cellPadding + uiConstants.cellSize),
+                                cellPadding + j * (cellPadding + uiConstants.cellSize),
+                                uiConstants.cellSize,
+                                uiConstants.cellSize,
                                 rectRadius
                             )
                         }
@@ -121,6 +114,9 @@ class UiBoard(virtualWidth: Int) : Container() {
 
     companion object {
         fun Stage.addBoard() = UiBoard(views.virtualWidth).addTo(this)
+
+        val TileIndex.columnX get() = cellPadding + (uiConstants.cellSize + cellPadding) * (this % boardSize)
+        val TileIndex.rowY get() = cellPadding + (uiConstants.cellSize + cellPadding) * (this / boardSize)
 
         private operator fun Scale.plus(d: Double): Scale = Scale(scaleX + d, scaleY + d)
     }

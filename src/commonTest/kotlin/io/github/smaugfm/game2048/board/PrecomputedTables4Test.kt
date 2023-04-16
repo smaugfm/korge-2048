@@ -1,7 +1,9 @@
 package io.github.smaugfm.game2048.board
 
-import io.github.smaugfm.game2048.board.PrecomputedTables4.packArray
-import io.github.smaugfm.game2048.board.PrecomputedTables4.unpackArray
+import io.github.smaugfm.game2048.board.impl.PrecomputedTables4.packArray
+import io.github.smaugfm.game2048.board.impl.PrecomputedTables4.unpackArray
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
+import io.github.smaugfm.game2048.board.impl.PrecomputedTables4
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

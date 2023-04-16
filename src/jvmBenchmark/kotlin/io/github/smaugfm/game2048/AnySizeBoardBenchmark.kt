@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048
 
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.AnySizeBoard
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import kotlinx.benchmark.*
 
 @State(Scope.Benchmark)

@@ -1,11 +1,10 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.board.AnySizeBoard
-import io.github.smaugfm.game2048.board.solve.Expectimax
-import io.github.smaugfm.game2048.board.solve.Heuristics
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
+import io.github.smaugfm.game2048.expectimax.Expectimax
+import io.github.smaugfm.game2048.heuristics.Heuristics
 import kotlinx.benchmark.*
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 
 @DelicateCoroutinesApi
 @State(Scope.Benchmark)

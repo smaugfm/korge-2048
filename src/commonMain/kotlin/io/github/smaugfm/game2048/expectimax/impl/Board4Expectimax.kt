@@ -1,9 +1,11 @@
-package io.github.smaugfm.game2048.board.solve
+package io.github.smaugfm.game2048.expectimax.impl
 
-import io.github.smaugfm.game2048.board.Board4
+import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
+import io.github.smaugfm.game2048.expectimax.Expectimax
+import io.github.smaugfm.game2048.heuristics.Heuristics
 
 class Board4Expectimax(heuristics: Heuristics<Board4>, log: Boolean = true) :
     Expectimax<Board4>(heuristics, log) {

@@ -1,11 +1,11 @@
-package io.github.smaugfm.game2048.board.solve
+package io.github.smaugfm.game2048.heuristics.impl
 
-import io.github.smaugfm.game2048.board.AnySizeBoard
-import io.github.smaugfm.game2048.board.AnySizeBoard.Companion.directionIndexesMap
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard.Companion.directionIndexesMap
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.boardSize
-import korlibs.datastructure.toIntList
+import io.github.smaugfm.game2048.heuristics.Heuristics
 import kotlin.math.min
 import kotlin.math.pow
 

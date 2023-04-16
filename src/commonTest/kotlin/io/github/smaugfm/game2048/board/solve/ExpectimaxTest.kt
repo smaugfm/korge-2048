@@ -1,6 +1,8 @@
 package io.github.smaugfm.game2048.board.solve
 
-import io.github.smaugfm.game2048.board.AnySizeBoard
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
+import io.github.smaugfm.game2048.expectimax.Expectimax
+import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
 import kotlin.test.Test
 
 class ExpectimaxTest {

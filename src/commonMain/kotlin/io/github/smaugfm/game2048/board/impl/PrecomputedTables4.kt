@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048.board
+package io.github.smaugfm.game2048.board.impl
 
 @OptIn(ExperimentalUnsignedTypes::class)
 object PrecomputedTables4 {

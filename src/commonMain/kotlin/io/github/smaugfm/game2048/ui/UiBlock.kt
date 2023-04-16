@@ -1,35 +1,33 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.accentColor
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
-import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.cellPadding
-import io.github.smaugfm.game2048.cellSize
-import io.github.smaugfm.game2048.font
-import io.github.smaugfm.game2048.labelBackgroundColor
-import io.github.smaugfm.game2048.moveAnimationDuration
-import io.github.smaugfm.game2048.rectCorners
-import io.github.smaugfm.game2048.scaleAnimationDuration
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.accentColor
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelBackgroundColor
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.moveAnimationDuration
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.rectCorners
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.scaleAnimationDuration
+import io.github.smaugfm.game2048.ui.UiBoard.Companion.columnX
+import io.github.smaugfm.game2048.ui.UiBoard.Companion.rowY
+import io.github.smaugfm.game2048.uiConstants
 import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.moveTo
 import korlibs.korge.animate.tween
 import korlibs.korge.tween.get
-import korlibs.korge.view.Container
-import korlibs.korge.view.addTo
+import korlibs.korge.view.*
 import korlibs.korge.view.align.centerBetween
-import korlibs.korge.view.position
-import korlibs.korge.view.roundRect
-import korlibs.korge.view.text
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 import korlibs.math.interpolation.Easing
 
 class UiBlock(private val tile: Tile) : Container() {
     init {
-        roundRect(Size(cellSize, cellSize), rectCorners, fill = color)
+        roundRect(
+            Size(uiConstants.cellSize, uiConstants.cellSize),
+            rectCorners,
+            fill = color
+        )
         val textColor =
             if (tile == Tile.TWO || tile == Tile.FOUR)
                 Colors.BLACK
@@ -39,9 +37,9 @@ class UiBlock(private val tile: Tile) : Container() {
             tile.score.toString(),
             textSize.toFloat(),
             textColor,
-            font
+            uiConstants.font
         ) {
-            centerBetween(0.0, 0.0, cellSize, cellSize)
+            centerBetween(0.0, 0.0, uiConstants.cellSize, uiConstants.cellSize)
         }
     }
 
@@ -70,11 +68,11 @@ class UiBlock(private val tile: Tile) : Container() {
     private val textSize
         get() =
             with(tile) {
-                if (power <= 6) cellSize / 2
-                else if (power <= 9) cellSize * 4 / 9
-                else if (power <= 13) cellSize * 3 / 8
-                else if (power <= 16) cellSize * 7 / 22
-                else cellSize * 3 / 12
+                if (power <= 6) uiConstants.cellSize / 2
+                else if (power <= 9) uiConstants.cellSize * 4 / 9
+                else if (power <= 13) uiConstants.cellSize * 3 / 8
+                else if (power <= 16) uiConstants.cellSize * 7 / 22
+                else uiConstants.cellSize * 3 / 12
             }
 
     fun animateMove(animator: Animator, to: TileIndex) {
@@ -99,9 +97,6 @@ class UiBlock(private val tile: Tile) : Container() {
     }
 
     companion object {
-        private val TileIndex.columnX get() = cellPadding + (cellSize + cellPadding) * (this % boardSize)
-        private val TileIndex.rowY get() = cellPadding + (cellSize + cellPadding) * (this / boardSize)
-
         private operator fun Scale.plus(d: Double): Scale =
             Scale(scaleX + d, scaleY + d)
 

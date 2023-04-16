@@ -1,8 +1,15 @@
-package io.github.smaugfm.game2048.board
+package io.github.smaugfm.game2048.board.impl
 
-import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
+import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.TilePlacementResult
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.board.Board
+import io.github.smaugfm.game2048.board.BoardMove
+import io.github.smaugfm.game2048.board.MoveBoardResult
+import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
+import io.github.smaugfm.game2048.board.TileIndex
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.datastructure.toIntList
@@ -59,7 +66,7 @@ class AnySizeBoard(
             .filter { it.value.isEmpty }
             .randomOrNull()?.index ?: return null
         val tile =
-            if (FastRandom.nextDouble() < TILE_FOUR_PROBABILITY)
+            if (FastRandom.nextDouble() < TILE_TWO_PROBABILITY)
                 Tile.TWO
             else
                 Tile.FOUR

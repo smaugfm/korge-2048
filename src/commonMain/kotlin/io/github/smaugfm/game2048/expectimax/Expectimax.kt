@@ -1,10 +1,11 @@
-package io.github.smaugfm.game2048.board.solve
+package io.github.smaugfm.game2048.expectimax
 
 import io.github.smaugfm.game2048.board.Board
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.MoveBoardResult
 import io.github.smaugfm.game2048.maxAiDepth
+import io.github.smaugfm.game2048.heuristics.Heuristics
 import kotlin.math.roundToLong
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime

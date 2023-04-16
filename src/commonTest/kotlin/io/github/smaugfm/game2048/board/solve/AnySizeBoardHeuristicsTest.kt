@@ -1,7 +1,9 @@
 package io.github.smaugfm.game2048.board.solve
 
-import io.github.smaugfm.game2048.board.AnySizeBoard
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.expectimax.Expectimax
+import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
 import korlibs.datastructure.IntArray2
 import kotlin.math.roundToLong
 import kotlin.test.Test

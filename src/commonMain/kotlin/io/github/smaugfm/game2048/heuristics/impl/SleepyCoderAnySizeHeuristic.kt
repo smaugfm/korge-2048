@@ -1,7 +1,8 @@
-package io.github.smaugfm.game2048.board.solve
+package io.github.smaugfm.game2048.heuristics.impl
 
-import io.github.smaugfm.game2048.board.AnySizeBoard
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.heuristics.Heuristics
 import kotlin.math.abs
 
 /**
