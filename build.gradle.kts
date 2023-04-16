@@ -30,7 +30,11 @@ kotlin {
         }
     }
     sourceSets {
-        val commonMain by getting
+        val commonMain by getting {
+            dependencies {
+                implementation("com.soywiz.korlibs.korinject:korinject:$4.0.0-rc")
+            }
+        }
         val jvmMain by getting
         val commonBenchmark by creating {
             dependsOn(commonMain)

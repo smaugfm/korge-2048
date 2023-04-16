@@ -4,7 +4,6 @@ import io.github.smaugfm.game2048.board.Board
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.MoveBoardResult
-import io.github.smaugfm.game2048.maxAiDepth
 import io.github.smaugfm.game2048.heuristics.Heuristics
 import kotlin.math.roundToLong
 import kotlin.time.Duration
@@ -58,7 +57,7 @@ abstract class Expectimax<T : Board<T>>(
         if (newBoard == board)
             return Pair(Double.NEGATIVE_INFINITY, board)
 
-        return expectimaxNode(newBoard, 0, 1.0, maxAiDepth) to newBoard
+        return expectimaxNode(newBoard, 0, 1.0, MAX_AI_DEPTH) to newBoard
     }
 
     private fun expectimaxNode(
@@ -102,6 +101,7 @@ abstract class Expectimax<T : Board<T>>(
 
     companion object {
         const val PROBABILITY_THRESHOLD = 0.0001
+        const val MAX_AI_DEPTH = 3
 
         private fun Duration.mpm(moves: Long): String {
             return ((moves.toDouble() / inWholeMilliseconds) * 1000)

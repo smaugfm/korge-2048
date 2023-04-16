@@ -1,9 +1,10 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.*
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
+import io.github.smaugfm.game2048.boardArraySize
+import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColorLight
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.cellPadding
@@ -17,7 +18,10 @@ import korlibs.korge.view.*
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 
-class UiBoard(virtualWidth: Int) : Container() {
+class UiBoard(
+    virtualWidth: Int,
+    private val uiConstants: UIConstants
+) : Container() {
     private val blocks = arrayOfNulls<UiBlock>(boardArraySize)
 
     init {
@@ -52,7 +56,7 @@ class UiBoard(virtualWidth: Int) : Container() {
     }
 
     fun createNewBlock(power: Tile, index: TileIndex): UiBlock {
-        return addBlock(power, index)
+        return addBlock(power, index, uiConstants)
             .also {
                 blocks[index] = it
             }
@@ -113,10 +117,8 @@ class UiBoard(virtualWidth: Int) : Container() {
     }
 
     companion object {
-        fun Stage.addBoard() = UiBoard(views.virtualWidth).addTo(this)
-
-        val TileIndex.columnX get() = cellPadding + (uiConstants.cellSize + cellPadding) * (this % boardSize)
-        val TileIndex.rowY get() = cellPadding + (uiConstants.cellSize + cellPadding) * (this / boardSize)
+        fun Container.addBoard(views: Views, uiConstants: UIConstants) =
+            UiBoard(views.virtualWidth, uiConstants).addTo(this)
 
         private operator fun Scale.plus(d: Double): Scale = Scale(scaleX + d, scaleY + d)
     }

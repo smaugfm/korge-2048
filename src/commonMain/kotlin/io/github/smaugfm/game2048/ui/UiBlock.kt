@@ -2,26 +2,32 @@ package io.github.smaugfm.game2048.ui
 
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
+import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.accentColor
+import io.github.smaugfm.game2048.ui.UIConstants.Companion.cellPadding
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelBackgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.moveAnimationDuration
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.rectCorners
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.scaleAnimationDuration
-import io.github.smaugfm.game2048.ui.UiBoard.Companion.columnX
-import io.github.smaugfm.game2048.ui.UiBoard.Companion.rowY
-import io.github.smaugfm.game2048.uiConstants
 import korlibs.image.color.Colors
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.moveTo
 import korlibs.korge.animate.tween
 import korlibs.korge.tween.get
-import korlibs.korge.view.*
+import korlibs.korge.view.Container
+import korlibs.korge.view.addTo
 import korlibs.korge.view.align.centerBetween
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.text
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 import korlibs.math.interpolation.Easing
 
-class UiBlock(private val tile: Tile) : Container() {
+class UiBlock(
+    private val tile: Tile,
+    private val uiConstants: UIConstants
+) : Container() {
     init {
         roundRect(
             Size(uiConstants.cellSize, uiConstants.cellSize),
@@ -76,7 +82,13 @@ class UiBlock(private val tile: Tile) : Container() {
             }
 
     fun animateMove(animator: Animator, to: TileIndex) {
-        animator.moveTo(this, to.columnX, to.rowY, moveAnimationDuration, Easing.LINEAR)
+        animator.moveTo(
+            this,
+            columnX(to, uiConstants),
+            rowY(to, uiConstants),
+            moveAnimationDuration,
+            Easing.LINEAR
+        )
     }
 
     fun animateScale(animator: Animator) {
@@ -100,12 +112,23 @@ class UiBlock(private val tile: Tile) : Container() {
         private operator fun Scale.plus(d: Double): Scale =
             Scale(scaleX + d, scaleY + d)
 
-        fun Container.addBlock(power: Tile, index: TileIndex): UiBlock {
-            return UiBlock(power)
+        fun columnX(tileIndex: TileIndex, uiConstants: UIConstants) =
+            cellPadding + (uiConstants.cellSize + cellPadding) * (tileIndex % boardSize)
+
+        fun rowY(tileIndex: TileIndex, uiConstants: UIConstants) =
+            cellPadding + (uiConstants.cellSize + cellPadding) * (tileIndex / boardSize)
+
+        fun Container.addBlock(
+            power: Tile,
+            index: TileIndex,
+            uiConstants: UIConstants
+        ): UiBlock {
+            val bl = UiBlock(power, uiConstants)
+            return bl
                 .addTo(this)
                 .position(
-                    index.columnX,
-                    index.rowY,
+                    columnX(index, uiConstants),
+                    rowY(index, uiConstants)
                 )
         }
     }

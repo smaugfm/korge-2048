@@ -3,8 +3,14 @@ package io.github.smaugfm.game2048.persistence
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.boardArraySize
 import korlibs.datastructure.iterators.fastForEach
+import korlibs.inject.AsyncInjector
+import korlibs.korge.service.storage.storage
+import korlibs.korge.view.Views
 
-class History(from: String?, private val onUpdate: (History) -> Unit) {
+class History private constructor(
+    from: String?,
+    private val onUpdate: (History) -> Unit
+) {
     class Element(val tiles: Array<Tile>, val score: Int)
 
     private val history = mutableListOf<Element>()
@@ -51,6 +57,18 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
     override fun toString(): String {
         return history.joinToString(";") {
             it.tiles.joinToString(",") + "," + it.score
+        }
+    }
+
+    companion object {
+        suspend operator fun invoke(injector: AsyncInjector): History {
+            injector.mapSingleton {
+                val views: Views = get()
+                History(views.storage.getOrNull("history")) {
+                    views.storage["history"] = it.toString()
+                }
+            }
+            return injector.get()
         }
     }
 }

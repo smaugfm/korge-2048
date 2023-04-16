@@ -1,20 +1,25 @@
 package io.github.smaugfm.game2048.input
 
+import io.github.smaugfm.game2048.GameState
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.isAiPlaying
 import korlibs.event.Key
+import korlibs.inject.AsyncInjector
+import korlibs.io.async.ObservableProperty
 import korlibs.korge.input.SwipeDirection
 import korlibs.korge.input.keys
 import korlibs.korge.input.onSwipe
-import korlibs.korge.view.Stage
+import korlibs.korge.view.View
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-class KorgeInputManager(stage: Stage) : InputManager {
+class KorgeInputManager private constructor(
+    view: View,
+    isAiPlaying: ObservableProperty<Boolean>
+) : InputManager {
     private val flow = MutableSharedFlow<InputEvent>()
 
     init {
-        stage.keys {
+        view.keys {
             down { keyEvent ->
                 if (isAiPlaying.value)
                     return@down
@@ -30,7 +35,7 @@ class KorgeInputManager(stage: Stage) : InputManager {
                 }
             }
         }
-        stage.onSwipe(20.0) {
+        view.onSwipe(20.0) {
             if (isAiPlaying.value)
                 return@onSwipe
             when (it.direction) {
@@ -38,8 +43,8 @@ class KorgeInputManager(stage: Stage) : InputManager {
                 SwipeDirection.RIGHT -> Direction.RIGHT
                 SwipeDirection.TOP -> Direction.TOP
                 SwipeDirection.BOTTOM -> Direction.BOTTOM
-            }.let {
-                flow.emit(InputEvent.DirectionInput.AiDirection(it))
+            }.let { dir ->
+                flow.emit(InputEvent.DirectionInput.AiDirection(dir))
             }
         }
     }
@@ -62,4 +67,14 @@ class KorgeInputManager(stage: Stage) : InputManager {
 
     override fun eventsFlow(): Flow<InputEvent> =
         flow
+
+    companion object {
+
+        suspend operator fun invoke(injector: AsyncInjector): KorgeInputManager {
+            injector.mapSingleton {
+                KorgeInputManager(get(), get<GameState>().isAiPlaying)
+            }
+            return injector.get()
+        }
+    }
 }
