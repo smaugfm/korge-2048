@@ -1,8 +1,8 @@
 package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.boardArraySize
-import junit.framework.TestCase.assertEquals
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AnySizeBoardTest {
     @Test

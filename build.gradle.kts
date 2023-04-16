@@ -30,16 +30,15 @@ kotlin {
         }
     }
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
-            }
-        }
+        val commonMain by getting
         val jvmMain by getting
         val commonBenchmark by creating {
             dependsOn(commonMain)
         }
         val jvmBenchmark by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
+            }
             dependsOn(commonBenchmark)
             dependsOn(jvmMain)
         }

@@ -6,14 +6,10 @@ import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.MoveBoardResult
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.maxAiDepth
+import korlibs.io.concurrent.atomic.KorAtomicLong
+import korlibs.io.concurrent.atomic.incrementAndGet
 import korlibs.io.concurrent.createFixedThreadDispatcher
-import kotlinx.benchmark.format
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.*
 import kotlin.math.roundToLong
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -26,17 +22,14 @@ class Expectimax<T : Board<T>>(
     private val dispatcher =
         Dispatchers.createFixedThreadDispatcher("ai", directions.size)
 
-    private val moveBoardCounter = AtomicLong(0)
-    private val Duration.mpm: String
-        get() =
-            ((moveBoardCounter.toDouble() / inWholeNanoseconds) * 1000000000000).format(0) + "m/s"
+    private val moveBoardCounter = KorAtomicLong(0)
 
     suspend fun findBestMove(
         scope: CoroutineScope,
         board: T
     ): Deferred<MoveBoardResult<T>?> =
         scope.async {
-            moveBoardCounter.set(0)
+            moveBoardCounter.value = 0
             measureTimedValue {
                 findBestDirection(scope, board)
                     .map { board.moveGenerateMoves(it) }
@@ -44,8 +37,8 @@ class Expectimax<T : Board<T>>(
             }.also {
                 println(
                     "findBestMove: ${it.duration}, " +
-                        "moves: ${moveBoardCounter.get()}, " +
-                        "speed: ${it.duration.mpm} m/s"
+                        "moves: ${moveBoardCounter.value}, " +
+                        "speed: ${it.duration.mpm(moveBoardCounter.value)} m/s"
                 )
             }.value
         }
@@ -125,5 +118,10 @@ class Expectimax<T : Board<T>>(
 
     companion object {
         private const val PROBABILITY_THRESHOLD = 0.0001
+
+        private fun Duration.mpm(moves: Long): String {
+            return ((moves.toDouble() / inWholeMilliseconds) * 1000)
+                .roundToLong().toString() + "m/s"
+        }
     }
 }

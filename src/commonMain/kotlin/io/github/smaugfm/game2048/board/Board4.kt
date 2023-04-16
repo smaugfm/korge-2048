@@ -3,6 +3,8 @@ package io.github.smaugfm.game2048.board
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
+import korlibs.io.lang.assert
+import kotlin.jvm.JvmInline
 
 @OptIn(ExperimentalUnsignedTypes::class)
 @JvmInline

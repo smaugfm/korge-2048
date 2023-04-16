@@ -1,5 +1,7 @@
 package io.github.smaugfm.game2048.board
 
+import kotlin.jvm.JvmInline
+
 @JvmInline
 value class Tile(val power: Int) {
     val score get() = if (power > 0) 1 shl power else 0

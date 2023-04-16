@@ -4,6 +4,9 @@ import io.github.smaugfm.game2048.board.AnySizeBoard
 import io.github.smaugfm.game2048.boardSize
 import kotlin.math.abs
 
+/**
+ * Based on [this](http://sleepycoder.github.io/2014/04/01/2048-ai/)
+ */
 class SleepyCoderAnySizeHeuristic : Heuristics<AnySizeBoard> {
     override fun evaluate(board: AnySizeBoard): Double {
         var diff = 0

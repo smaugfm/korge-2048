@@ -1,14 +1,14 @@
 package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.AnySizeBoard
-import kotlinx.coroutines.runBlocking
-import org.junit.Test
+import korlibs.io.async.runBlockingNoJs
+import kotlin.test.Test
 
 class ExpectimaxTest {
 
     @Test
     fun test() {
-        runBlocking {
+        runBlockingNoJs {
             val board = AnySizeBoard(
                 intArrayOf(
                     -1, -1, -1, 2,

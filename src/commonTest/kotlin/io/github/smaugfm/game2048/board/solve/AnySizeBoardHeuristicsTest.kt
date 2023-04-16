@@ -2,8 +2,8 @@ package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.AnySizeBoard
 import korlibs.datastructure.IntArray2
-import org.junit.Test
 import kotlin.math.roundToLong
+import kotlin.test.Test
 
 class AnySizeBoardHeuristicsTest {
     //    private val heuristics = NneonneoAnySizeHeuristics()

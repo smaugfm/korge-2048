@@ -2,8 +2,8 @@ package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.board.PrecomputedTables4.packArray
 import io.github.smaugfm.game2048.board.PrecomputedTables4.unpackArray
-import junit.framework.TestCase.assertEquals
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalUnsignedTypes::class)
 class PrecomputedTables4Test {

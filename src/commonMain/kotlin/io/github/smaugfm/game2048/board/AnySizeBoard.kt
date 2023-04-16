@@ -2,6 +2,8 @@ package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.util.fastForLoop
+import io.github.smaugfm.game2048.util.fastRepeat
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.datastructure.toIntList
@@ -77,27 +79,22 @@ class AnySizeBoard(
     ): Sequence<TilePlacementResult<AnySizeBoard>> {
         var emptyIndex = 0
         return sequence {
-            var i = 0
-            while (i < boardArraySize) {
+            fastRepeat(boardArraySize) { i ->
                 val tile = this@AnySizeBoard[i]
-                if (tile.isNotEmpty) {
-                    i++
-                    continue
-                }
-
-                onEmpty(emptyIndex)?.let { newTile ->
-                    yield(
-                        TilePlacementResult(
-                            this@AnySizeBoard.copy().also { newBoard ->
-                                newBoard.array[i] = newTile.power
-                            },
-                            newTile,
-                            emptyIndex
+                if (tile.isEmpty) {
+                    onEmpty(emptyIndex)?.let { newTile ->
+                        yield(
+                            TilePlacementResult(
+                                this@AnySizeBoard.copy().also { newBoard ->
+                                    newBoard.array[i] = newTile.power
+                                },
+                                newTile,
+                                emptyIndex
+                            )
                         )
-                    )
+                    }
+                    emptyIndex++
                 }
-                emptyIndex++
-                i++
             }
         }
     }
@@ -169,7 +166,7 @@ class AnySizeBoard(
     ): AnySizeBoard {
         val newBoard = AnySizeBoard()
 
-        for (i in (0 until boardSize)) {
+        fastRepeat(boardSize) { i ->
             val indexes = directionIndexesMap[direction.ordinal][i]
             moveLineLeftInternal(indexes, newBoard, addMove, addMerge)
         }
@@ -183,11 +180,9 @@ class AnySizeBoard(
     ): Int? {
         if (startFrom == null)
             return null
-        var i = startFrom + 1
-        while (i < indexes.size) {
+        fastForLoop(startFrom + 1, indexes.size) { i ->
             if (Tile(this.array[indexes[i]]).isNotEmpty)
                 return i
-            i++
         }
 
         return null
