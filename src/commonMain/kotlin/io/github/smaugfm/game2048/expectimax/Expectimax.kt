@@ -33,6 +33,8 @@ abstract class Expectimax<T : Board<T>>(
                 bestDirections(board)
             }
 
+        cacheSize = getCurrentCacheSize()
+
         return bestDirectionDescending
             .firstOrNull { board.move(it.first) != board }
             .also { if (it != null) logResults(duration, it.first, it.second) }
@@ -68,8 +70,10 @@ abstract class Expectimax<T : Board<T>>(
             return evaluateNode(depth, board)
         }
         val cachedScore = expectimaxCacheSearch(board, depth)
-        if (cachedScore != null)
+        if (cachedScore != null) {
+            cacheHits++
             return cachedScore
+        }
 
         val emptyCount = board.countEmptyTiles()
         val emptyTileProb = prob / emptyCount
@@ -88,6 +92,9 @@ abstract class Expectimax<T : Board<T>>(
     protected open fun expectimaxCacheSearch(board: T, depth: Int): Float? {
         return null
     }
+
+    protected open fun getCurrentCacheSize(): Long = 0L
+
 
     private fun evaluateNode(depth: Int, board: T): Float {
         evaluations++
@@ -119,8 +126,11 @@ abstract class Expectimax<T : Board<T>>(
     protected open fun clearState() {
         evaluations = 0
         moves = 0
-        cacheHits = 0
         unprobable = 0
+        cacheHits = 0
+        cacheSize = 0
+        maxDepth = 0
+        depthLimit = 0
     }
 
     open fun getDepthLimit(board: T): Int =
@@ -132,7 +142,7 @@ abstract class Expectimax<T : Board<T>>(
         println(
             "Move $direction: score=${score.format()}, evaluated=${evaluations.format()}, " +
                 "moves=${moves.format()}, unprobable=${unprobable.format()}, cacheHits=${cacheHits.format()}, " +
-                "cacheSize=${cacheSize.format()}, maxDepth=$maxDepth in $duration}"
+                "cacheSize=${cacheSize.format()}, maxDepth=$maxDepth in $duration"
         )
     }
 
@@ -143,6 +153,7 @@ abstract class Expectimax<T : Board<T>>(
         fun Float.format(): String {
             return this.roundDecimalPlaces(2).toString()
         }
+
         fun Long.format(): String {
             if (this < 10_000)
                 return this.toString()

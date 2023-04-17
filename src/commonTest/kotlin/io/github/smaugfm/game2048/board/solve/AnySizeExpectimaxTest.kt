@@ -5,7 +5,7 @@ import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
 import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
 import kotlin.test.Test
 
-class ExpectimaxTest {
+class AnySizeExpectimaxTest {
     @Test
     fun test() {
         val board = AnySizeBoard.fromArray(

@@ -242,7 +242,7 @@ class AnySizeBoardHeuristicsTest {
         showLine(intArrayOf(1, 2, 3, 4))
     }
 
-    private fun show(it: IntArray): Double {
+    private fun show(it: IntArray): Float {
         val e = heuristics.evaluate(
             AnySizeBoard.fromArray(it)
         )
@@ -252,7 +252,7 @@ class AnySizeBoardHeuristicsTest {
         return e
     }
 
-    private fun showLine(a: IntArray): Double {
+    private fun showLine(a: IntArray): Float {
         val e = heuristics.evaluateLine(
             AnySizeBoard.fromArray(a),
             intArrayOf(0, 1, 2, 3)

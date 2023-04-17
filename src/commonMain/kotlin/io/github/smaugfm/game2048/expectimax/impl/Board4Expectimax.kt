@@ -1,26 +1,41 @@
 package io.github.smaugfm.game2048.expectimax.impl
 
+import LongLongMap
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.heuristics.Heuristics
-import korlibs.datastructure.FastIntMap
-import korlibs.datastructure.IntIntMap
-import korlibs.datastructure.getOrPut
-import korlibs.datastructure.set
 import kotlin.jvm.JvmInline
 import kotlin.math.max
 
 class Board4Expectimax(heuristics: Heuristics<Board4>, log: Boolean = true) :
     Expectimax<Board4>(heuristics, log) {
 
-    private var searchCache = IntIntMap()
+    private var searchCache = LongLongMap()
+
+    @JvmInline
+    value class CacheEntry(val bits: Long) {
+        val score get() = Float.fromBits((bits and Int.MIN_VALUE.toLong()).toInt())
+        val depth get() = (bits ushr 32).toInt()
+
+        companion object {
+            fun create(score: Float, depth: Int): CacheEntry {
+                return CacheEntry(
+                    (score.toRawBits().toULong() or (depth.toULong() shl 32)).toLong()
+                )
+            }
+        }
+    }
 
     override fun clearState() {
-        searchCache = IntIntMap()
+        super.clearState()
+        searchCache.clear()
     }
+
+    override fun getCurrentCacheSize(): Long =
+        searchCache.size.toLong()
 
     override fun getDepthLimit(board: Board4): Int {
         val distinctTiles = board.countDistinctTiles()
@@ -30,10 +45,19 @@ class Board4Expectimax(heuristics: Heuristics<Board4>, log: Boolean = true) :
     override fun expectimaxCacheStore(board: Board4, depth: Int, score: Float) {
         if (depth >= CACHE_DEPTH_LIMIT)
             return
+
+        searchCache[board.bits.toLong()] = CacheEntry.create(score, depth).bits
     }
 
     override fun expectimaxCacheSearch(board: Board4, depth: Int): Float? {
-        return super.expectimaxCacheSearch(board, depth)
+        val bits = searchCache[board.bits.toLong()]
+        if (bits == 0L) return null
+
+        val entry = CacheEntry(bits)
+        if (entry.depth <= depth)
+            return entry.score
+
+        return null
     }
 
     override fun emptyTilesScoresSum(
