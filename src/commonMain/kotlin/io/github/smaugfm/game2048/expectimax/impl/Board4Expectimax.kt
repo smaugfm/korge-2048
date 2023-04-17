@@ -17,7 +17,7 @@ class Board4Expectimax(heuristics: Heuristics<Board4>, log: Boolean = true) :
 
     @JvmInline
     value class CacheEntry(val bits: Long) {
-        val score get() = Float.fromBits((bits and Int.MIN_VALUE.toLong()).toInt())
+        val score get() = Float.fromBits(bits.toInt())
         val depth get() = (bits ushr 32).toInt()
 
         companion object {
