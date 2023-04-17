@@ -10,7 +10,9 @@ import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.board.TilePlacementResult
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
+import korlibs.datastructure.toFastList
 import korlibs.io.lang.assert
+import kotlin.jvm.JvmInline
 
 @OptIn(ExperimentalUnsignedTypes::class)
 @JvmInline
@@ -172,6 +174,12 @@ value class Board4 private constructor(val bits: ULong) : Board<Board4> {
         return (x and 0xFUL).toInt()
     }
 
+    fun countDistinctTiles(): Int {
+        return tiles().toList()
+            .filter { it.isNotEmpty }
+            .distinctBy { it.power }
+            .size
+    }
 
     companion object : BoardFactory<Board4> {
         private const val ROW_MASK = 0xFFFFUL

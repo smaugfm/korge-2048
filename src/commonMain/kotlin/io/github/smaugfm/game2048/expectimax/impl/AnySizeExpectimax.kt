@@ -13,9 +13,8 @@ class AnySizeExpectimax(heuristics: Heuristics<AnySizeBoard>, log: Boolean = tru
 
     override fun emptyTilesScoresSum(
         board: AnySizeBoard,
-        emptyTileProb: Double,
+        emptyTileProb: Float,
         depth: Int,
-        maxDepth: Int
     ): Double {
         var sum = 0.0
         repeat(boardArraySize) { i ->
@@ -27,13 +26,11 @@ class AnySizeExpectimax(heuristics: Heuristics<AnySizeBoard>, log: Boolean = tru
                 board.placeTile(Tile.TWO, i),
                 emptyTileProb * TILE_TWO_PROBABILITY,
                 depth,
-                maxDepth,
             ) * TILE_TWO_PROBABILITY
             val scoreBoard4 = moveNode(
                 board.placeTile(Tile.FOUR, i),
                 emptyTileProb * TILE_FOUR_PROBABILITY,
                 depth,
-                maxDepth
             ) * TILE_FOUR_PROBABILITY
 
             sum += scoreBoard2 + scoreBoard4

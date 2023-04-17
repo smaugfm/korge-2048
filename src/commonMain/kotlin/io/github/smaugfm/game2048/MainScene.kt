@@ -4,7 +4,6 @@ import io.github.smaugfm.game2048.board.Board
 import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.MoveBoardResult
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.input.InputEvent
 import io.github.smaugfm.game2048.input.KorgeInputManager
@@ -167,17 +166,17 @@ class MainScene<T: Board<T>> : Scene() {
 
     private fun SContainer.startAiPlay() {
         launchAsap(aiDispatcher) {
-            var moveResultDeferred: Deferred<MoveBoardResult<T>?>
-            var moveResult = expectimax.findBestMove(board)
+            var bestDirectionDeferred: Deferred<Direction?>
+            var bestDirection = expectimax.findBestDirection(board)
             while (true) {
                 val waitForAnimation = CompletableDeferred<Unit>()
 
-                if (moveResult == null) {
+                if (bestDirection == null) {
                     isAiPlaying.update(false)
                     gameOver()
                     break
                 }
-                var (newBoard, moves) = moveResult
+                var (newBoard, moves) = board.moveGenerateMoves(bestDirection)
                 animateMoves(moves) {
                     waitForAnimation.complete(Unit)
                 }
@@ -189,14 +188,14 @@ class MainScene<T: Board<T>> : Scene() {
                 if (!isAiPlaying.value) {
                     break
                 }
-                moveResultDeferred = async(aiDispatcher) {
-                    expectimax.findBestMove(newBoard)
+                bestDirectionDeferred = async(aiDispatcher) {
+                    expectimax.findBestDirection(newBoard)
                 }
                 waitForAnimation.await()
                 uiBoard.createNewBlock(newTile.tile, newTile.index)
 
                 board = newBoard
-                moveResult = moveResultDeferred.await()
+                bestDirection = bestDirectionDeferred.await()
             }
         }
     }

@@ -16,4 +16,7 @@ class Board4Heuristics : Heuristics<Board4> {
             heuristicsTable[b.secondRow] +
             heuristicsTable[b.thirdRow] +
             heuristicsTable[b.fourthRow]
+
+    companion object {
+    }
 }

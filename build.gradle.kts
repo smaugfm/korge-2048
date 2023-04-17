@@ -65,15 +65,7 @@ korge {
     name = "game2048"
     jvmMainClassName = "io.github.smaugfm.game2048.MainKt"
 
-//    To enable all targets at once
-//    targetAll()
-
-//    To enable targets based on properties/environment variables
-//    targetDefault()
-
     targetJvm()
-//    targetJs()
-//    targetDesktop()
-//    targetIos()
-//    targetAndroid()
+    targetJs()
+    targetDesktop()
 }

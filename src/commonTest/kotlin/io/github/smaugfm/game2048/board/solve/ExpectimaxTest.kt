@@ -17,6 +17,6 @@ class ExpectimaxTest {
             )
         )
         AnySizeExpectimax(NneonneoAnySizeHeuristics())
-            .findBestMove(board)
+            .findBestDirection(board)
     }
 }

@@ -3,9 +3,9 @@ package io.github.smaugfm.game2048.expectimax
 import io.github.smaugfm.game2048.board.Board
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
-import io.github.smaugfm.game2048.board.MoveBoardResult
 import io.github.smaugfm.game2048.heuristics.Heuristics
-import kotlin.math.roundToLong
+import korlibs.math.roundDecimalPlaces
+import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -15,97 +15,128 @@ abstract class Expectimax<T : Board<T>>(
     protected val heuristics: Heuristics<T>,
     private val log: Boolean = true
 ) {
-    private var moveBoardCounter = 0L
+    private var evaluations: Long = 0
+    private var moves: Long = 0
+    private var unprobable: Long = 0
+    private var cacheHits: Long = 0
+    private var cacheSize: Long = 0
+    private var maxDepth: Int = 0
+    private var depthLimit: Long = 0
 
-    fun findBestMove(board: T): MoveBoardResult<T>? {
-        moveBoardCounter = 0
-        return measureTimedValue {
-            findBestDirection(board)
-                .map { board.moveGenerateMoves(it) }
-                .firstOrNull { it.board != board }
-        }.also {
-            if (log)
-                println(
-                    "findBestMove: ${it.duration}, " +
-                        "moves: ${moveBoardCounter}, " +
-                        "speed: ${it.duration.mpm(moveBoardCounter)} m/s"
-                )
-        }.value
+    fun findBestDirection(board: T): Direction? {
+        clearState()
+
+        depthLimit = getDepthLimit(board).toLong()
+
+        val (bestDirectionDescending, duration) =
+            measureTimedValue {
+                bestDirections(board)
+            }
+
+        return bestDirectionDescending
+            .firstOrNull { board.move(it.first) != board }
+            .also { if (it != null) logResults(duration, it.first, it.second) }
+            ?.first
     }
 
-    private fun findBestDirection(
-        board: T
-    ): List<Direction> =
+    private fun bestDirections(board: T): List<Pair<Direction, Double>> =
         directions.map { it to topLevelNode(board, it) }
-            .sortedByDescending { it.second.first }
-            .also { results ->
-                if (log) {
-                    println("moves:\n")
-                    results.forEach {
-                        println("${it.first} ${it.second.first.roundToLong()}")
-                        println(it.second.second)
-                    }
-                }
-            }
-            .map { it.first }
+            .sortedByDescending { it.second }
 
     private fun topLevelNode(
         board: T,
         it: Direction
-    ): Pair<Double, T> {
+    ): Double {
         val newBoard = board.move(it)
+        moves++
         if (newBoard == board)
-            return Pair(Double.NEGATIVE_INFINITY, board)
+            return Double.NEGATIVE_INFINITY
 
-        return expectimaxNode(newBoard, 0, 1.0, MAX_AI_DEPTH) to newBoard
+        return expectimaxNode(newBoard, 0, 1.0f)
     }
 
     private fun expectimaxNode(
         board: T,
         depth: Int,
-        prob: Double,
-        maxDepth: Int
+        prob: Float,
     ): Double {
-        if (prob < PROBABILITY_THRESHOLD || depth >= maxDepth)
-            return heuristics.evaluate(board)
+        if (prob < PROBABILITY_THRESHOLD) {
+            unprobable++
+            return evaluateNode(depth, board)
+        }
+        if (depth >= depthLimit) {
+            return evaluateNode(depth, board)
+        }
 
         val emptyCount = board.countEmptyTiles()
         val emptyTileProb = prob / emptyCount
 
-        return emptyTilesScoresSum(board, emptyTileProb, depth, maxDepth) / emptyCount
+        return emptyTilesScoresSum(board, emptyTileProb, depth) / emptyCount
+    }
+
+    private fun evaluateNode(depth: Int, board: T): Double {
+        evaluations++
+        maxDepth = max(depth, maxDepth)
+        return heuristics.evaluate(board)
     }
 
     protected abstract fun emptyTilesScoresSum(
         board: T,
-        emptyTileProb: Double,
+        emptyTileProb: Float,
         depth: Int,
-        maxDepth: Int
     ): Double
 
     protected fun moveNode(
         board: T,
-        prob: Double,
+        prob: Float,
         depth: Int,
-        maxDepth: Int
     ): Double {
         return directions
             .map {
                 val newBoard = board.move(it)
-                moveBoardCounter++
-
+                moves++
                 if (newBoard == board)
                     return@map Double.NEGATIVE_INFINITY
-                expectimaxNode(newBoard, depth + 1, prob, maxDepth)
+                expectimaxNode(newBoard, depth + 1, prob)
             }.max()
     }
 
-    companion object {
-        const val PROBABILITY_THRESHOLD = 0.0001
-        const val MAX_AI_DEPTH = 3
+    private fun clearState() {
+        evaluations = 0
+        moves = 0
+        cacheHits = 0
+        unprobable = 0
+    }
 
-        private fun Duration.mpm(moves: Long): String {
-            return ((moves.toDouble() / inWholeMilliseconds) * 1000)
-                .roundToLong().toString() + "m/s"
+    open fun getDepthLimit(board: T): Int =
+        SPARSE_BOARD_MAX_DEPTH
+
+    private fun logResults(duration: Duration, direction: Direction, score: Double) {
+        if (!log) return
+
+        println(
+            "Move $direction: score=${score.format()}, evaluated=${evaluations.format()}, " +
+                "moves=${moves.format()}, unprobable=${unprobable.format()}, cacheHits=${cacheHits.format()}, " +
+                "cacheSize=${cacheSize.format()}, maxDepth=$maxDepth in $duration}"
+        )
+    }
+
+    companion object {
+        const val PROBABILITY_THRESHOLD = 0.0001f// one in ten thousands
+        const val SPARSE_BOARD_MAX_DEPTH = 3
+
+        fun Double.format(): String {
+            return this.roundDecimalPlaces(2).toString()
+        }
+        fun Long.format(): String {
+            if (this < 10_000)
+                return this.toString()
+            if (this < 1_000_000)
+                return "${this / 1_000}k"
+            if (this < 1_000_000_000)
+                return "${this / 1_000_000}M"
+
+            return "${this / 1_000_000_000}B"
         }
     }
 }

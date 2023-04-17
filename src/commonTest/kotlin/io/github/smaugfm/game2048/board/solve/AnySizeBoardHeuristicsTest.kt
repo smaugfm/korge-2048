@@ -27,7 +27,7 @@ class AnySizeBoardHeuristicsTest {
         )
         val right = b.move(Direction.RIGHT)
         val rightScore = heuristics.evaluate(right)
-        expectimax.findBestMove(b)
+        expectimax.findBestDirection(b)
         println("Right score: $rightScore")
     }
 
