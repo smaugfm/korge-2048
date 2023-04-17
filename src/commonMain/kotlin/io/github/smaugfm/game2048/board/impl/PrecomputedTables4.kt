@@ -9,7 +9,7 @@ object PrecomputedTables4 {
 
     val leftLinesTable = UShortArray(65536) { 0u }
     val rightLinesTable = UShortArray(65536) { 0u }
-    val heuristicsTable = DoubleArray(65536) { 0.0 }
+    val heuristicsTable = FloatArray(65536) { 0.0f }
 
     init {
         for (line in (0u until 65536u)) {

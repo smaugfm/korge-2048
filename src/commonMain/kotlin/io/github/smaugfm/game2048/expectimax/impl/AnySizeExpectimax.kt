@@ -15,8 +15,8 @@ class AnySizeExpectimax(heuristics: Heuristics<AnySizeBoard>, log: Boolean = tru
         board: AnySizeBoard,
         emptyTileProb: Float,
         depth: Int,
-    ): Double {
-        var sum = 0.0
+    ): Float {
+        var sum = 0.0f
         repeat(boardArraySize) { i ->
             val tile = board[i]
             if (tile.isNotEmpty)

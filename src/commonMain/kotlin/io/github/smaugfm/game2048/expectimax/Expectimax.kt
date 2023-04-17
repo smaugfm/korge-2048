@@ -39,18 +39,18 @@ abstract class Expectimax<T : Board<T>>(
             ?.first
     }
 
-    private fun bestDirections(board: T): List<Pair<Direction, Double>> =
+    private fun bestDirections(board: T): List<Pair<Direction, Float>> =
         directions.map { it to topLevelNode(board, it) }
             .sortedByDescending { it.second }
 
     private fun topLevelNode(
         board: T,
         it: Direction
-    ): Double {
+    ): Float {
         val newBoard = board.move(it)
         moves++
         if (newBoard == board)
-            return Double.NEGATIVE_INFINITY
+            return Float.NEGATIVE_INFINITY
 
         return expectimaxNode(newBoard, 0, 1.0f)
     }
@@ -59,7 +59,7 @@ abstract class Expectimax<T : Board<T>>(
         board: T,
         depth: Int,
         prob: Float,
-    ): Double {
+    ): Float {
         if (prob < PROBABILITY_THRESHOLD) {
             unprobable++
             return evaluateNode(depth, board)
@@ -76,22 +76,20 @@ abstract class Expectimax<T : Board<T>>(
 
         val score = emptyTilesScoresSum(board, emptyTileProb, depth) / emptyCount
 
-        if (depth < CACHE_DEPTH_LIMIT) {
-            expectimaxCacheStore(board, depth, score)
-        }
+        expectimaxCacheStore(board, depth, score)
 
         return score
     }
 
-    protected open fun expectimaxCacheStore(board: T, depth: Int, score: Double) {
+    protected open fun expectimaxCacheStore(board: T, depth: Int, score: Float) {
         //do nothing
     }
 
-    protected open fun expectimaxCacheSearch(board: T, depth: Int): Double? {
+    protected open fun expectimaxCacheSearch(board: T, depth: Int): Float? {
         return null
     }
 
-    private fun evaluateNode(depth: Int, board: T): Double {
+    private fun evaluateNode(depth: Int, board: T): Float {
         evaluations++
         maxDepth = max(depth, maxDepth)
         return heuristics.evaluate(board)
@@ -101,19 +99,19 @@ abstract class Expectimax<T : Board<T>>(
         board: T,
         emptyTileProb: Float,
         depth: Int,
-    ): Double
+    ): Float
 
     protected fun moveNode(
         board: T,
         prob: Float,
         depth: Int,
-    ): Double {
+    ): Float {
         return directions
             .map {
                 val newBoard = board.move(it)
                 moves++
                 if (newBoard == board)
-                    return@map Double.NEGATIVE_INFINITY
+                    return@map Float.NEGATIVE_INFINITY
                 expectimaxNode(newBoard, depth + 1, prob)
             }.max()
     }
@@ -128,7 +126,7 @@ abstract class Expectimax<T : Board<T>>(
     open fun getDepthLimit(board: T): Int =
         SPARSE_BOARD_MAX_DEPTH
 
-    private fun logResults(duration: Duration, direction: Direction, score: Double) {
+    private fun logResults(duration: Duration, direction: Direction, score: Float) {
         if (!log) return
 
         println(
@@ -141,9 +139,8 @@ abstract class Expectimax<T : Board<T>>(
     companion object {
         const val PROBABILITY_THRESHOLD = 0.0001f// one in ten thousands
         const val SPARSE_BOARD_MAX_DEPTH = 3
-        const val CACHE_DEPTH_LIMIT = 15
 
-        fun Double.format(): String {
+        fun Float.format(): String {
             return this.roundDecimalPlaces(2).toString()
         }
         fun Long.format(): String {

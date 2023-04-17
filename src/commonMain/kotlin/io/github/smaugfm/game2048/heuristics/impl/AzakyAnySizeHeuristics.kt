@@ -16,7 +16,7 @@ class AzakyAnySizeHeuristics : Heuristics<AnySizeBoard> {
         private const val BORDER_DISTANCE_WEIGHT = 100
     }
 
-    override fun evaluate(board: AnySizeBoard): Double {
+    override fun evaluate(board: AnySizeBoard): Float {
         var empty = 0
         var diffs = 0
         var distances = 0
@@ -39,11 +39,11 @@ class AzakyAnySizeHeuristics : Heuristics<AnySizeBoard> {
             }
         }
         if (empty == 0)
-            return Double.NEGATIVE_INFINITY
+            return Float.NEGATIVE_INFINITY
 
         return (empty * EMPTY_WEIGHT -
             diffs * SMOOTHNESS_WEIGHT -
             distances * BORDER_DISTANCE_WEIGHT
-            ).toDouble()
+            ).toFloat()
     }
 }

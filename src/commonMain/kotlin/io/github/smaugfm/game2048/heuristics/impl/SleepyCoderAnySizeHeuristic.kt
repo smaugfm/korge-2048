@@ -9,7 +9,7 @@ import kotlin.math.abs
  * Based on [this](http://sleepycoder.github.io/2014/04/01/2048-ai/)
  */
 class SleepyCoderAnySizeHeuristic : Heuristics<AnySizeBoard> {
-    override fun evaluate(board: AnySizeBoard): Double {
+    override fun evaluate(board: AnySizeBoard): Float {
         var diff = 0
         var sum = 0
         var row = 0
@@ -38,8 +38,8 @@ class SleepyCoderAnySizeHeuristic : Heuristics<AnySizeBoard> {
             row++
         }
         return if (empty == 0)
-            Double.NEGATIVE_INFINITY
+            Float.NEGATIVE_INFINITY
         else
-            ((sum * 4 - diff) * 2).toDouble()
+            ((sum * 4 - diff) * 2).toFloat()
     }
 }
