@@ -1,5 +1,11 @@
 package io.github.smaugfm.game2048
 
+import io.github.smaugfm.game2048.board.BoardFactory
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
+import io.github.smaugfm.game2048.expectimax.Expectimax
+import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
+import io.github.smaugfm.game2048.heuristics.Heuristics
+import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.StaticUi
@@ -15,12 +21,16 @@ const val boardArraySize = boardSize * boardSize
 
 suspend fun main() {
     val injector = AsyncInjector().apply {
+        mapInstance(Heuristics::class, NneonneoAnySizeHeuristics())
+        mapInstance(BoardFactory::class, AnySizeBoard.Companion)
+        mapSingleton(Expectimax::class) { AnySizeExpectimax(get()) }
+        mapSingleton { MainScene<AnySizeBoard>() }
+
         mapInstance(GameState())
         UIConstants(this)
         History(this)
         KorgeInputManager(this)
         StaticUi(this)
-        MainScene(this)
     }
     Korge(
         KorgeConfig(

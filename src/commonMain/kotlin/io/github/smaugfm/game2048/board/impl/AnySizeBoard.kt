@@ -1,22 +1,23 @@
 package io.github.smaugfm.game2048.board.impl
 
+import io.github.smaugfm.game2048.board.Board
+import io.github.smaugfm.game2048.board.BoardFactory
+import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.MoveBoardResult
 import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
+import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.board.TilePlacementResult
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
-import io.github.smaugfm.game2048.board.Board
-import io.github.smaugfm.game2048.board.BoardMove
-import io.github.smaugfm.game2048.board.MoveBoardResult
-import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
-import io.github.smaugfm.game2048.board.TileIndex
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.datastructure.toIntList
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
-class AnySizeBoard(
+class AnySizeBoard private constructor(
     val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power }
 ) : Board<AnySizeBoard> {
 
@@ -206,7 +207,7 @@ class AnySizeBoard(
             array
         ).toString()
 
-    companion object {
+    companion object : BoardFactory<AnySizeBoard> {
         private val emptyAddMove = { _: Int, _: Int -> }
         private val emptyAddMerge = { _: Int, _: Int, _: Int, _: Tile -> }
         private val indices = (0 until boardArraySize).toList().toIntArray()
@@ -232,5 +233,14 @@ class AnySizeBoard(
                         .toIntArray()
                 }.toTypedArray<IntArray>()
             }.toTypedArray<Array<IntArray>>()
+
+        override fun createEmpty(): AnySizeBoard =
+            AnySizeBoard()
+
+        override fun fromTiles(tiles: Array<Tile>): AnySizeBoard =
+            AnySizeBoard(tiles.map { it.power }.toIntArray())
+
+        override fun fromArray(tiles: IntArray): AnySizeBoard =
+            AnySizeBoard(tiles)
     }
 }

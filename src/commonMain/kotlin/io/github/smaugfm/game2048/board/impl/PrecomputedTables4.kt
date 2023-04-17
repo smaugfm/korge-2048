@@ -7,11 +7,11 @@ object PrecomputedTables4 {
 
     init {
         for (line in (0u until 65536u)) {
-            val generalBoard = AnySizeBoard(
+            val generalBoard = AnySizeBoard.fromArray(
                 line.unpackArray().toIntArray()
             )
 
-            val newBoard = AnySizeBoard(
+            val newBoard = AnySizeBoard.fromArray(
                 intArrayOf(0, 0, 0, 0)
             )
             generalBoard.moveLineToStart(

@@ -1,6 +1,7 @@
 package io.github.smaugfm.game2048.board.impl
 
 import io.github.smaugfm.game2048.board.Board
+import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.MoveBoardResult
@@ -66,7 +67,7 @@ value class Board4(val bits: ULong) : Board<Board4> {
 
 
     override fun moveGenerateMoves(direction: Direction): MoveBoardResult<Board4> =
-        AnySizeBoard(toIntArray())
+        AnySizeBoard.fromArray(toIntArray())
             .moveGenerateMoves(direction)
             .let {
                 MoveBoardResult(
@@ -159,16 +160,22 @@ value class Board4(val bits: ULong) : Board<Board4> {
     }
 
 
-    companion object {
+    companion object : BoardFactory<Board4> {
         private const val ROW_MASK = 0xFFFFUL
 
-        fun fromArray(array: IntArray): Board4 {
+        override fun fromArray(tiles: IntArray): Board4 {
             var result = Board4(0UL)
-            array.forEachIndexed { index, value ->
+            tiles.forEachIndexed { index, value ->
                 if (value > 0)
                     result = result.set(index, value)
             }
             return result
         }
+
+        override fun createEmpty(): Board4 =
+            Board4(0UL)
+
+        override fun fromTiles(tiles: Array<Tile>): Board4 =
+            fromArray(tiles.map { it.power }.toIntArray())
     }
 }

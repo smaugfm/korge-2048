@@ -1,11 +1,11 @@
 package io.github.smaugfm.game2048
 
+import io.github.smaugfm.game2048.board.Board
+import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.MoveBoardResult
-import io.github.smaugfm.game2048.board.impl.AnySizeBoard
-import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
-import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
+import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.input.InputEvent
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.History
@@ -13,7 +13,6 @@ import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
-import korlibs.inject.AsyncInjector
 import korlibs.io.async.ObservableProperty
 import korlibs.io.async.launchAsap
 import korlibs.io.async.launchImmediately
@@ -26,10 +25,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 
-class MainScene : Scene() {
-
-    private var globalBoard = AnySizeBoard()
-    private var expectimax = AnySizeExpectimax(NneonneoAnySizeHeuristics())
+class MainScene<T: Board<T>> : Scene() {
     private val aiDispatcher = Dispatchers.createFixedThreadDispatcher("ai", 2)
     private var isAnimationRunning = false
     private var isGameOverModal = false
@@ -41,19 +37,31 @@ class MainScene : Scene() {
     private lateinit var history: History
     private lateinit var inputManager: KorgeInputManager
 
+    private lateinit var boardFactory: BoardFactory<T>
+    private lateinit var board: T
+    private lateinit var expectimax: Expectimax<T>
+
     private lateinit var staticUi: StaticUi
-    private lateinit var uiBoard: UiBoard
     private lateinit var uiConstants: UIConstants
+
+    private lateinit var uiBoard: UiBoard
+
 
     override suspend fun SContainer.sceneInit() {
         with(injector) {
             best = get<GameState>().best
             score = get<GameState>().score
             isAiPlaying = get<GameState>().isAiPlaying
+
             inputManager = get()
             history = get()
+
+            boardFactory = get()
+            board = boardFactory.createEmpty()
             staticUi = get()
             uiConstants = get()
+
+            expectimax = get()
         }
 
         val storage = views.storage
@@ -117,12 +125,12 @@ class MainScene : Scene() {
             return
         }
 
-        val (newBoard, moves) = globalBoard.moveGenerateMoves(direction)
-        if (globalBoard != newBoard) {
+        val (newBoard, moves) = board.moveGenerateMoves(direction)
+        if (board != newBoard) {
             animateMoves(moves) {
-                globalBoard = newBoard
+                board = newBoard
                 generateBlockAndSave()
-                if (!globalBoard.hasAvailableMoves())
+                if (!board.hasAvailableMoves())
                     gameOver()
             }
         }
@@ -159,8 +167,8 @@ class MainScene : Scene() {
 
     private fun SContainer.startAiPlay() {
         launchAsap(aiDispatcher) {
-            var moveResultDeferred: Deferred<MoveBoardResult<AnySizeBoard>?>
-            var moveResult = expectimax.findBestMove(globalBoard)
+            var moveResultDeferred: Deferred<MoveBoardResult<T>?>
+            var moveResult = expectimax.findBestMove(board)
             while (true) {
                 val waitForAnimation = CompletableDeferred<Unit>()
 
@@ -176,7 +184,7 @@ class MainScene : Scene() {
                 val newTile = newBoard.placeRandomTile() ?: break
                 newBoard = newTile.newBoard
 
-                history.add(globalBoard.tiles(), score.value)
+                history.add(board.tiles(), score.value)
 
                 if (!isAiPlaying.value) {
                     break
@@ -187,15 +195,15 @@ class MainScene : Scene() {
                 waitForAnimation.await()
                 uiBoard.createNewBlock(newTile.tile, newTile.index)
 
-                globalBoard = newBoard
+                board = newBoard
                 moveResult = moveResultDeferred.await()
             }
         }
     }
 
-    private fun restart() {
+    private suspend fun restart() {
         isGameOverModal = false
-        globalBoard = AnySizeBoard()
+        board = boardFactory.createEmpty()
         uiBoard.clear()
         score.update(0)
         history.clear()
@@ -203,26 +211,20 @@ class MainScene : Scene() {
     }
 
     private fun generateBlockAndSave() {
-        val (newBoard, power, index) = globalBoard.placeRandomTile() ?: return
-        globalBoard = newBoard
+        val (newBoard, power, index) = board.placeRandomTile() ?: return
+        board = newBoard
         uiBoard.createNewBlock(power, index)
-        history.add(globalBoard.tiles(), score.value)
+        history.add(board.tiles(), score.value)
     }
 
     private fun restoreField(historyElement: History.Element) {
         uiBoard.clear()
-        globalBoard = AnySizeBoard(historyElement.tiles.map { it.power }.toIntArray())
+        board = boardFactory.fromTiles(historyElement.tiles)
         score.update(historyElement.score)
-        globalBoard.tiles().forEachIndexed { i, tile ->
+        board.tiles().forEachIndexed { i, tile ->
             if (tile.isNotEmpty) {
                 uiBoard.createNewBlock(tile, i)
             }
-        }
-    }
-
-    companion object {
-        suspend operator fun invoke(injector: AsyncInjector) {
-            injector.mapSingleton { MainScene() }
         }
     }
 }
