@@ -15,7 +15,7 @@ import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
 import korlibs.inject.AsyncInjector
 import korlibs.io.async.ObservableProperty
-import korlibs.io.async.launch
+import korlibs.io.async.launchAsap
 import korlibs.io.async.launchImmediately
 import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.korge.scene.Scene
@@ -158,7 +158,7 @@ class MainScene : Scene() {
     }
 
     private fun SContainer.startAiPlay() {
-        launch(aiDispatcher) {
+        launchAsap(aiDispatcher) {
             var moveResultDeferred: Deferred<MoveBoardResult<AnySizeBoard>?>
             var moveResult = expectimax.findBestMove(globalBoard)
             while (true) {
