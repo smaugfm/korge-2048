@@ -8,18 +8,18 @@ import korlibs.io.async.ObservableProperty
 import korlibs.korge.input.SwipeDirection
 import korlibs.korge.input.keys
 import korlibs.korge.input.onSwipe
-import korlibs.korge.view.View
+import korlibs.korge.view.Views
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class KorgeInputManager private constructor(
-    view: View,
+    views: Views,
     isAiPlaying: ObservableProperty<Boolean>
 ) : InputManager {
     private val flow = MutableSharedFlow<InputEvent>()
 
     init {
-        view.keys {
+        views.root.keys {
             down { keyEvent ->
                 if (isAiPlaying.value)
                     return@down
@@ -35,7 +35,7 @@ class KorgeInputManager private constructor(
                 }
             }
         }
-        view.onSwipe(20.0) {
+        views.root.onSwipe(20.0) {
             if (isAiPlaying.value)
                 return@onSwipe
             when (it.direction) {
@@ -70,11 +70,10 @@ class KorgeInputManager private constructor(
 
     companion object {
 
-        suspend operator fun invoke(injector: AsyncInjector): KorgeInputManager {
+        suspend operator fun invoke(injector: AsyncInjector) {
             injector.mapSingleton {
                 KorgeInputManager(get(), get<GameState>().isAiPlaying)
             }
-            return injector.get()
         }
     }
 }

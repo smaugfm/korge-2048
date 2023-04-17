@@ -13,6 +13,7 @@ import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
+import korlibs.inject.AsyncInjector
 import korlibs.io.async.ObservableProperty
 import korlibs.io.async.launch
 import korlibs.io.async.launchImmediately
@@ -25,8 +26,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 
-@Suppress("RemoveEmptyPrimaryConstructor")
-class MainScene() : Scene() {
+class MainScene : Scene() {
 
     private var globalBoard = AnySizeBoard()
     private var expectimax = AnySizeExpectimax(NneonneoAnySizeHeuristics())
@@ -76,25 +76,32 @@ class MainScene() : Scene() {
             generateBlockAndSave()
         }
 
-        inputManager.eventsFlow().collect { inputEvent ->
-            when (inputEvent) {
-                InputEvent.ClickInput.AiToggleClick ->
-                    isAiPlaying.update(!isAiPlaying.value)
+        launchImmediately {
+            inputManager
+                .eventsFlow()
+                .collect { inputEvent ->
+                    when (inputEvent) {
+                        InputEvent.ClickInput.AiToggleClick ->
+                            isAiPlaying.update(!isAiPlaying.value)
 
-                InputEvent.ClickInput.RestartClick ->
-                    restart()
+                        InputEvent.ClickInput.RestartClick ->
+                            restart()
 
-                InputEvent.ClickInput.TryAgainClick ->
-                    restart()
+                        InputEvent.ClickInput.TryAgainClick ->
+                            restart()
 
-                InputEvent.ClickInput.UndoClick ->
-                    if (!isAiPlaying.value)
-                        restoreField(history.undo())
+                        InputEvent.ClickInput.UndoClick ->
+                            if (!isAiPlaying.value)
+                                restoreField(history.undo())
 
-                is InputEvent.DirectionInput.AiDirection -> TODO()
-                is InputEvent.DirectionInput.UserDirection ->
-                    handleMoveBlocks(inputEvent.dir)
-            }
+                        is InputEvent.DirectionInput.AiDirection -> {
+                            TODO()
+                        }
+
+                        is InputEvent.DirectionInput.UserDirection ->
+                            handleMoveBlocks(inputEvent.dir)
+                    }
+                }
         }
 
         isAiPlaying.observe {
@@ -213,4 +220,9 @@ class MainScene() : Scene() {
         }
     }
 
+    companion object {
+        suspend operator fun invoke(injector: AsyncInjector) {
+            injector.mapSingleton { MainScene() }
+        }
+    }
 }

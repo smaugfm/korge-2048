@@ -1,6 +1,5 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.board.TileIndex
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
@@ -25,7 +24,7 @@ class UIConstants private constructor(
 
     companion object {
 
-        suspend operator fun invoke(injector: AsyncInjector): UIConstants {
+        suspend operator fun invoke(injector: AsyncInjector) {
             injector.mapSingleton {
                 UIConstants(
                     get(),
@@ -35,10 +34,9 @@ class UIConstants private constructor(
                     resourcesVfs["undo.png"].readBitmap()
                 )
             }
-            return injector.get()
         }
 
-//        internal val moveAnimationDuration = 0.0375.seconds
+        //        internal val moveAnimationDuration = 0.0375.seconds
 //        internal val scaleAnimationDuration = 0.05.seconds
 //        internal val moveAnimationDuration = 0.075.seconds
 //        internal val scaleAnimationDuration = 0.1.seconds

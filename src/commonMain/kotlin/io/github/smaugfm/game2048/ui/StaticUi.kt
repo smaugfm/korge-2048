@@ -240,9 +240,8 @@ class StaticUi(
     }
 
     companion object {
-        suspend operator fun invoke(injector: AsyncInjector): StaticUi {
+        suspend operator fun invoke(injector: AsyncInjector) {
             injector.mapSingleton { StaticUi(get(), get(), get()) }
-            return injector.get()
         }
     }
 }

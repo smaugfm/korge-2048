@@ -61,14 +61,13 @@ class History private constructor(
     }
 
     companion object {
-        suspend operator fun invoke(injector: AsyncInjector): History {
+        suspend operator fun invoke(injector: AsyncInjector) {
             injector.mapSingleton {
                 val views: Views = get()
                 History(views.storage.getOrNull("history")) {
                     views.storage["history"] = it.toString()
                 }
             }
-            return injector.get()
         }
     }
 }
