@@ -24,7 +24,7 @@ value class Tile(val power: Int) {
         fun randomNewTile() =
             if (FastRandom.nextDouble() < TILE_TWO_PROBABILITY) TWO else FOUR
 
-        const val TILE_TWO_PROBABILITY = 0.9
-        const val TILE_FOUR_PROBABILITY = 0.1
+        const val TILE_TWO_PROBABILITY = 0.9f
+        const val TILE_FOUR_PROBABILITY = 0.1f
     }
 }

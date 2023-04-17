@@ -67,11 +67,28 @@ abstract class Expectimax<T : Board<T>>(
         if (depth >= depthLimit) {
             return evaluateNode(depth, board)
         }
+        val cachedScore = expectimaxCacheSearch(board, depth)
+        if (cachedScore != null)
+            return cachedScore
 
         val emptyCount = board.countEmptyTiles()
         val emptyTileProb = prob / emptyCount
 
-        return emptyTilesScoresSum(board, emptyTileProb, depth) / emptyCount
+        val score = emptyTilesScoresSum(board, emptyTileProb, depth) / emptyCount
+
+        if (depth < CACHE_DEPTH_LIMIT) {
+            expectimaxCacheStore(board, depth, score)
+        }
+
+        return score
+    }
+
+    protected open fun expectimaxCacheStore(board: T, depth: Int, score: Double) {
+        //do nothing
+    }
+
+    protected open fun expectimaxCacheSearch(board: T, depth: Int): Double? {
+        return null
     }
 
     private fun evaluateNode(depth: Int, board: T): Double {
@@ -101,7 +118,7 @@ abstract class Expectimax<T : Board<T>>(
             }.max()
     }
 
-    private fun clearState() {
+    protected open fun clearState() {
         evaluations = 0
         moves = 0
         cacheHits = 0
@@ -124,6 +141,7 @@ abstract class Expectimax<T : Board<T>>(
     companion object {
         const val PROBABILITY_THRESHOLD = 0.0001f// one in ten thousands
         const val SPARSE_BOARD_MAX_DEPTH = 3
+        const val CACHE_DEPTH_LIMIT = 15
 
         fun Double.format(): String {
             return this.roundDecimalPlaces(2).toString()
