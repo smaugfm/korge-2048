@@ -20,7 +20,7 @@ class NneonneoAnySizeHeuristics : Heuristics<AnySizeBoard> {
             row + top
         }
 
-    override fun evaluateLine(board: AnySizeBoard, indexes: IntArray): Double {
+    fun evaluateLine(board: AnySizeBoard, indexes: IntArray): Double {
         var empty = 0
         var merges = 0
         var sum = 0.0

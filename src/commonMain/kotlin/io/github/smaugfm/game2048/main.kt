@@ -1,11 +1,11 @@
 package io.github.smaugfm.game2048
 
 import io.github.smaugfm.game2048.board.BoardFactory
-import io.github.smaugfm.game2048.board.impl.AnySizeBoard
+import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
-import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
+import io.github.smaugfm.game2048.expectimax.impl.Board4Expectimax
 import io.github.smaugfm.game2048.heuristics.Heuristics
-import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
+import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.StaticUi
@@ -21,10 +21,15 @@ const val boardArraySize = boardSize * boardSize
 
 suspend fun main() {
     val injector = AsyncInjector().apply {
-        mapInstance(Heuristics::class, NneonneoAnySizeHeuristics())
-        mapInstance(BoardFactory::class, AnySizeBoard.Companion)
-        mapSingleton(Expectimax::class) { AnySizeExpectimax(get()) }
-        mapSingleton { MainScene<AnySizeBoard>() }
+//        mapInstance(Heuristics::class, NneonneoAnySizeHeuristics())
+//        mapInstance(BoardFactory::class, AnySizeBoard.Companion)
+//        mapSingleton(Expectimax::class) { AnySizeExpectimax(get()) }
+//        mapSingleton { MainScene<AnySizeBoard>() }
+
+        mapInstance(Heuristics::class, Board4Heuristics())
+        mapInstance(BoardFactory::class, Board4.Companion)
+        mapSingleton(Expectimax::class) { Board4Expectimax(get()) }
+        mapSingleton { MainScene<Board4>() }
 
         mapInstance(GameState())
         UIConstants(this)

@@ -2,7 +2,7 @@ package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.expectimax.Expectimax
+import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
 import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
 import korlibs.datastructure.IntArray2
 import kotlin.math.roundToLong
@@ -13,11 +13,11 @@ class AnySizeBoardHeuristicsTest {
 //private val heuristics = SleepyCoderAnySizeHeuristic()
 //    private val heuristics = AzakyAnySizeHeuristics()
 
-    private val expectimax = Expectimax(heuristics)
+    private val expectimax = AnySizeExpectimax(heuristics)
 
     @Test
     fun t() {
-        val b = AnySizeBoard(
+        val b = AnySizeBoard.fromArray(
             intArrayOf(
                 9, 6, 1, 1,
                 3, 5, 2, 0,
@@ -244,7 +244,7 @@ class AnySizeBoardHeuristicsTest {
 
     private fun show(it: IntArray): Double {
         val e = heuristics.evaluate(
-            AnySizeBoard(it)
+            AnySizeBoard.fromArray(it)
         )
         println(
             "${IntArray2(4, 4, it)} ${e.roundToLong()} \n"
@@ -254,7 +254,7 @@ class AnySizeBoardHeuristicsTest {
 
     private fun showLine(a: IntArray): Double {
         val e = heuristics.evaluateLine(
-            AnySizeBoard(a),
+            AnySizeBoard.fromArray(a),
             intArrayOf(0, 1, 2, 3)
         )
         println("${a.contentToString()} - ${e.roundToLong()}")

@@ -14,7 +14,7 @@ import korlibs.io.lang.assert
 
 @OptIn(ExperimentalUnsignedTypes::class)
 @JvmInline
-value class Board4(val bits: ULong) : Board<Board4> {
+value class Board4 private constructor(val bits: ULong) : Board<Board4> {
     fun transpose(): Board4 {
         val a1 = bits and 0xF0F00F0FF0F00F0FUL
         val a2 = bits and 0x0000F0F00000F0F0UL
@@ -98,18 +98,31 @@ value class Board4(val bits: ULong) : Board<Board4> {
         }
     }
 
+    val firstRow
+        get() =
+            ((bits shr 0) and ROW_MASK).toInt()
+    val secondRow
+        get() =
+            ((bits shr 16) and ROW_MASK).toInt()
+    val thirdRow
+        get() =
+            ((bits shr 32) and ROW_MASK).toInt()
+    val fourthRow
+        get() =
+            ((bits shr 48) and ROW_MASK).toInt()
+
     private fun lookupRows(
         table: UShortArray,
     ): Board4 {
         var result = 0UL
         result = result or
-            ((table[((bits shr 0) and ROW_MASK).toInt()].toULong()) shl 0)
+            ((table[firstRow].toULong()) shl 0)
         result = result or
-            ((table[((bits shr 16) and ROW_MASK).toInt()].toULong()) shl 16)
+            ((table[secondRow].toULong()) shl 16)
         result = result or
-            ((table[((bits shr 32) and ROW_MASK).toInt()].toULong()) shl 32)
+            ((table[thirdRow].toULong()) shl 32)
         result = result or
-            ((table[((bits shr 48) and ROW_MASK).toInt()].toULong()) shl 48)
+            ((table[fourthRow].toULong()) shl 48)
 
         return Board4(result)
     }
@@ -163,6 +176,12 @@ value class Board4(val bits: ULong) : Board<Board4> {
     companion object : BoardFactory<Board4> {
         private const val ROW_MASK = 0xFFFFUL
 
+        override fun createEmpty(): Board4 =
+            Board4(0UL)
+
+        override fun fromTiles(tiles: Array<Tile>): Board4 =
+            fromArray(tiles.map { it.power }.toIntArray())
+
         override fun fromArray(tiles: IntArray): Board4 {
             var result = Board4(0UL)
             tiles.forEachIndexed { index, value ->
@@ -171,11 +190,5 @@ value class Board4(val bits: ULong) : Board<Board4> {
             }
             return result
         }
-
-        override fun createEmpty(): Board4 =
-            Board4(0UL)
-
-        override fun fromTiles(tiles: Array<Tile>): Board4 =
-            fromArray(tiles.map { it.power }.toIntArray())
     }
 }

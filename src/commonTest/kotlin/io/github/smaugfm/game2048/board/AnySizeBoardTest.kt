@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 class AnySizeBoardTest {
     @Test
     fun testMap1() {
-        val board = AnySizeBoard(
+        val board = AnySizeBoard.fromArray(
             intArrayOf(
                 2, 2, 0, 3,
                 2, 3, 0, 0,
@@ -18,7 +18,7 @@ class AnySizeBoardTest {
         )
         val (board1, moves1) = board.moveGenerateMoves(Direction.LEFT)
         assertEquals(
-            AnySizeBoard(
+            AnySizeBoard.fromArray(
                 intArrayOf(
                     3, 3, 0, 0,
                     2, 3, 0, 0,
@@ -30,7 +30,7 @@ class AnySizeBoardTest {
 
         val (board2, moves2) = board1.moveGenerateMoves(Direction.TOP)
         assertEquals(
-            AnySizeBoard(
+            AnySizeBoard.fromArray(
                 intArrayOf(
                     3, 4, 4, 0,
                     2, 3, 0, 0,
@@ -116,11 +116,11 @@ class AnySizeBoardTest {
     }
 
     private fun posMapOneLine(array: IntArray) =
-        AnySizeBoard(array + IntArray(boardArraySize - array.size) { Tile.EMPTY.power })
+        AnySizeBoard.fromArray(array + IntArray(boardArraySize - array.size) { Tile.EMPTY.power })
 
     private fun genPosMapForOneLine(array: IntArray): AnySizeBoard {
         val board = posMapOneLine(array)
-        val newBoard = AnySizeBoard()
+        val newBoard = AnySizeBoard.createEmpty()
         val moves = mutableListOf<BoardMove>()
         board.moveLineToStartGenerateMoves(
             intArrayOf(0, 1, 2, 3),

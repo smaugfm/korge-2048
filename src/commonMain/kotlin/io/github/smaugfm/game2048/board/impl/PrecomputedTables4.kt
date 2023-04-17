@@ -1,9 +1,15 @@
 package io.github.smaugfm.game2048.board.impl
 
+import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
+
 @OptIn(ExperimentalUnsignedTypes::class)
 object PrecomputedTables4 {
+    private val firstLineLeftIndexes = intArrayOf(0, 1, 2, 3)
+    private val anySizeHeuristics = NneonneoAnySizeHeuristics()
+
     val leftLinesTable = UShortArray(65536) { 0u }
     val rightLinesTable = UShortArray(65536) { 0u }
+    val heuristicsTable = DoubleArray(65536) { 0.0 }
 
     init {
         for (line in (0u until 65536u)) {
@@ -15,7 +21,7 @@ object PrecomputedTables4 {
                 intArrayOf(0, 0, 0, 0)
             )
             generalBoard.moveLineToStart(
-                intArrayOf(0, 1, 2, 3),
+                firstLineLeftIndexes,
                 newBoard
             )
 
@@ -26,6 +32,9 @@ object PrecomputedTables4 {
 
             leftLinesTable[line.toInt()] = result
             rightLinesTable[reverseLine.toInt()] = reverseResult
+
+            val score = anySizeHeuristics.evaluateLine(newBoard, firstLineLeftIndexes)
+            heuristicsTable[line.toInt()] = score
         }
     }
 
