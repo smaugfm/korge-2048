@@ -51,14 +51,11 @@ kotlin {
 
 benchmark {
     configurations {
-        register("expectimax") {
-            include(".*ExpectimaxBenchmark.*")
+        register("findBestMove") {
+            include(".*FindBestMoveBenchmark.*")
         }
-        register("board4") {
-            include(".*ExpectimaxBenchmark.*")
-        }
-        register("anysize") {
-            include(".*ExpectimaxBenchmark.*")
+        register("moveBoard") {
+            include(".*MoveBoardBenchmark.*")
         }
     }
 }

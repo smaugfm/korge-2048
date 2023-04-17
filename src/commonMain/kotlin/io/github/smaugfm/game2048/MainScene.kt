@@ -201,7 +201,7 @@ class MainScene<T: Board<T>> : Scene() {
         }
     }
 
-    private suspend fun restart() {
+    private fun restart() {
         isGameOverModal = false
         board = boardFactory.createEmpty()
         uiBoard.clear()

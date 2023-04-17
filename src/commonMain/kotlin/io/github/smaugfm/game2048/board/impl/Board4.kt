@@ -32,7 +32,7 @@ value class Board4 private constructor(val bits: ULong) : Board<Board4> {
         }
 
     override fun placeRandomTile(): TilePlacementResult<Board4>? {
-        val emptyTilesCount = countEmptyTiles()
+        val emptyTilesCount = if (bits == 0UL) 16 else countEmptyTiles()
         val randomIndex = FastRandom.Default.nextInt(emptyTilesCount)
         val tile = Tile.randomNewTile()
 
