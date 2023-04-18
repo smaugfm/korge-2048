@@ -12,22 +12,36 @@ class GameState(
     val best: ObservableProperty<Int> = ObservableProperty(0),
     val score: ObservableProperty<Int> = ObservableProperty(0),
     val isAiPlaying: ObservableProperty<Boolean> = ObservableProperty(false),
-    val animationSpeed: ObservableProperty<AnimationSpeed> = ObservableProperty(AnimationSpeed.Normal)
+    val animationSpeed: ObservableProperty<AnimationSpeed> =
+        ObservableProperty(AnimationSpeed.Normal)
 ) {
     init {
-        best.update(storage.getOrNull("best")?.toInt() ?: 0)
         score.observe {
             if (it > best.value) best.update(it)
         }
         best.observe {
             storage["best"] = it.toString()
         }
+        animationSpeed.observe {
+            storage["animationSpeed"] = it.toString()
+        }
     }
 
     companion object {
         suspend operator fun invoke(injector: AsyncInjector) {
             injector.mapSingleton {
-                GameState(injector.get<Views>().storage)
+                val storage = injector.get<Views>().storage
+                GameState(
+                    storage,
+                    ObservableProperty(storage.getOrNull("best")?.toInt() ?: 0),
+                    ObservableProperty(0),
+                    ObservableProperty(false),
+                    ObservableProperty(
+                        storage.getOrNull("animationSpeed")
+                            ?.let(AnimationSpeed::fromString)
+                            ?: AnimationSpeed.Normal
+                    )
+                )
             }
         }
     }
