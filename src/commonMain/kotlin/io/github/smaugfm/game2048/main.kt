@@ -15,6 +15,7 @@ import korlibs.inject.AsyncInjector
 import korlibs.korge.Korge
 import korlibs.korge.KorgeConfig
 import korlibs.math.geom.Size
+import korlibs.render.GameWindow
 
 const val boardSize = 4
 const val boardArraySize = boardSize * boardSize
@@ -34,9 +35,11 @@ suspend fun main() {
     }
     Korge(
         KorgeConfig(
-            windowSize = Size(480, 640),
+            virtualSize = UIConstants.virtualSize,
+            windowSize = UIConstants.windowSize,
             title = "2048",
             injector = injector,
+            quality = GameWindow.Quality.QUALITY,
             mainSceneClass = MainScene::class,
             backgroundColor = RGBA(253, 247, 240),
         )

@@ -7,7 +7,6 @@ import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.gameOverTextColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelBackgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelColor
-import io.github.smaugfm.game2048.ui.UIConstants.Companion.rectCorners
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.textColor
 import korlibs.event.Key
 import korlibs.image.color.Colors
@@ -49,9 +48,13 @@ class StaticUi(
     private val inputManager: KorgeInputManager,
     private val uiConstants: UIConstants
 ) {
+    private val buttonSize: Double = uiConstants.tileSize * 0.3
     private val best = gameState.best
     private val score = gameState.score
     private val isAiPlaying = gameState.isAiPlaying
+    private val padding = uiConstants.tileSize / 10
+    private val statMargin = padding
+    private val statInnerPadding = uiConstants.tileSize / 8
 
     fun addStaticUi(
         container: Container,
@@ -64,7 +67,7 @@ class StaticUi(
                 alignTopToTopOf(bgLogo)
             }
             addStat("SCORE", score) {
-                alignRightToLeftOf(bgBest, 24)
+                alignRightToLeftOf(bgBest, statMargin)
                 alignTopToTopOf(bgBest)
             }
 
@@ -78,14 +81,14 @@ class StaticUi(
     ) {
         val restartBlock = container {
             val bg = roundRect(
-                Size(uiConstants.btnSize, uiConstants.btnSize),
-                rectCorners,
-                backgroundColor
+                Size(buttonSize, buttonSize),
+                uiConstants.rectCorners,
+                backgroundColor,
             )
-            alignTopToBottomOf(bgBest, 5)
+            alignTopToBottomOf(bgBest, padding / 2)
             alignRightToRightOf(bgField)
             image(uiConstants.restartImg) {
-                size(uiConstants.btnSize * 0.8, uiConstants.btnSize * 0.8)
+                size(buttonSize * 0.8, buttonSize * 0.8)
                 centerOn(bg)
             }
             onClick {
@@ -94,14 +97,14 @@ class StaticUi(
         }
         val undoBlock = container {
             val bg = roundRect(
-                Size(uiConstants.btnSize, uiConstants.btnSize),
-                rectCorners,
+                Size(buttonSize, buttonSize),
+                uiConstants.rectCorners,
                 backgroundColor
             )
             alignTopToTopOf(restartBlock)
-            alignRightToLeftOf(restartBlock, 5.0)
+            alignRightToLeftOf(restartBlock, padding / 2)
             image(uiConstants.undoImg) {
-                size(uiConstants.btnSize * 0.6, uiConstants.btnSize * 0.6)
+                size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(bg)
             }
             onClick {
@@ -110,16 +113,16 @@ class StaticUi(
         }
         container {
             val bg = roundRect(
-                Size(uiConstants.btnSize, uiConstants.btnSize),
-                rectCorners
+                Size(buttonSize, buttonSize),
+                uiConstants.rectCorners
             )
             updateAiBg(bg, isAiPlaying.value)
 
             alignTopToTopOf(undoBlock)
-            alignRightToLeftOf(undoBlock, 5.0)
+            alignRightToLeftOf(undoBlock, padding / 2)
             text(
                 "AI",
-                (uiConstants.btnSize * 0.7).toFloat(),
+                (buttonSize * 0.7).toFloat(),
                 textColor,
                 uiConstants.fontBold
             ) {
@@ -148,18 +151,18 @@ class StaticUi(
         callback: @ViewDslMarker (RoundRect.() -> Unit) = {}
     ): RoundRect {
         val bgStat = roundRect(
-            Size(uiConstants.cellSize * 1.5, uiConstants.cellSize * 0.8),
-            rectCorners,
+            Size(uiConstants.tileSize * 1.5, uiConstants.tileSize * 0.8),
+            uiConstants.rectCorners,
             labelBackgroundColor,
             callback = callback
         )
-        text(label, uiConstants.cellSize.toFloat() * 0.2f, labelColor, uiConstants.font) {
+        text(label, uiConstants.tileSize.toFloat() * 0.2f, labelColor, uiConstants.font) {
             centerXOn(bgStat)
-            alignTopToTopOf(bgStat, 5)
+            alignTopToTopOf(bgStat, statInnerPadding)
         }
         text(
             prop.value.toString(),
-            uiConstants.cellSize.toFloat() * 0.35f,
+            uiConstants.tileSize.toFloat() * 0.35f,
             textColor,
             uiConstants.font
         ) {
@@ -168,11 +171,11 @@ class StaticUi(
                     0.0,
                     0.0,
                     bgStat.width.toDouble(),
-                    uiConstants.cellSize - 24.0
+                    uiConstants.tileSize - statInnerPadding
                 )
             )
             alignment = TextAlignment.MIDDLE_CENTER
-            alignTopToTopOf(bgStat, 14.0)
+            alignTopToTopOf(bgStat, statInnerPadding)
             centerXOn(bgStat)
             prop.observe {
                 setText(it.toString())
@@ -190,7 +193,7 @@ class StaticUi(
             inputManager.handleTryAgainClick()
         }
         position(uiBoard.pos)
-        roundRect(uiBoard.size, rectCorners, Colors["#FFFFFF33"])
+        roundRect(uiBoard.size, uiConstants.rectCorners, Colors["#FFFFFF33"])
         text("Game Over", 60f, textColor, uiConstants.font) {
             centerOn(uiBoard)
             y -= 60
@@ -220,8 +223,8 @@ class StaticUi(
 
     private fun Container.addLogo(uiBoard: UiBoard): RoundRect {
         val bgLogo = roundRect(
-            Size(uiConstants.cellSize, uiConstants.cellSize),
-            rectCorners,
+            Size(uiConstants.tileSize, uiConstants.tileSize),
+            uiConstants.rectCorners,
             accentColor,
         ) {
             alignLeftToLeftOf(uiBoard)
@@ -229,7 +232,7 @@ class StaticUi(
         }
         text(
             "2048",
-            uiConstants.cellSize.toFloat() * 0.4f,
+            uiConstants.tileSize.toFloat() * 0.4f,
             textColor,
             uiConstants.font,
         ) {

@@ -10,6 +10,7 @@ import korlibs.inject.AsyncInjector
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.view.Views
 import korlibs.math.geom.RectCorners
+import korlibs.math.geom.Size
 import korlibs.time.seconds
 
 class UIConstants private constructor(
@@ -19,8 +20,10 @@ class UIConstants private constructor(
     val restartImg: Bitmap,
     val undoImg: Bitmap
 ) {
-    var cellSize = views.virtualWidth / 5.0
-    var btnSize: Double = cellSize * 0.3
+    val tileSize = views.virtualWidth / 5.0
+    val tilePadding = tileSize / 12
+    val rectRadius = tileSize / 18
+    val rectCorners = RectCorners(rectRadius)
 
     companion object {
 
@@ -36,25 +39,22 @@ class UIConstants private constructor(
             }
         }
 
-        //        internal val moveAnimationDuration = 0.0375.seconds
-//        internal val scaleAnimationDuration = 0.05.seconds
-//        internal val moveAnimationDuration = 0.075.seconds
-//        internal val scaleAnimationDuration = 0.1.seconds
-        internal val moveAnimationDuration = 0.15.seconds
-        internal val scaleAnimationDuration = 0.2.seconds
+//        val moveAnimationDuration = 0.0375.seconds
+//        val scaleAnimationDuration = 0.05.seconds
+//        val moveAnimationDuration = 0.075.seconds
+//        val scaleAnimationDuration = 0.1.seconds
+        val moveAnimationDuration = 0.15.seconds
+        val scaleAnimationDuration = 0.2.seconds
 
+        val accentColor = Colors["#EDC403"]
+        val backgroundColor = Colors["#BBAE9E"]
+        val backgroundColorLight = Colors["#CEC0B2"]
+        val labelBackgroundColor = Colors["#47413B"]
+        val labelColor = RGBA(239, 226, 210)
+        val textColor = Colors.WHITE
+        val gameOverTextColor = Colors.BLACK
 
-        internal val accentColor = Colors["#EDC403"]
-        internal val backgroundColor = Colors["#BBAE9E"]
-        internal val backgroundColorLight = Colors["#CEC0B2"]
-        internal val labelBackgroundColor = Colors["#47413B"]
-        internal val labelColor = RGBA(239, 226, 210)
-        internal val textColor = Colors.WHITE
-        internal val gameOverTextColor = Colors.BLACK
-
-
-        internal const val cellPadding = 10.0
-        internal const val rectRadius = 5.0
-        internal val rectCorners = RectCorners(rectRadius)
+        val windowSize = Size(480, 640)
+        val virtualSize = windowSize * 2
     }
 }

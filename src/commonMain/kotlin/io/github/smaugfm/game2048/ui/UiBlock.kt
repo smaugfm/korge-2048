@@ -4,10 +4,8 @@ import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.accentColor
-import io.github.smaugfm.game2048.ui.UIConstants.Companion.cellPadding
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelBackgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.moveAnimationDuration
-import io.github.smaugfm.game2048.ui.UIConstants.Companion.rectCorners
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.scaleAnimationDuration
 import korlibs.image.color.Colors
 import korlibs.korge.animate.Animator
@@ -30,8 +28,8 @@ class UiBlock(
 ) : Container() {
     init {
         roundRect(
-            Size(uiConstants.cellSize, uiConstants.cellSize),
-            rectCorners,
+            Size(uiConstants.tileSize, uiConstants.tileSize),
+            uiConstants.rectCorners,
             fill = color
         )
         val textColor =
@@ -45,7 +43,7 @@ class UiBlock(
             textColor,
             uiConstants.font
         ) {
-            centerBetween(0.0, 0.0, uiConstants.cellSize, uiConstants.cellSize)
+            centerBetween(0.0, 0.0, uiConstants.tileSize, uiConstants.tileSize)
         }
     }
 
@@ -74,11 +72,11 @@ class UiBlock(
     private val textSize
         get() =
             with(tile) {
-                if (power <= 6) uiConstants.cellSize / 2
-                else if (power <= 9) uiConstants.cellSize * 4 / 9
-                else if (power <= 13) uiConstants.cellSize * 3 / 8
-                else if (power <= 16) uiConstants.cellSize * 7 / 22
-                else uiConstants.cellSize * 3 / 12
+                if (power <= 6) uiConstants.tileSize / 2
+                else if (power <= 9) uiConstants.tileSize * 4 / 9
+                else if (power <= 13) uiConstants.tileSize * 3 / 8
+                else if (power <= 16) uiConstants.tileSize * 7 / 22
+                else uiConstants.tileSize * 3 / 12
             }
 
     fun animateMove(animator: Animator, to: TileIndex) {
@@ -113,10 +111,10 @@ class UiBlock(
             Scale(scaleX + d, scaleY + d)
 
         fun columnX(tileIndex: TileIndex, uiConstants: UIConstants) =
-            cellPadding + (uiConstants.cellSize + cellPadding) * (tileIndex % boardSize)
+            uiConstants.tilePadding + (uiConstants.tileSize + uiConstants.tilePadding) * (tileIndex % boardSize)
 
         fun rowY(tileIndex: TileIndex, uiConstants: UIConstants) =
-            cellPadding + (uiConstants.cellSize + cellPadding) * (tileIndex / boardSize)
+            uiConstants.tilePadding + (uiConstants.tileSize + uiConstants.tilePadding) * (tileIndex / boardSize)
 
         fun Container.addBlock(
             power: Tile,

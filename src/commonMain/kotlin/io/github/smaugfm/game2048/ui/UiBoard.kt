@@ -7,9 +7,6 @@ import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColorLight
-import io.github.smaugfm.game2048.ui.UIConstants.Companion.cellPadding
-import io.github.smaugfm.game2048.ui.UIConstants.Companion.rectCorners
-import io.github.smaugfm.game2048.ui.UIConstants.Companion.rectRadius
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
@@ -29,22 +26,24 @@ class UiBoard(
 ) : Container() {
     private val blocks = arrayOfNulls<UiBlock>(boardArraySize)
 
+    private val boardTopOffset: Double = uiConstants.tileSize * 1.5
+
     init {
-        val boardSizePixels: Double = 50 + 4 * uiConstants.cellSize
-        position((virtualWidth - boardSizePixels) / 2, 150.0)
+        val boardSizePixels: Double = uiConstants.tilePadding * 5 + 4 * uiConstants.tileSize
+        position((virtualWidth - boardSizePixels) / 2, boardTopOffset)
         roundRect(
-            Size(boardSizePixels, boardSizePixels), rectCorners, backgroundColor,
+            Size(boardSizePixels, boardSizePixels), uiConstants.rectCorners, backgroundColor,
         ) {
             graphics {
                 repeat(boardSize) { i: Int ->
                     repeat(boardSize) { j: Int ->
                         fill(backgroundColorLight) {
                             roundRect(
-                                cellPadding + i * (cellPadding + uiConstants.cellSize),
-                                cellPadding + j * (cellPadding + uiConstants.cellSize),
-                                uiConstants.cellSize,
-                                uiConstants.cellSize,
-                                rectRadius
+                                uiConstants.tilePadding + i * (uiConstants.tilePadding + uiConstants.tileSize),
+                                uiConstants.tilePadding + j * (uiConstants.tilePadding + uiConstants.tileSize),
+                                uiConstants.tileSize,
+                                uiConstants.tileSize,
+                                uiConstants.rectRadius
                             )
                         }
                     }
