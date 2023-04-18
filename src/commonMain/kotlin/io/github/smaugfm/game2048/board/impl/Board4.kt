@@ -85,44 +85,37 @@ value class Board4 private constructor(val bits: ULong) : Board<Board4> {
         Direction.RIGHT ->
             lookupRows(PrecomputedTables4.rightLinesTable)
 
-        Direction.TOP -> {
-            val t = transpose()
-            val result = t.lookupRows(PrecomputedTables4.leftLinesTable)
-            result.transpose()
-        }
+        Direction.TOP ->
+            lookupColumns(PrecomputedTables4.upLinesTable)
 
-        Direction.BOTTOM -> {
-            val t = transpose()
-            val result = t.lookupRows(PrecomputedTables4.rightLinesTable)
-            result.transpose()
-        }
+        Direction.BOTTOM ->
+            lookupColumns(PrecomputedTables4.downLinesTable)
     }
 
-    val firstRow
-        get() =
-            ((bits shr 0) and ROW_MASK).toInt()
-    val secondRow
-        get() =
-            ((bits shr 16) and ROW_MASK).toInt()
-    val thirdRow
-        get() =
-            ((bits shr 32) and ROW_MASK).toInt()
-    val fourthRow
-        get() =
-            ((bits shr 48) and ROW_MASK).toInt()
+    private fun lookupColumns(table: ULongArray): Board4 {
+        val t = transpose().bits
+        var ret =
+            table[((t shr 0) and ROW_MASK).toInt()] shl 0
+        ret =
+            ret or table[((t shr 16) and ROW_MASK).toInt()] shl 4
+        ret =
+            ret or table[((t shr 32) and ROW_MASK).toInt()] shl 8
+        ret =
+            ret or table[((t shr 48) and ROW_MASK).toInt()] shl 12
 
-    private fun lookupRows(
-        table: UShortArray,
-    ): Board4 {
+        return Board4(ret)
+    }
+
+    private fun lookupRows(table: UShortArray): Board4 {
         var result = 0UL
         result = result or
-            ((table[firstRow].toULong()) shl 0)
+            ((table[((bits shr 0) and ROW_MASK).toInt()].toULong()) shl 0)
         result = result or
-            ((table[secondRow].toULong()) shl 16)
+            ((table[((bits shr 16) and ROW_MASK).toInt()].toULong()) shl 16)
         result = result or
-            ((table[thirdRow].toULong()) shl 32)
+            ((table[((bits shr 32) and ROW_MASK).toInt()].toULong()) shl 32)
         result = result or
-            ((table[fourthRow].toULong()) shl 48)
+            ((table[((bits shr 48) and ROW_MASK).toInt()].toULong()) shl 48)
 
         return Board4(result)
     }
@@ -180,7 +173,7 @@ value class Board4 private constructor(val bits: ULong) : Board<Board4> {
     }
 
     companion object : BoardFactory<Board4> {
-        private const val ROW_MASK = 0xFFFFUL
+        const val ROW_MASK = 0xFFFFUL
 
         override fun createEmpty(): Board4 =
             Board4(0UL)

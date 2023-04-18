@@ -1,6 +1,7 @@
 package io.github.smaugfm.game2048.heuristics.impl
 
 import io.github.smaugfm.game2048.board.impl.Board4
+import io.github.smaugfm.game2048.board.impl.Board4.Companion.ROW_MASK
 import io.github.smaugfm.game2048.board.impl.PrecomputedTables4
 import io.github.smaugfm.game2048.heuristics.Heuristics
 
@@ -15,10 +16,10 @@ class Board4Heuristics : Heuristics<Board4> {
     }
 
     private fun scoreLines(b: Board4): Float =
-        heuristicsTable[b.firstRow] +
-            heuristicsTable[b.secondRow] +
-            heuristicsTable[b.thirdRow] +
-            heuristicsTable[b.fourthRow]
+        heuristicsTable[((b.bits shr 0) and ROW_MASK).toInt()] +
+            heuristicsTable[((b.bits shr 16) and ROW_MASK).toInt()] +
+            heuristicsTable[((b.bits shr 32) and ROW_MASK).toInt()] +
+            heuristicsTable[((b.bits shr 48) and ROW_MASK).toInt()]
 
     companion object
 }

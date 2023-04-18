@@ -95,14 +95,14 @@ class Board4Test {
             ), board1
         )
 
-        val (board2, moves2) = board1.moveGenerateMoves(Direction.TOP)
+        val (board2, moves2) = board1.moveGenerateMoves(Direction.BOTTOM)
         assertEquals(
             Board4.fromArray(
                 intArrayOf(
-                    3, 4, 4, 0,
-                    2, 3, 0, 0,
-                    2, 0, 0, 0,
-                    0, 0, 0, 0
+                    0, 0, 0, 0,
+                    3, 0, 0, 0,
+                    2, 4, 0, 0,
+                    2, 3, 4, 0
                 )
             ), board2
         )

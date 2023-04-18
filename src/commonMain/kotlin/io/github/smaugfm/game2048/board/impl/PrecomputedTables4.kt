@@ -3,11 +3,14 @@ package io.github.smaugfm.game2048.board.impl
 import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
 
 object PrecomputedTables4 {
+    private const val COL_MASK = 0x000F000F000F000FUL
     private val firstLineLeftIndexes = intArrayOf(0, 1, 2, 3)
     private val anySizeHeuristics = AnySizeBoardHeuristics()
 
     val leftLinesTable = UShortArray(65536) { 0u }
     val rightLinesTable = UShortArray(65536) { 0u }
+    val upLinesTable = ULongArray(65536) { 0UL }
+    val downLinesTable = ULongArray(65536) { 0UL }
     val heuristicsTable = FloatArray(65536) { 0.0f }
 
     init {
@@ -31,10 +34,17 @@ object PrecomputedTables4 {
 
             leftLinesTable[line.toInt()] = result
             rightLinesTable[reverseLine.toInt()] = reverseResult
+            upLinesTable[line.toInt()] = transposeColumn(result)
+            downLinesTable[reverseLine.toInt()] = transposeColumn(reverseResult)
 
             val score = anySizeHeuristics.evaluateLine(newBoard, firstLineLeftIndexes)
             heuristicsTable[line.toInt()] = score
         }
+    }
+
+    private fun transposeColumn(line: UShort): ULong {
+        val tmp = line.toULong()
+        return (tmp or (tmp shl 12) or (tmp shl 24) or (tmp shl 36)) and COL_MASK
     }
 
     fun UInt.unpackArray() = uintArrayOf(

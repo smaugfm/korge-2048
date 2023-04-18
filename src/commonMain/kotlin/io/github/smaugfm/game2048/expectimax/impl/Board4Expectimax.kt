@@ -12,7 +12,7 @@ import kotlin.math.max
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
-class Board4Expectimax(
+open class Board4Expectimax(
     heuristics: Heuristics<Board4>,
     log: Boolean = true
 ) :
