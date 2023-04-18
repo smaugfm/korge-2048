@@ -7,6 +7,7 @@ import io.github.smaugfm.game2048.expectimax.impl.Board4Expectimax
 import io.github.smaugfm.game2048.heuristics.Heuristics
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.input.KorgeInputManager
+import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
@@ -14,7 +15,6 @@ import korlibs.image.color.RGBA
 import korlibs.inject.AsyncInjector
 import korlibs.korge.Korge
 import korlibs.korge.KorgeConfig
-import korlibs.math.geom.Size
 import korlibs.render.GameWindow
 
 const val boardSize = 4
@@ -27,7 +27,7 @@ suspend fun main() {
         mapSingleton(Expectimax::class) { Board4Expectimax(get()) }
         mapSingleton { MainScene<Board4>() }
 
-        mapInstance(GameState())
+        GameState(this)
         UIConstants(this)
         History(this)
         KorgeInputManager(this)
@@ -39,7 +39,7 @@ suspend fun main() {
             windowSize = UIConstants.windowSize,
             title = "2048",
             injector = injector,
-            quality = GameWindow.Quality.QUALITY,
+            quality = GameWindow.Quality.PERFORMANCE,
             mainSceneClass = MainScene::class,
             backgroundColor = RGBA(253, 247, 240),
         )

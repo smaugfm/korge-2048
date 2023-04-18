@@ -1,6 +1,6 @@
 package io.github.smaugfm.game2048.input
 
-import io.github.smaugfm.game2048.GameState
+import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.board.Direction
 import korlibs.event.Key
 import korlibs.inject.AsyncInjector
@@ -63,7 +63,11 @@ class KorgeInputManager private constructor(
     }
 
     suspend fun handleAiClick() {
-        flow.emit(InputEvent.ClickInput.AiToggleClick)
+        flow.emit(InputEvent.ClickInput.AiButtonClick)
+    }
+
+    suspend fun handleAnimationSpeedClick() {
+        flow.emit(InputEvent.ClickInput.AnimationSpeedClick)
     }
 
     override fun eventsFlow(): Flow<InputEvent> =

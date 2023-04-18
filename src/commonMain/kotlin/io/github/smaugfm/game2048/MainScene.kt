@@ -7,7 +7,9 @@ import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.input.InputEvent
 import io.github.smaugfm.game2048.input.KorgeInputManager
+import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.persistence.History
+import io.github.smaugfm.game2048.ui.AnimationSpeed
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
 import io.github.smaugfm.game2048.ui.UiBoard
@@ -17,7 +19,6 @@ import korlibs.io.async.launchAsap
 import korlibs.io.async.launchImmediately
 import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.korge.scene.Scene
-import korlibs.korge.service.storage.storage
 import korlibs.korge.view.SContainer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -30,10 +31,8 @@ class MainScene<T : Board<T>> : Scene() {
     private var isAnimationRunning = false
     private var isGameOverModal = false
 
-    private lateinit var best: ObservableProperty<Int>
-    private lateinit var score: ObservableProperty<Int>
-    private lateinit var isAiPlaying: ObservableProperty<Boolean>
-    private lateinit var isAiStopping: ObservableProperty<Boolean>
+    private lateinit var gs: GameState
+    private val isAiStopping: ObservableProperty<Boolean> = ObservableProperty(false)
 
     private lateinit var history: History
     private lateinit var inputManager: KorgeInputManager
@@ -50,10 +49,7 @@ class MainScene<T : Board<T>> : Scene() {
 
     override suspend fun SContainer.sceneInit() {
         with(injector) {
-            best = get<GameState>().best
-            score = get<GameState>().score
-            isAiPlaying = get<GameState>().isAiPlaying
-            isAiStopping = ObservableProperty(false)
+            gs = get<GameState>()
 
             inputManager = get()
             history = get()
@@ -65,20 +61,10 @@ class MainScene<T : Board<T>> : Scene() {
 
             expectimax = get()
         }
-
-        val storage = views.storage
-
-        best.update(storage.getOrNull("best")?.toInt() ?: 0)
-        score.observe {
-            if (it > best.value) best.update(it)
-        }
-        best.observe {
-            storage["best"] = it.toString()
-        }
     }
 
     override suspend fun SContainer.sceneMain() {
-        uiBoard = addBoard(views, uiConstants)
+        uiBoard = addBoard(injector)
         staticUi.addStaticUi(this, uiBoard)
         if (!history.isEmpty()) {
             restoreField(history.currentElement)
@@ -91,42 +77,53 @@ class MainScene<T : Board<T>> : Scene() {
                 .eventsFlow()
                 .collect { inputEvent ->
                     when (inputEvent) {
-                        InputEvent.ClickInput.AiToggleClick -> {
+                        InputEvent.ClickInput.AiButtonClick -> {
                             if (isGameOverModal) return@collect
-                            if (!isAiPlaying.value)
-                                isAiPlaying.update(true)
+                            if (!gs.isAiPlaying.value)
+                                gs.isAiPlaying.update(true)
                             else
                                 isAiStopping.update(true)
                         }
 
                         InputEvent.ClickInput.RestartClick ->
-                            if (!isAiPlaying.value)
+                            if (!gs.isAiPlaying.value)
                                 restart()
 
                         InputEvent.ClickInput.TryAgainClick ->
-                            if (!isAiPlaying.value)
+                            if (!gs.isAiPlaying.value)
                                 restart()
 
                         InputEvent.ClickInput.UndoClick -> {
-                            if (isGameOverModal) return@collect
-                            if (!isAiPlaying.value)
-                                restoreField(history.undo())
+                            if (isGameOverModal || gs.isAiPlaying.value) return@collect
+                            restoreField(history.undo())
+                        }
+
+                        InputEvent.ClickInput.AnimationSpeedClick -> {
+                            if (isGameOverModal || !gs.isAiPlaying.value) return@collect
+
+                            gs.animationSpeed.update(
+                                when (gs.animationSpeed.value) {
+                                    AnimationSpeed.Normal -> AnimationSpeed.Fast
+                                    AnimationSpeed.Fast -> AnimationSpeed.Faster
+                                    AnimationSpeed.Faster -> AnimationSpeed.Normal
+                                }
+                            )
                         }
 
                         is InputEvent.DirectionInput -> {
                             if (isGameOverModal) return@collect
-                            if (!isAiPlaying.value)
+                            if (!gs.isAiPlaying.value)
                                 handleMoveBlocks(inputEvent.dir)
                         }
                     }
                 }
         }
 
-        isAiPlaying.observe {
+        gs.isAiPlaying.observe {
             if (it)
                 startAiPlay()
         }
-        if (isAiPlaying.value)
+        if (gs.isAiPlaying.value)
             startAiPlay()
     }
 
@@ -143,7 +140,7 @@ class MainScene<T : Board<T>> : Scene() {
                 val waitForAnimation = CompletableDeferred<Unit>()
 
                 if (bestDirection == null) {
-                    isAiPlaying.update(false)
+                    gs.isAiPlaying.update(false)
                     gameOver()
                     break
                 }
@@ -154,9 +151,9 @@ class MainScene<T : Board<T>> : Scene() {
                 val newTile = newBoard.placeRandomTile() ?: break
                 newBoard = newTile.newBoard
 
-                history.add(board.tiles(), score.value)
+                history.add(board.tiles(), gs.score.value)
 
-                if (!isAiPlaying.value) {
+                if (!gs.isAiPlaying.value) {
                     break
                 }
                 bestDirectionDeferred = async(aiDispatcher) {
@@ -174,7 +171,7 @@ class MainScene<T : Board<T>> : Scene() {
             }
 
             isAiStopping.update(false)
-            isAiPlaying.update(false)
+            gs.isAiPlaying.update(false)
         }
     }
 
@@ -213,7 +210,7 @@ class MainScene<T : Board<T>> : Scene() {
         val points = moves
             .filterIsInstance<BoardMove.Merge>()
             .sumOf { it.newTile.score }
-        score.update(score.value + points)
+        gs.score.update(gs.score.value + points)
     }
 
     private fun SContainer.gameOver() {
@@ -227,7 +224,7 @@ class MainScene<T : Board<T>> : Scene() {
         isGameOverModal = false
         board = boardFactory.createEmpty()
         uiBoard.clear()
-        score.update(0)
+        gs.score.update(0)
         history.clear()
         generateBlockAndSave()
     }
@@ -236,13 +233,13 @@ class MainScene<T : Board<T>> : Scene() {
         val (newBoard, power, index) = board.placeRandomTile() ?: return
         board = newBoard
         uiBoard.createNewBlock(power, index)
-        history.add(board.tiles(), score.value)
+        history.add(board.tiles(), gs.score.value)
     }
 
     private fun restoreField(historyElement: History.Element) {
         uiBoard.clear()
         board = boardFactory.fromTiles(historyElement.tiles)
-        score.update(historyElement.score)
+        gs.score.update(historyElement.score)
         board.tiles().forEachIndexed { i, tile ->
             if (tile.isNotEmpty) {
                 uiBoard.createNewBlock(tile, i)

@@ -39,13 +39,6 @@ class UIConstants private constructor(
             }
         }
 
-//        val moveAnimationDuration = 0.0375.seconds
-//        val scaleAnimationDuration = 0.05.seconds
-//        val moveAnimationDuration = 0.075.seconds
-//        val scaleAnimationDuration = 0.1.seconds
-        val moveAnimationDuration = 0.15.seconds
-        val scaleAnimationDuration = 0.2.seconds
-
         val accentColor = Colors["#EDC403"]
         val backgroundColor = Colors["#BBAE9E"]
         val backgroundColorLight = Colors["#CEC0B2"]

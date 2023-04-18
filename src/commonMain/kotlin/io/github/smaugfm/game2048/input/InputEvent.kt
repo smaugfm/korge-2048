@@ -8,7 +8,8 @@ sealed class InputEvent {
     sealed class ClickInput : InputEvent() {
         object RestartClick : ClickInput()
         object UndoClick : ClickInput()
-        object AiToggleClick : ClickInput()
+        object AiButtonClick : ClickInput()
+        object AnimationSpeedClick : ClickInput()
         object TryAgainClick : ClickInput()
     }
 }

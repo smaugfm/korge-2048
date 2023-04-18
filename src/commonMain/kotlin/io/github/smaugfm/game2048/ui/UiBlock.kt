@@ -5,9 +5,8 @@ import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.accentColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelBackgroundColor
-import io.github.smaugfm.game2048.ui.UIConstants.Companion.moveAnimationDuration
-import io.github.smaugfm.game2048.ui.UIConstants.Companion.scaleAnimationDuration
 import korlibs.image.color.Colors
+import korlibs.io.async.ObservableProperty
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.moveTo
 import korlibs.korge.animate.tween
@@ -24,7 +23,8 @@ import korlibs.math.interpolation.Easing
 
 class UiBlock(
     private val tile: Tile,
-    private val uiConstants: UIConstants
+    private val uiConstants: UIConstants,
+    private val animationSpeed: ObservableProperty<AnimationSpeed>
 ) : Container() {
     init {
         roundRect(
@@ -84,7 +84,7 @@ class UiBlock(
             this,
             columnX(to, uiConstants),
             rowY(to, uiConstants),
-            moveAnimationDuration,
+            animationSpeed.value.moveAnimationDuration,
             Easing.LINEAR
         )
     }
@@ -94,14 +94,14 @@ class UiBlock(
             this::x[x - 4],
             this::y[y - 4],
             this::scale[scale + 0.1],
-            time = scaleAnimationDuration / 2,
+            time = animationSpeed.value.scaleAnimationDuration / 2,
             easing = Easing.LINEAR
         )
         animator.tween(
             this::x[x],
             this::y[y],
             this::scale[scale],
-            time = scaleAnimationDuration / 2,
+            time = animationSpeed.value.scaleAnimationDuration / 2,
             easing = Easing.LINEAR
         )
     }
@@ -119,15 +119,14 @@ class UiBlock(
         fun Container.addBlock(
             power: Tile,
             index: TileIndex,
-            uiConstants: UIConstants
-        ): UiBlock {
-            val bl = UiBlock(power, uiConstants)
-            return bl
+            uiConstants: UIConstants,
+            animationSpeed: ObservableProperty<AnimationSpeed>
+        ): UiBlock =
+            UiBlock(power, uiConstants, animationSpeed)
                 .addTo(this)
                 .position(
                     columnX(index, uiConstants),
                     rowY(index, uiConstants)
                 )
-        }
     }
 }

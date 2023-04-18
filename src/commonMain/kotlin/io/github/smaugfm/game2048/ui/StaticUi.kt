@@ -1,6 +1,6 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.GameState
+import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.accentColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
@@ -22,6 +22,7 @@ import korlibs.korge.input.onOver
 import korlibs.korge.input.onUp
 import korlibs.korge.view.Container
 import korlibs.korge.view.RoundRect
+import korlibs.korge.view.Text
 import korlibs.korge.view.View
 import korlibs.korge.view.ViewDslMarker
 import korlibs.korge.view.align.alignLeftToLeftOf
@@ -52,6 +53,7 @@ class StaticUi(
     private val best = gameState.best
     private val score = gameState.score
     private val isAiPlaying = gameState.isAiPlaying
+    private val animationSpeed = gameState.animationSpeed
     private val padding = uiConstants.tileSize / 10
     private val statMargin = padding
     private val statInnerPadding = uiConstants.tileSize / 8
@@ -79,46 +81,28 @@ class StaticUi(
         bgBest: View,
         bgField: View,
     ) {
-        val restartBlock = container {
-            val bg = roundRect(
-                Size(buttonSize, buttonSize),
-                uiConstants.rectCorners,
-                backgroundColor,
-            )
-            alignTopToBottomOf(bgBest, padding / 2)
+        val restartBlock = addBtn(bgBest, inputManager::handleRestartClick) { bg ->
             alignRightToRightOf(bgField)
             image(uiConstants.restartImg) {
                 size(buttonSize * 0.8, buttonSize * 0.8)
                 centerOn(bg)
             }
-            onClick {
-                inputManager.handleRestartClick()
-            }
         }
-        val undoBlock = container {
-            val bg = roundRect(
-                Size(buttonSize, buttonSize),
-                uiConstants.rectCorners,
-                backgroundColor
-            )
-            alignTopToTopOf(restartBlock)
+        val undoBlock = addBtn(bgBest, inputManager::handleUndoClick) { bg ->
             alignRightToLeftOf(restartBlock, padding / 2)
             image(uiConstants.undoImg) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(bg)
             }
-            onClick {
-                inputManager.handleUndoClick()
-            }
         }
-        container {
-            val bg = roundRect(
-                Size(buttonSize, buttonSize),
-                uiConstants.rectCorners
-            )
-            updateAiBg(bg, isAiPlaying.value)
-
-            alignTopToTopOf(undoBlock)
+        val aiBlock = addBtn(bgBest, inputManager::handleAiClick) { bg ->
+            fun onAiPlaying(bg: RoundRect, isAi: Boolean) {
+                bg.fill = if (isAi)
+                    accentColor
+                else
+                    backgroundColor
+            }
+            onAiPlaying(bg, isAiPlaying.value)
             alignRightToLeftOf(undoBlock, padding / 2)
             text(
                 "AI",
@@ -129,21 +113,57 @@ class StaticUi(
                 centerXOn(bg)
                 alignTopToTopOf(bg, -1)
             }
-            onClick {
-                inputManager.handleAiClick()
-            }
             isAiPlaying.observe {
-                updateAiBg(bg, it)
+                onAiPlaying(bg, it)
+            }
+        }
+        addBtn(bgBest, inputManager::handleAnimationSpeedClick) { bg ->
+            fun onAnimationSpeed(textView: Text) {
+                textView.text = when(animationSpeed.value) {
+                    AnimationSpeed.Fast -> "x2"
+                    AnimationSpeed.Faster -> "x3"
+                    AnimationSpeed.Normal -> "x1"
+                }
+            }
+
+            this.visible = isAiPlaying.value
+            isAiPlaying.observe {
+                this.visible = it
+            }
+            alignRightToLeftOf(aiBlock, padding / 2)
+            text(
+                "AI",
+                (buttonSize * 0.7).toFloat(),
+                textColor,
+                uiConstants.fontBold
+            ) {
+                onAnimationSpeed(this)
+                centerXOn(bg)
+                alignTopToTopOf(bg, -1)
+                animationSpeed.observe {
+                    onAnimationSpeed(this)
+                }
             }
         }
     }
 
-    private fun updateAiBg(bg: RoundRect, isAi: Boolean) {
-        bg.fill = if (isAi)
-            accentColor
-        else
-            backgroundColor
-    }
+    private fun Container.addBtn(
+        bgBest: View,
+        onClick: suspend () -> Unit,
+        content: Container.(RoundRect) -> Unit
+    ): Container =
+        container {
+            val bg = roundRect(
+                Size(buttonSize, buttonSize),
+                uiConstants.rectCorners,
+                backgroundColor,
+            )
+            alignTopToBottomOf(bgBest, padding / 2)
+            content(bg)
+            onClick {
+                onClick()
+            }
+        }
 
     private fun Container.addStat(
         label: String,

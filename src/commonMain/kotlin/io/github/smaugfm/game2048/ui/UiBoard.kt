@@ -1,5 +1,6 @@
 package io.github.smaugfm.game2048.ui
 
+import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
@@ -8,6 +9,8 @@ import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColorLight
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
+import korlibs.inject.AsyncInjector
+import korlibs.io.async.ObservableProperty
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
 import korlibs.korge.animate.block
@@ -22,17 +25,21 @@ import korlibs.math.geom.Size
 
 class UiBoard(
     virtualWidth: Int,
-    private val uiConstants: UIConstants
+    private val uiConstants: UIConstants,
+    private val animationSpeed: ObservableProperty<AnimationSpeed>
 ) : Container() {
     private val blocks = arrayOfNulls<UiBlock>(boardArraySize)
 
     private val boardTopOffset: Double = uiConstants.tileSize * 1.5
 
     init {
-        val boardSizePixels: Double = uiConstants.tilePadding * 5 + 4 * uiConstants.tileSize
+        val boardSizePixels: Double =
+            uiConstants.tilePadding * 5 + 4 * uiConstants.tileSize
         position((virtualWidth - boardSizePixels) / 2, boardTopOffset)
         roundRect(
-            Size(boardSizePixels, boardSizePixels), uiConstants.rectCorners, backgroundColor,
+            Size(boardSizePixels, boardSizePixels),
+            uiConstants.rectCorners,
+            backgroundColor,
         ) {
             graphics {
                 repeat(boardSize) { i: Int ->
@@ -60,7 +67,7 @@ class UiBoard(
     }
 
     fun createNewBlock(power: Tile, index: TileIndex): UiBlock {
-        return addBlock(power, index, uiConstants)
+        return addBlock(power, index, uiConstants, animationSpeed)
             .also {
                 blocks[index] = it
             }
@@ -121,8 +128,12 @@ class UiBoard(
     }
 
     companion object {
-        fun Container.addBoard(views: Views, uiConstants: UIConstants) =
-            UiBoard(views.virtualWidth, uiConstants).addTo(this)
+        suspend fun Container.addBoard(injector: AsyncInjector): UiBoard =
+            UiBoard(
+                injector.get<Views>().virtualWidth,
+                injector.get(),
+                injector.get<GameState>().animationSpeed
+            ).addTo(this)
 
         private operator fun Scale.plus(d: Double): Scale = Scale(scaleX + d, scaleY + d)
     }
