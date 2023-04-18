@@ -45,6 +45,7 @@ class UIConstants private constructor(
         val labelBackgroundColor = Colors["#47413B"]
         val labelColor = RGBA(239, 226, 210)
         val textColor = Colors.WHITE
+        val moveLabelColor = backgroundColor
         val gameOverTextColor = Colors.BLACK
 
         val windowSize = Size(480, 640)

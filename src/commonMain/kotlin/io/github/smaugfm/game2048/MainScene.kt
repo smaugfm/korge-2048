@@ -160,6 +160,8 @@ class MainScene<T : Board<T>> : Scene() {
                     expectimax.findBestDirection(newBoard)
                 }
                 waitForAnimation.await()
+
+                gs.moveNumber.update(gs.moveNumber.value + 1)
                 uiBoard.createNewBlock(newTile.tile, newTile.index)
 
                 board = newBoard
@@ -184,6 +186,7 @@ class MainScene<T : Board<T>> : Scene() {
         if (board != newBoard) {
             animateMoves(moves) {
                 board = newBoard
+                gs.moveNumber.update(gs.moveNumber.value + 1)
                 generateBlockAndSave()
                 if (!board.hasAvailableMoves())
                     gameOver()
@@ -224,6 +227,7 @@ class MainScene<T : Board<T>> : Scene() {
         isGameOverModal = false
         board = boardFactory.createEmpty()
         uiBoard.clear()
+        gs.moveNumber.update(0)
         gs.score.update(0)
         history.clear()
         generateBlockAndSave()

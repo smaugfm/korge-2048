@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.input.KorgeInputManager
+import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.accentColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.gameOverTextColor
@@ -52,6 +52,7 @@ class StaticUi(
     private val buttonSize: Double = uiConstants.tileSize * 0.3
     private val best = gameState.best
     private val score = gameState.score
+    private val moveNumber = gameState.moveNumber
     private val isAiPlaying = gameState.isAiPlaying
     private val animationSpeed = gameState.animationSpeed
     private val padding = uiConstants.tileSize / 10
@@ -74,6 +75,26 @@ class StaticUi(
             }
 
             addButtons(bgBest, uiBoard)
+            addMoveLabel(uiBoard)
+        }
+    }
+
+    private fun Container.addMoveLabel(uiBoard: UiBoard) {
+        fun Text.updateMoveNumber(moveNumber: Int) {
+            text = "move #${moveNumber}"
+        }
+        text(
+            "",
+            (buttonSize * 0.5).toFloat(),
+            UIConstants.moveLabelColor,
+            uiConstants.fontBold
+        ) {
+            alignLeftToLeftOf(uiBoard)
+            alignTopToBottomOf(uiBoard, padding / 2)
+            updateMoveNumber(moveNumber.value)
+            moveNumber.observe {
+                updateMoveNumber(it)
+            }
         }
     }
 
@@ -119,7 +140,7 @@ class StaticUi(
         }
         addBtn(bgBest, inputManager::handleAnimationSpeedClick) { bg ->
             fun onAnimationSpeed(textView: Text) {
-                textView.text = when(animationSpeed.value) {
+                textView.text = when (animationSpeed.value) {
                     AnimationSpeed.Fast -> "x2"
                     AnimationSpeed.Faster -> "x3"
                     AnimationSpeed.Normal -> "x1"

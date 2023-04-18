@@ -18,7 +18,6 @@ abstract class Expectimax<T : Board<T>>(
 ) {
     private var evaluations: Long = 0
     private var moves: Long = 0
-    private var unprobable: Long = 0
     private var cacheHits: Long = 0
     private var cacheSize: Long = 0
     private var maxDepth: Int = 0
@@ -64,7 +63,6 @@ abstract class Expectimax<T : Board<T>>(
         prob: Float,
     ): Float {
         if (prob < PROBABILITY_THRESHOLD) {
-            unprobable++
             return evaluateNode(depth, board)
         }
         if (depth >= depthLimit) {
@@ -127,7 +125,6 @@ abstract class Expectimax<T : Board<T>>(
     protected open fun clearState() {
         evaluations = 0
         moves = 0
-        unprobable = 0
         cacheHits = 0
         cacheSize = 0
         maxDepth = 0
@@ -141,9 +138,13 @@ abstract class Expectimax<T : Board<T>>(
         if (!log) return
 
         println(
-            "Move $direction: score=${score.format()}, evaluated=${evaluations.format()}, " +
-                "moves=${moves.format()}, unprobable=${unprobable.format()}, cacheHits=${cacheHits.format()}, " +
-                "cacheSize=${cacheSize.format()}, maxDepth=$maxDepth in $duration"
+            "Move ${direction.toString().padEnd(6)}: " +
+                "score=${score.format(20)}, " +
+                "evaluated=${evaluations.format(8)}, " +
+                "moves=${moves.format(8)}, " +
+                "cacheHits=${cacheHits.format(8)}, cacheSize=${cacheSize.format(8)}, " +
+                "maxDepth=${maxDepth.toString().padStart(2)}, " +
+                "elapsed=$duration"
         )
     }
 
@@ -151,19 +152,21 @@ abstract class Expectimax<T : Board<T>>(
         const val PROBABILITY_THRESHOLD = 0.0001f// one in ten thousands
         const val SPARSE_BOARD_MAX_DEPTH = 3
 
-        fun Float.format(): String {
-            return this.roundDecimalPlaces(2).toString()
+        fun Float.format(padStart: Int = 0): String {
+            return this.roundDecimalPlaces(2).toString().padStart(padStart)
         }
 
-        fun Long.format(): String {
-            if (this < 10_000)
-                return this.toString()
-            if (this < 1_000_000)
-                return "${this / 1_000}k"
-            if (this < 1_000_000_000)
-                return "${this / 1_000_000}M"
+        fun Long.format(padStart: Int = 0): String {
+            val result = if (this < 10_000)
+                this.toString()
+            else if (this < 1_000_000)
+                "${this / 1_000}k"
+            else if (this < 1_000_000_000)
+                "${(this / 1_000_000.0).roundDecimalPlaces(1)}M"
+            else
+                "${(this / 1_000_000_000.0).roundDecimalPlaces(2)}B"
 
-            return "${this / 1_000_000_000}B"
+            return result.padStart(padStart)
         }
     }
 }

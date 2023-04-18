@@ -9,9 +9,10 @@ import korlibs.korge.view.Views
 
 class GameState(
     private val storage: NativeStorage,
-    val best: ObservableProperty<Int> = ObservableProperty(0),
-    val score: ObservableProperty<Int> = ObservableProperty(0),
-    val isAiPlaying: ObservableProperty<Boolean> = ObservableProperty(false),
+    val best: ObservableProperty<Int>,
+    val score: ObservableProperty<Int>,
+    val isAiPlaying: ObservableProperty<Boolean>,
+    val moveNumber: ObservableProperty<Int>,
     val animationSpeed: ObservableProperty<AnimationSpeed> =
         ObservableProperty(AnimationSpeed.Normal)
 ) {
@@ -21,6 +22,9 @@ class GameState(
         }
         best.observe {
             storage["best"] = it.toString()
+        }
+        moveNumber.observe {
+            storage["moveNumber"] = it.toString()
         }
         animationSpeed.observe {
             storage["animationSpeed"] = it.toString()
@@ -36,6 +40,7 @@ class GameState(
                     ObservableProperty(storage.getOrNull("best")?.toInt() ?: 0),
                     ObservableProperty(0),
                     ObservableProperty(false),
+                    ObservableProperty(storage.getOrNull("moveNumber")?.toInt() ?: 0),
                     ObservableProperty(
                         storage.getOrNull("animationSpeed")
                             ?.let(AnimationSpeed::fromString)
