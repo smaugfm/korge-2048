@@ -1,6 +1,5 @@
 package io.github.smaugfm.game2048.expectimax.impl
 
-import LongLongMap
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
@@ -13,10 +12,13 @@ import kotlin.math.max
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
-class Board4Expectimax(heuristics: Heuristics<Board4>, log: Boolean = true) :
+class Board4Expectimax(
+    heuristics: Heuristics<Board4>,
+    log: Boolean = true
+) :
     Expectimax<Board4>(heuristics, log) {
 
-    private var searchCache = LongLongMap()
+    private var searchCache = HashMap<Long, Long>()
 
     @JvmInline
     value class CacheEntry(val bits: Long) {
@@ -52,8 +54,7 @@ class Board4Expectimax(heuristics: Heuristics<Board4>, log: Boolean = true) :
     }
 
     override fun expectimaxCacheSearch(board: Board4, depth: Int): Float? {
-        val bits = searchCache[board.bits.toLong()]
-        if (bits == 0L) return null
+        val bits = searchCache[board.bits.toLong()] ?: return null
 
         val entry = CacheEntry(bits)
         if (entry.depth <= depth)
