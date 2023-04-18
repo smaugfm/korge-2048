@@ -21,11 +21,10 @@ class Board4Expectimax(heuristics: Heuristics<Board4>, log: Boolean = true) :
         val depth get() = (bits ushr 32).toInt()
 
         companion object {
-            fun create(score: Float, depth: Int): CacheEntry {
-                return CacheEntry(
+            fun create(score: Float, depth: Int): CacheEntry =
+                CacheEntry(
                     (score.toRawBits().toULong() or (depth.toULong() shl 32)).toLong()
                 )
-            }
         }
     }
 

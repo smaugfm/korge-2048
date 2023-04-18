@@ -36,7 +36,7 @@ kotlin {
     sourceSets {
         all {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
-            languageSettings.optIn("kotlin.ExperimentalTime")
+            languageSettings.optIn("kotlin.time.ExperimentalTime")
         }
         val commonMain by getting
         val jvmMain by getting
