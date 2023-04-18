@@ -7,7 +7,6 @@ import io.github.smaugfm.game2048.board.impl.PrecomputedTables4.unpackArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalUnsignedTypes::class)
 class PrecomputedTables4Test {
     @Test
     fun reverseLineTest() {

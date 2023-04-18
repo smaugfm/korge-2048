@@ -3,10 +3,7 @@ package io.github.smaugfm.game2048.input
 import io.github.smaugfm.game2048.board.Direction
 
 sealed class InputEvent {
-    sealed class DirectionInput(val dir: Direction) : InputEvent() {
-        class UserDirection(dir: Direction) : DirectionInput(dir)
-        class AiDirection(dir: Direction) : DirectionInput(dir)
-    }
+    class DirectionInput(val dir: Direction) : InputEvent()
 
     sealed class ClickInput : InputEvent() {
         object RestartClick : ClickInput()

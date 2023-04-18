@@ -2,7 +2,6 @@ package io.github.smaugfm.game2048.board.impl
 
 import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
 
-@OptIn(ExperimentalUnsignedTypes::class)
 object PrecomputedTables4 {
     private val firstLineLeftIndexes = intArrayOf(0, 1, 2, 3)
     private val anySizeHeuristics = NneonneoAnySizeHeuristics()

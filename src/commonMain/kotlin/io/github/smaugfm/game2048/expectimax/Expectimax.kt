@@ -10,7 +10,6 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
-@OptIn(ExperimentalTime::class)
 abstract class Expectimax<T : Board<T>>(
     protected val heuristics: Heuristics<T>,
     private val log: Boolean = true

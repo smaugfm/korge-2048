@@ -31,20 +31,21 @@ class KorgeInputManager private constructor(
                     Key.DOWN -> Direction.BOTTOM
                     else -> null
                 }?.let { dir ->
-                    flow.emit(InputEvent.DirectionInput.UserDirection(dir))
+                    flow.emit(InputEvent.DirectionInput(dir))
                 }
             }
         }
         views.root.onSwipe(20.0) {
             if (isAiPlaying.value)
                 return@onSwipe
+
             when (it.direction) {
                 SwipeDirection.LEFT -> Direction.LEFT
                 SwipeDirection.RIGHT -> Direction.RIGHT
                 SwipeDirection.TOP -> Direction.TOP
                 SwipeDirection.BOTTOM -> Direction.BOTTOM
             }.let { dir ->
-                flow.emit(InputEvent.DirectionInput.AiDirection(dir))
+                flow.emit(InputEvent.DirectionInput(dir))
             }
         }
     }

@@ -19,12 +19,13 @@ import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.korge.scene.Scene
 import korlibs.korge.service.storage.storage
 import korlibs.korge.view.SContainer
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 
-class MainScene<T: Board<T>> : Scene() {
+class MainScene<T : Board<T>> : Scene() {
     private val aiDispatcher = Dispatchers.createFixedThreadDispatcher("ai", 2)
     private var isAnimationRunning = false
     private var isGameOverModal = false
@@ -32,6 +33,7 @@ class MainScene<T: Board<T>> : Scene() {
     private lateinit var best: ObservableProperty<Int>
     private lateinit var score: ObservableProperty<Int>
     private lateinit var isAiPlaying: ObservableProperty<Boolean>
+    private lateinit var isAiStopping: ObservableProperty<Boolean>
 
     private lateinit var history: History
     private lateinit var inputManager: KorgeInputManager
@@ -51,6 +53,7 @@ class MainScene<T: Board<T>> : Scene() {
             best = get<GameState>().best
             score = get<GameState>().score
             isAiPlaying = get<GameState>().isAiPlaying
+            isAiStopping = ObservableProperty(false)
 
             inputManager = get()
             history = get()
@@ -88,25 +91,33 @@ class MainScene<T: Board<T>> : Scene() {
                 .eventsFlow()
                 .collect { inputEvent ->
                     when (inputEvent) {
-                        InputEvent.ClickInput.AiToggleClick ->
-                            isAiPlaying.update(!isAiPlaying.value)
-
-                        InputEvent.ClickInput.RestartClick ->
-                            restart()
-
-                        InputEvent.ClickInput.TryAgainClick ->
-                            restart()
-
-                        InputEvent.ClickInput.UndoClick ->
+                        InputEvent.ClickInput.AiToggleClick -> {
+                            if (isGameOverModal) return@collect
                             if (!isAiPlaying.value)
-                                restoreField(history.undo())
-
-                        is InputEvent.DirectionInput.AiDirection -> {
-                            TODO()
+                                isAiPlaying.update(true)
+                            else
+                                isAiStopping.update(true)
                         }
 
-                        is InputEvent.DirectionInput.UserDirection ->
-                            handleMoveBlocks(inputEvent.dir)
+                        InputEvent.ClickInput.RestartClick ->
+                            if (!isAiPlaying.value)
+                                restart()
+
+                        InputEvent.ClickInput.TryAgainClick ->
+                            if (!isAiPlaying.value)
+                                restart()
+
+                        InputEvent.ClickInput.UndoClick -> {
+                            if (isGameOverModal) return@collect
+                            if (!isAiPlaying.value)
+                                restoreField(history.undo())
+                        }
+
+                        is InputEvent.DirectionInput -> {
+                            if (isGameOverModal) return@collect
+                            if (!isAiPlaying.value)
+                                handleMoveBlocks(inputEvent.dir)
+                        }
                     }
                 }
         }
@@ -117,6 +128,54 @@ class MainScene<T: Board<T>> : Scene() {
         }
         if (isAiPlaying.value)
             startAiPlay()
+    }
+
+    private fun SContainer.startAiPlay() {
+        launchAsap(aiDispatcher) {
+            var bestDirectionDeferred: Deferred<Direction?> =
+                CompletableDeferred(null)
+            var bestDirection = expectimax.findBestDirection(board)
+            isAiStopping.observe {
+                if (it)
+                    bestDirectionDeferred.cancel()
+            }
+            while (!isAiStopping.value) {
+                val waitForAnimation = CompletableDeferred<Unit>()
+
+                if (bestDirection == null) {
+                    isAiPlaying.update(false)
+                    gameOver()
+                    break
+                }
+                var (newBoard, moves) = board.moveGenerateMoves(bestDirection)
+                animateMoves(moves) {
+                    waitForAnimation.complete(Unit)
+                }
+                val newTile = newBoard.placeRandomTile() ?: break
+                newBoard = newTile.newBoard
+
+                history.add(board.tiles(), score.value)
+
+                if (!isAiPlaying.value) {
+                    break
+                }
+                bestDirectionDeferred = async(aiDispatcher) {
+                    expectimax.findBestDirection(newBoard)
+                }
+                waitForAnimation.await()
+                uiBoard.createNewBlock(newTile.tile, newTile.index)
+
+                board = newBoard
+                try {
+                    bestDirection = bestDirectionDeferred.await()
+                } catch (e: CancellationException) {
+                    break
+                }
+            }
+
+            isAiStopping.update(false)
+            isAiPlaying.update(false)
+        }
     }
 
     private fun SContainer.handleMoveBlocks(direction: Direction) {
@@ -161,42 +220,6 @@ class MainScene<T: Board<T>> : Scene() {
         if (!isGameOverModal) {
             isGameOverModal = true
             staticUi.showGameOver(uiBoard, this)
-        }
-    }
-
-    private fun SContainer.startAiPlay() {
-        launchAsap(aiDispatcher) {
-            var bestDirectionDeferred: Deferred<Direction?>
-            var bestDirection = expectimax.findBestDirection(board)
-            while (true) {
-                val waitForAnimation = CompletableDeferred<Unit>()
-
-                if (bestDirection == null) {
-                    isAiPlaying.update(false)
-                    gameOver()
-                    break
-                }
-                var (newBoard, moves) = board.moveGenerateMoves(bestDirection)
-                animateMoves(moves) {
-                    waitForAnimation.complete(Unit)
-                }
-                val newTile = newBoard.placeRandomTile() ?: break
-                newBoard = newTile.newBoard
-
-                history.add(board.tiles(), score.value)
-
-                if (!isAiPlaying.value) {
-                    break
-                }
-                bestDirectionDeferred = async(aiDispatcher) {
-                    expectimax.findBestDirection(newBoard)
-                }
-                waitForAnimation.await()
-                uiBoard.createNewBlock(newTile.tile, newTile.index)
-
-                board = newBoard
-                bestDirection = bestDirectionDeferred.await()
-            }
         }
     }
 

@@ -14,7 +14,6 @@ import korlibs.datastructure.toFastList
 import korlibs.io.lang.assert
 import kotlin.jvm.JvmInline
 
-@OptIn(ExperimentalUnsignedTypes::class)
 @JvmInline
 value class Board4 private constructor(val bits: ULong) : Board<Board4> {
     fun transpose(): Board4 {
