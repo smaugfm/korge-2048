@@ -27,7 +27,16 @@ object PrecomputedTables4 {
                 newBoard
             )
 
-            val result = newBoard.array.toUIntArray().packArray().toUShort()
+            val result = newBoard.array
+                .map {
+                    //4 bits per tile, so maximum tile is 32768
+                    if (it > 15)
+                        15
+                    else
+                        it
+                }
+                .toIntArray()
+                .toUIntArray().packArray().toUShort()
 
             val reverseResult = reverseLine(result)
             val reverseLine = reverseLine(line.toUShort())
