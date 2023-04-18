@@ -1,11 +1,11 @@
 package io.github.smaugfm.game2048.ui
 
-import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColorLight
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock

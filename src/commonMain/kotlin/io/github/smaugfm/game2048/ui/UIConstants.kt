@@ -11,7 +11,6 @@ import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.view.Views
 import korlibs.math.geom.RectCorners
 import korlibs.math.geom.Size
-import korlibs.time.seconds
 
 class UIConstants private constructor(
     views: Views,

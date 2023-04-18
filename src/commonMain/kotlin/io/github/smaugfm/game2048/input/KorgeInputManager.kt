@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.input
 
-import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.persistence.GameState
 import korlibs.event.Key
 import korlibs.inject.AsyncInjector
 import korlibs.io.async.ObservableProperty
