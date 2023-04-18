@@ -2,7 +2,7 @@ package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
-import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
+import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
 import kotlin.test.Test
 
 class AnySizeExpectimaxTest {
@@ -16,7 +16,7 @@ class AnySizeExpectimaxTest {
                 0, 0, 0, 0,
             )
         )
-        AnySizeExpectimax(NneonneoAnySizeHeuristics())
+        AnySizeExpectimax(AnySizeBoardHeuristics())
             .findBestDirection(board)
     }
 }

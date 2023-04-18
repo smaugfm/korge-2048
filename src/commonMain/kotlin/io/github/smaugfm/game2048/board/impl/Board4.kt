@@ -10,7 +10,6 @@ import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.board.TilePlacementResult
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
-import korlibs.datastructure.toFastList
 import korlibs.io.lang.assert
 import kotlin.jvm.JvmInline
 

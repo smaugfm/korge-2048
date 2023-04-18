@@ -4,6 +4,9 @@ import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.board.impl.PrecomputedTables4
 import io.github.smaugfm.game2048.heuristics.Heuristics
 
+/**
+ * Based on [this](https://github.com/nneonneo/2048-ai) repo
+ */
 class Board4Heuristics : Heuristics<Board4> {
     private val heuristicsTable = PrecomputedTables4.heuristicsTable
 
@@ -17,6 +20,5 @@ class Board4Heuristics : Heuristics<Board4> {
             heuristicsTable[b.thirdRow] +
             heuristicsTable[b.fourthRow]
 
-    companion object {
-    }
+    companion object
 }

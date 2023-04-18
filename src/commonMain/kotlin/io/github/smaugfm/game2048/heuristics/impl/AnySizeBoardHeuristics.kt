@@ -12,7 +12,7 @@ import kotlin.math.pow
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
-class NneonneoAnySizeHeuristics : Heuristics<AnySizeBoard> {
+class AnySizeBoardHeuristics : Heuristics<AnySizeBoard> {
     override fun evaluate(board: AnySizeBoard): Float {
         var sum = 0.0f
         repeat(boardSize) {

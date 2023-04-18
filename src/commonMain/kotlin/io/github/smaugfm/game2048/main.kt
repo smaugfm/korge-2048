@@ -1,6 +1,5 @@
 package io.github.smaugfm.game2048
 
-import LongLongMap
 import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
@@ -11,8 +10,6 @@ import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
-import korlibs.datastructure.IntIntMap
-import korlibs.datastructure.random.FastRandom
 import korlibs.image.color.RGBA
 import korlibs.inject.AsyncInjector
 import korlibs.korge.Korge
@@ -23,14 +20,7 @@ const val boardSize = 4
 const val boardArraySize = boardSize * boardSize
 
 suspend fun main() {
-    val searchCache = LongLongMap()
-
     val injector = AsyncInjector().apply {
-//        mapInstance(Heuristics::class, NneonneoAnySizeHeuristics())
-//        mapInstance(BoardFactory::class, AnySizeBoard.Companion)
-//        mapSingleton(Expectimax::class) { AnySizeExpectimax(get()) }
-//        mapSingleton { MainScene<AnySizeBoard>() }
-
         mapInstance(Heuristics::class, Board4Heuristics())
         mapInstance(BoardFactory::class, Board4.Companion)
         mapSingleton(Expectimax::class) { Board4Expectimax(get()) }

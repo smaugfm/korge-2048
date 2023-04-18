@@ -1,10 +1,10 @@
 package io.github.smaugfm.game2048.board.impl
 
-import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
+import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
 
 object PrecomputedTables4 {
     private val firstLineLeftIndexes = intArrayOf(0, 1, 2, 3)
-    private val anySizeHeuristics = NneonneoAnySizeHeuristics()
+    private val anySizeHeuristics = AnySizeBoardHeuristics()
 
     val leftLinesTable = UShortArray(65536) { 0u }
     val rightLinesTable = UShortArray(65536) { 0u }

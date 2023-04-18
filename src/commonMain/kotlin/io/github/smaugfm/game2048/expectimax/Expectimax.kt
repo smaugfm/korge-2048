@@ -7,9 +7,11 @@ import io.github.smaugfm.game2048.heuristics.Heuristics
 import korlibs.math.roundDecimalPlaces
 import kotlin.math.max
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
+/**
+ * Based on [this](https://github.com/nneonneo/2048-ai) repo
+ */
 abstract class Expectimax<T : Board<T>>(
     protected val heuristics: Heuristics<T>,
     private val log: Boolean = true

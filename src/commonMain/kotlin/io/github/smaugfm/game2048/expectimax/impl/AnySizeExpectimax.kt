@@ -1,9 +1,9 @@
 package io.github.smaugfm.game2048.expectimax.impl
 
-import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.boardArraySize
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.heuristics.Heuristics

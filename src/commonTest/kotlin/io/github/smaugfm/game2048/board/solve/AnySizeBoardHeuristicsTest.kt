@@ -1,15 +1,15 @@
 package io.github.smaugfm.game2048.board.solve
 
-import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
-import io.github.smaugfm.game2048.heuristics.impl.NneonneoAnySizeHeuristics
+import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
 import korlibs.datastructure.IntArray2
 import kotlin.math.roundToLong
 import kotlin.test.Test
 
 class AnySizeBoardHeuristicsTest {
-        private val heuristics = NneonneoAnySizeHeuristics()
+    private val heuristics = AnySizeBoardHeuristics()
 //private val heuristics = SleepyCoderAnySizeHeuristic()
 //    private val heuristics = AzakyAnySizeHeuristics()
 

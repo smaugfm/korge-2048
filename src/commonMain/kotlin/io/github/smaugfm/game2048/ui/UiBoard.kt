@@ -14,7 +14,12 @@ import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
 import korlibs.korge.animate.block
-import korlibs.korge.view.*
+import korlibs.korge.view.Container
+import korlibs.korge.view.Views
+import korlibs.korge.view.addTo
+import korlibs.korge.view.graphics
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
 import korlibs.math.geom.Scale
 import korlibs.math.geom.Size
 

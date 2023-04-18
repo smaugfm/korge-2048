@@ -38,12 +38,12 @@ private fun _hash2(key: Long, mask: Int): Int {
 
 private fun _hash3(input: Long, mask: Int): Int {
     var key = (input.inv()) + (input shl 21)
-    key = key xor (key ushr 24);
+    key = key xor (key ushr 24)
     key += (key shl 3) + (key shl 8)
-    key = key xor (key ushr 14);
+    key = key xor (key ushr 14)
     key += (key shl 2) + (key shl 4)
-    key = key xor (key ushr 28);
-    key += (key shl 31);
+    key = key xor (key ushr 28)
+    key += (key shl 31)
 
     return mask(key.toULong(), mask)
 }
@@ -187,7 +187,7 @@ class LongLongMap internal constructor(
                             key,
                             value
                         )
-                    val index2 = hash2(key, mask);
+                    val index2 = hash2(key, mask)
                     if (_keys[index2] == EMPTY)
                         return setEmptySlot(
                             index2,
