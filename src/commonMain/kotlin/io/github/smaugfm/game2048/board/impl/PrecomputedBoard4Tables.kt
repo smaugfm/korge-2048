@@ -1,8 +1,10 @@
 package io.github.smaugfm.game2048.board.impl
 
+import io.github.smaugfm.game2048.expectimax.impl.TranspositionTable
 import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
+import kotlin.random.Random
 
-object PrecomputedTables4 {
+object PrecomputedBoard4Tables {
     private const val COL_MASK = 0x000F000F000F000FUL
     private val firstLineLeftIndexes = intArrayOf(0, 1, 2, 3)
     private val anySizeHeuristics = AnySizeBoardHeuristics()

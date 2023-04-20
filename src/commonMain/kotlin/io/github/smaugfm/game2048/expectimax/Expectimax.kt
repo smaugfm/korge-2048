@@ -23,14 +23,14 @@ abstract class Expectimax<T : Board<T>>(
     private var maxDepth: Int = 0
     private var depthLimit: Long = 0
 
-    fun findBestDirection(board: T): Direction? {
+    fun findBestMove(board: T): Direction? {
         clearState()
 
         depthLimit = getDepthLimit(board).toLong()
 
         val (bestDirectionDescending, duration) =
             measureTimedValue {
-                bestDirections(board)
+                bestMovesSorted(board)
             }
 
         cacheSize = getCurrentCacheSize()
@@ -41,7 +41,7 @@ abstract class Expectimax<T : Board<T>>(
             ?.first
     }
 
-    private fun bestDirections(board: T): List<Pair<Direction, Float>> =
+    private fun bestMovesSorted(board: T): List<Pair<Direction, Float>> =
         directions.map { it to topLevelNode(board, it) }
             .sortedByDescending { it.second }
 

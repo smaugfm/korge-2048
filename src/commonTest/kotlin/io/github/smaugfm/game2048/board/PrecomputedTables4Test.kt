@@ -2,19 +2,19 @@ package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.board.impl.PrecomputedTables4
-import io.github.smaugfm.game2048.board.impl.PrecomputedTables4.unpackArray
+import io.github.smaugfm.game2048.board.impl.PrecomputedBoard4Tables
+import io.github.smaugfm.game2048.board.impl.PrecomputedBoard4Tables.unpackArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PrecomputedTables4Test {
     @Test
     fun reverseLineTest() {
-        assertEquals(0x123u.toUShort(), PrecomputedTables4.reverseLine(0x3210u))
-        assertEquals(0x0u.toUShort(), PrecomputedTables4.reverseLine(0x0000u))
-        assertEquals(0x1111u.toUShort(), PrecomputedTables4.reverseLine(0x1111u))
-        assertEquals(0x2211u.toUShort(), PrecomputedTables4.reverseLine(0x1122u))
-        assertEquals(0x2221u.toUShort(), PrecomputedTables4.reverseLine(0x1222u))
+        assertEquals(0x123u.toUShort(), PrecomputedBoard4Tables.reverseLine(0x3210u))
+        assertEquals(0x0u.toUShort(), PrecomputedBoard4Tables.reverseLine(0x0000u))
+        assertEquals(0x1111u.toUShort(), PrecomputedBoard4Tables.reverseLine(0x1111u))
+        assertEquals(0x2211u.toUShort(), PrecomputedBoard4Tables.reverseLine(0x1122u))
+        assertEquals(0x2221u.toUShort(), PrecomputedBoard4Tables.reverseLine(0x1222u))
     }
 
     @Test

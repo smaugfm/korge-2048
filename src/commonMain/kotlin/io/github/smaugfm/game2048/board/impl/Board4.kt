@@ -74,16 +74,16 @@ value class Board4 private constructor(val bits: ULong) : Board<Board4> {
         direction: Direction
     ): Board4 = when (direction) {
         Direction.LEFT ->
-            lookupRows(PrecomputedTables4.leftLinesTable)
+            lookupRows(PrecomputedBoard4Tables.leftLinesTable)
 
         Direction.RIGHT ->
-            lookupRows(PrecomputedTables4.rightLinesTable)
+            lookupRows(PrecomputedBoard4Tables.rightLinesTable)
 
         Direction.TOP ->
-            lookupColumns(PrecomputedTables4.upLinesTable)
+            lookupColumns(PrecomputedBoard4Tables.upLinesTable)
 
         Direction.BOTTOM ->
-            lookupColumns(PrecomputedTables4.downLinesTable)
+            lookupColumns(PrecomputedBoard4Tables.downLinesTable)
     }
 
     private fun lookupColumns(table: ULongArray): Board4 {

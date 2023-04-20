@@ -131,7 +131,7 @@ class MainScene<T : Board<T>> : Scene() {
         launchAsap(aiDispatcher) {
             var bestDirectionDeferred: Deferred<Direction?> =
                 CompletableDeferred(null)
-            var bestDirection = expectimax.findBestDirection(board)
+            var bestDirection = expectimax.findBestMove(board)
             isAiStopping.observe {
                 if (it)
                     bestDirectionDeferred.cancel()
@@ -157,7 +157,7 @@ class MainScene<T : Board<T>> : Scene() {
                     break
                 }
                 bestDirectionDeferred = async(aiDispatcher) {
-                    expectimax.findBestDirection(newBoard)
+                    expectimax.findBestMove(newBoard)
                 }
                 waitForAnimation.await()
 

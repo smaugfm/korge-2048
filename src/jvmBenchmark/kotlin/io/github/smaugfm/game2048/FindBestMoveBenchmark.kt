@@ -31,11 +31,11 @@ class FindBestMoveBenchmark {
 
     @Benchmark
     fun anySize() {
-        anySizeExpectimax.findBestDirection(anySizeBoard)
+        anySizeExpectimax.findBestMove(anySizeBoard)
     }
 
     @Benchmark
     fun board4() {
-        board4Expectimax.findBestDirection(board4)
+        board4Expectimax.findBestMove(board4)
     }
 }
