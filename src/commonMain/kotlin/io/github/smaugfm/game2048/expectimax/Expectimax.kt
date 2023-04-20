@@ -19,7 +19,7 @@ abstract class Expectimax<T : Board<T>>(
     private var evaluations: Long = 0
     private var moves: Long = 0
     private var cacheHits: Long = 0
-    private var cacheSize: Long = 0
+    private var cacheSize: Int = 0
     private var maxDepth: Int = 0
     private var depthLimit: Long = 0
 
@@ -92,7 +92,7 @@ abstract class Expectimax<T : Board<T>>(
         return null
     }
 
-    protected open fun getCurrentCacheSize(): Long = 0L
+    protected open fun getCurrentCacheSize(): Int = 0
 
 
     private fun evaluateNode(depth: Int, board: T): Float {
@@ -142,7 +142,9 @@ abstract class Expectimax<T : Board<T>>(
                 "score=${score.format(20)}, " +
                 "evaluated=${evaluations.format(8)}, " +
                 "moves=${moves.format(8)}, " +
-                "cacheHits=${cacheHits.format(8)}, cacheSize=${cacheSize.format(8)}, " +
+                "cacheHits=${cacheHits.format(8)}, cacheSize=${
+                    cacheSize.toLong().format(8)
+                }, " +
                 "maxDepth=${maxDepth.toString().padStart(2)}, " +
                 "elapsed=$duration"
         )

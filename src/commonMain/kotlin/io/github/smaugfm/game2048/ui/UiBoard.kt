@@ -66,12 +66,11 @@ class UiBoard(
         }
     }
 
-    fun createNewBlock(power: Tile, index: TileIndex): UiBlock {
-        return addBlock(power, index, uiConstants, animationSpeed)
+    fun createNewBlock(power: Tile, index: TileIndex): UiBlock =
+        addBlock(power, index, uiConstants, animationSpeed)
             .also {
                 blocks[index] = it
             }
-    }
 
     suspend fun animate(
         boardMoves: List<BoardMove>,

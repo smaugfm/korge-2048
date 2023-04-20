@@ -6,7 +6,6 @@ import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.heuristics.Heuristics
-import kotlin.jvm.JvmInline
 import kotlin.math.max
 
 /**
@@ -15,31 +14,17 @@ import kotlin.math.max
 open class Board4Expectimax(
     heuristics: Heuristics<Board4>,
     log: Boolean = true
-) :
-    Expectimax<Board4>(heuristics, log) {
+) : Expectimax<Board4>(heuristics, log) {
 
-    private var searchCache = HashMap<Long, Long>()
-
-    @JvmInline
-    value class CacheEntry(val bits: Long) {
-        val score get() = Float.fromBits(bits.toInt())
-        val depth get() = (bits ushr 32).toInt()
-
-        companion object {
-            fun create(score: Float, depth: Int): CacheEntry =
-                CacheEntry(
-                    (score.toRawBits().toULong() or (depth.toULong() shl 32)).toLong()
-                )
-        }
-    }
+    private var transpositionTable = TranspositionTable()
 
     override fun clearState() {
         super.clearState()
-        searchCache.clear()
+        transpositionTable.clear()
     }
 
-    override fun getCurrentCacheSize(): Long =
-        searchCache.size.toLong()
+    override fun getCurrentCacheSize() =
+        transpositionTable.size
 
     override fun getDepthLimit(board: Board4): Int {
         val distinctTiles = board.countDistinctTiles()
@@ -50,16 +35,15 @@ open class Board4Expectimax(
         if (depth >= CACHE_DEPTH_LIMIT)
             return
 
-        searchCache[board.bits.toLong()] = CacheEntry.create(score, depth).bits
+        transpositionTable.update(board, depth, score)
     }
 
     override fun expectimaxCacheSearch(board: Board4, depth: Int): Float? {
-        val bits = searchCache[board.bits.toLong()] ?: return null
-
-        val entry = CacheEntry(bits)
-        if (entry.depth <= depth)
-            return entry.score
-
+        transpositionTable.search(board) { cacheDepth, score ->
+            if (cacheDepth != null && score != null && cacheDepth <= depth) {
+                return score
+            }
+        }
         return null
     }
 
