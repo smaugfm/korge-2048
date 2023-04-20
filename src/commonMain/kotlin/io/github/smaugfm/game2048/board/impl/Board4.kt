@@ -1,13 +1,7 @@
 package io.github.smaugfm.game2048.board.impl
 
-import io.github.smaugfm.game2048.board.Board
-import io.github.smaugfm.game2048.board.BoardFactory
-import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.*
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
-import io.github.smaugfm.game2048.board.MoveBoardResult
-import io.github.smaugfm.game2048.board.Tile
-import io.github.smaugfm.game2048.board.TileIndex
-import io.github.smaugfm.game2048.board.TilePlacementResult
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.io.lang.assert
@@ -94,14 +88,11 @@ value class Board4 private constructor(val bits: ULong) : Board<Board4> {
 
     private fun lookupColumns(table: ULongArray): Board4 {
         val t = transpose().bits
-        var ret =
-            table[((t shr 0) and ROW_MASK).toInt()] shl 0
-        ret =
-            ret or table[((t shr 16) and ROW_MASK).toInt()] shl 4
-        ret =
-            ret or table[((t shr 32) and ROW_MASK).toInt()] shl 8
-        ret =
-            ret or table[((t shr 48) and ROW_MASK).toInt()] shl 12
+        var ret = 0UL
+        ret = ret or (table[((t shr 0) and ROW_MASK).toInt()] shl 0)
+        ret = ret or (table[((t shr 16) and ROW_MASK).toInt()] shl 4)
+        ret = ret or (table[((t shr 32) and ROW_MASK).toInt()] shl 8)
+        ret = ret or (table[((t shr 48) and ROW_MASK).toInt()] shl 12)
 
         return Board4(ret)
     }

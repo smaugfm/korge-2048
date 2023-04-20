@@ -1,8 +1,8 @@
 package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
+import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.board.impl.PrecomputedTables4
-import io.github.smaugfm.game2048.board.impl.PrecomputedTables4.packArray
 import io.github.smaugfm.game2048.board.impl.PrecomputedTables4.unpackArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,18 +18,45 @@ class PrecomputedTables4Test {
     }
 
     @Test
-    fun movesTest() {
-        for (line in (0u until 65536u)) {
-            val array = line.unpackArray()
+    fun leftMovesTest() {
+        movesTest(Direction.LEFT)
+    }
 
-            val board = AnySizeBoard.fromArray(array.toIntArray())
-            val newBoard = AnySizeBoard.fromArray(intArrayOf(0, 0, 0, 0))
-            board.moveLineToStart(intArrayOf(0, 1, 2, 3), newBoard)
-            val expected = newBoard.array.toUIntArray().packArray().toUShort()
+    @Test
+    fun rightMovesTest() {
+        movesTest(Direction.RIGHT)
+    }
+
+    @Test
+    fun upMovesTest() {
+        movesTest(Direction.TOP)
+    }
+
+    @Test
+    fun downMovesTest() {
+        movesTest(Direction.BOTTOM)
+    }
+
+    private fun movesTest(dir: Direction) {
+        for (line in (0u until 65536u)) {
+            val lineArray = line.unpackArray()
+            val arr = (lineArray + lineArray + lineArray + lineArray).toIntArray()
+
+            val board4 = Board4.fromArray(arr)
+            val board = AnySizeBoard.fromArray(arr)
+            val newBoard = board.move(dir)
+            newBoard.array.indices.forEach {
+                if (newBoard.array[it] > 15)
+                    newBoard.array[it] = 15
+            }
+            val actual = board4.move(dir)
 
             assertEquals(
-                expected,
-                PrecomputedTables4.leftLinesTable[line.toInt()]
+                newBoard.tiles().toList(),
+                actual.tiles().toList(),
+                "initial\n$board4\n" +
+                    "expected\n$newBoard\n" +
+                    "actual\n $actual\n"
             )
         }
     }
