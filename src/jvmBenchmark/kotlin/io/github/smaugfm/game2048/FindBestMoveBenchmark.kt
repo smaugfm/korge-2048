@@ -6,6 +6,8 @@ import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
 import io.github.smaugfm.game2048.expectimax.impl.Board4Expectimax
 import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
+import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
+import io.github.smaugfm.game2048.transposition.ZobristHashTranspositionTable
 import kotlinx.benchmark.*
 
 @State(Scope.Benchmark)
@@ -25,7 +27,10 @@ class FindBestMoveBenchmark {
             1, 0, 0, 1
         )
     private var anySizeExpectimax = AnySizeExpectimax(AnySizeBoardHeuristics(), false)
-    private var board4Expectimax = Board4Expectimax(Board4Heuristics(), false)
+    private var board4HashMapExpectimax =
+        Board4Expectimax(Board4Heuristics(), HashMapTranspositionTable(), false)
+    private var board4ZobristExpectimax =
+        Board4Expectimax(Board4Heuristics(), ZobristHashTranspositionTable(), false)
     private var anySizeBoard = AnySizeBoard.fromArray(arr)
     private var board4 = Board4.fromArray(arr)
 
@@ -35,7 +40,12 @@ class FindBestMoveBenchmark {
     }
 
     @Benchmark
-    fun board4() {
-        board4Expectimax.findBestMove(board4)
+    fun board4HashMap() {
+        board4HashMapExpectimax.findBestMove(board4)
+    }
+
+    @Benchmark
+    fun board4Zobrist() {
+        board4ZobristExpectimax.findBestMove(board4)
     }
 }

@@ -6,17 +6,17 @@ import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.heuristics.Heuristics
+import io.github.smaugfm.game2048.transposition.TranspositionTable
 import kotlin.math.max
 
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
-open class Board4Expectimax(
+class Board4Expectimax(
     heuristics: Heuristics<Board4>,
+    private val transpositionTable: TranspositionTable,
     log: Boolean = true
 ) : Expectimax<Board4>(heuristics, log) {
-
-    private var transpositionTable = TranspositionTable()
 
     override fun clearState() {
         super.clearState()
@@ -39,9 +39,9 @@ open class Board4Expectimax(
     }
 
     override fun expectimaxCacheSearch(board: Board4, depth: Int): Float? {
-        transpositionTable.search(board) { cacheDepth, score ->
-            if (cacheDepth != null && score != null && cacheDepth <= depth) {
-                return score
+        transpositionTable.search(board)?.let { entry ->
+            if (entry.depth <= depth) {
+                return entry.score
             }
         }
         return null

@@ -9,6 +9,7 @@ import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.persistence.History
+import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
 import korlibs.image.color.RGBA
@@ -22,9 +23,10 @@ const val boardArraySize = boardSize * boardSize
 
 suspend fun main() {
     val injector = AsyncInjector().apply {
+        mapInstance { HashMapTranspositionTable() }
         mapInstance(Heuristics::class, Board4Heuristics())
         mapInstance(BoardFactory::class, Board4.Companion)
-        mapSingleton(Expectimax::class) { Board4Expectimax(get()) }
+        mapSingleton(Expectimax::class) { Board4Expectimax(get(), get()) }
         mapSingleton { MainScene<Board4>() }
 
         GameState(this)
