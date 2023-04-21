@@ -1,10 +1,17 @@
 package io.github.smaugfm.game2048.expectimax
 
-import io.github.smaugfm.game2048.board.Board
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
+import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
+import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
+import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.heuristics.Heuristics
+import io.github.smaugfm.game2048.transposition.TranspositionTable
+import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.math.roundDecimalPlaces
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.measureTimedValue
@@ -12,147 +19,183 @@ import kotlin.time.measureTimedValue
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
-abstract class Expectimax<T : Board<T>>(
-    protected val heuristics: Heuristics<T>,
-    private val log: Boolean = true
+class Expectimax(
+    private val heuristics: Heuristics<Board4>,
+    private val transpositionTable: TranspositionTable,
+    private val log: Boolean = true,
 ) {
-    private var evaluations: Long = 0
-    private var moves: Long = 0
-    private var cacheHits: Long = 0
+
     private var cacheSize: Int = 0
-    private var maxDepth: Int = 0
     private var depthLimit: Long = 0
 
-    fun findBestMove(board: T): Direction? {
-        clearState()
+    fun findBestMove(board: Board4): Direction? {
+        transpositionTable.clear()
 
         depthLimit = getDepthLimit(board).toLong()
 
-        val (bestDirectionDescending, duration) =
+        val (sortedResults, duration) =
             measureTimedValue {
-                bestMovesSorted(board)
+                directions.map { d -> topLevelNode(board, d) }
+                    .sortedByDescending { it.score }
             }
+        val state = sortedResults.state()
+        cacheSize = transpositionTable.size
 
-        cacheSize = getCurrentCacheSize()
-
-        return bestDirectionDescending
-            .firstOrNull { board.move(it.first) != board }
-            .also { if (it != null) logResults(duration, it.first, it.second) }
-            ?.first
+        return sortedResults
+            .firstOrNull { board.move(it.direction) != board }
+            .also { if (it != null) logResults(duration, it.direction, state, it.score) }
+            ?.direction
     }
 
-    private fun bestMovesSorted(board: T): List<Pair<Direction, Float>> =
-        directions.map { it to topLevelNode(board, it) }
-            .sortedByDescending { it.second }
-
     private fun topLevelNode(
-        board: T,
-        it: Direction
-    ): Float {
-        val newBoard = board.move(it)
-        moves++
+        board: Board4,
+        dir: Direction
+    ): ScoreResult {
+        val state = State()
+        val newBoard = board.move(dir)
+        state.moves++
         if (newBoard == board)
-            return Float.NEGATIVE_INFINITY
+            return ScoreResult(dir, state, Float.NEGATIVE_INFINITY)
 
-        return expectimaxNode(newBoard, 0, 1.0f)
+        return ScoreResult(dir, state, expectimaxNode(state, newBoard, 0, 1.0f))
     }
 
     private fun expectimaxNode(
-        board: T,
+        state: State,
+        board: Board4,
         depth: Int,
         prob: Float,
     ): Float {
         if (prob < PROBABILITY_THRESHOLD) {
-            return evaluateNode(depth, board)
+            return evaluateBoard(state, depth, board)
         }
         if (depth >= depthLimit) {
-            return evaluateNode(depth, board)
+            return evaluateBoard(state, depth, board)
         }
         val cachedScore = expectimaxCacheSearch(board, depth)
         if (cachedScore != null) {
-            cacheHits++
+            state.cacheHits++
             return cachedScore
         }
 
         val emptyCount = board.countEmptyTiles()
         val emptyTileProb = prob / emptyCount
 
-        val score = emptyTilesScoresSum(board, emptyTileProb, depth) / emptyCount
+        val score = run {
+            var sum = 0.0f
+            board.iterateEmptyTiles { tileIndex, _ ->
+                val score2 = moveNode(
+                    state,
+                    board.placeTile(Tile.TWO, tileIndex),
+                    emptyTileProb * TILE_TWO_PROBABILITY,
+                    depth,
+                )
+                val score4 = moveNode(
+                    state,
+                    board.placeTile(Tile.FOUR, tileIndex),
+                    emptyTileProb * TILE_FOUR_PROBABILITY,
+                    depth,
+                )
 
-        expectimaxCacheStore(board, depth, score)
+                sum += score2 * TILE_TWO_PROBABILITY + score4 * TILE_FOUR_PROBABILITY
+            }
+            sum
+        } / emptyCount
+
+        if (depth < CACHE_DEPTH_LIMIT) {
+            transpositionTable.update(board, depth, score)
+        }
 
         return score
     }
 
-    protected open fun expectimaxCacheStore(board: T, depth: Int, score: Float) {
-        //do nothing
-    }
-
-    protected open fun expectimaxCacheSearch(board: T, depth: Int): Float? {
+    private fun expectimaxCacheSearch(board: Board4, depth: Int): Float? {
+        transpositionTable.search(board)?.let { entry ->
+            if (entry.depth <= depth) {
+                return entry.score
+            }
+        }
         return null
     }
 
-    protected open fun getCurrentCacheSize(): Int = 0
-
-
-    private fun evaluateNode(depth: Int, board: T): Float {
-        evaluations++
-        maxDepth = max(depth, maxDepth)
-        return heuristics.evaluate(board)
-    }
-
-    protected abstract fun emptyTilesScoresSum(
-        board: T,
-        emptyTileProb: Float,
-        depth: Int,
-    ): Float
-
-    protected fun moveNode(
-        board: T,
+    private fun moveNode(
+        state: State,
+        board: Board4,
         prob: Float,
         depth: Int,
     ): Float {
         return directions
             .map {
                 val newBoard = board.move(it)
-                moves++
+                state.moves++
                 if (newBoard == board)
                     return@map Float.NEGATIVE_INFINITY
-                expectimaxNode(newBoard, depth + 1, prob)
+                expectimaxNode(state, newBoard, depth + 1, prob)
             }.max()
     }
 
-    protected open fun clearState() {
-        evaluations = 0
-        moves = 0
-        cacheHits = 0
-        cacheSize = 0
-        maxDepth = 0
-        depthLimit = 0
+    private fun evaluateBoard(state: State, depth: Int, board: Board4): Float {
+        state.evaluations++
+        state.maxDepth = max(depth, state.maxDepth)
+        return heuristics.evaluate(board)
     }
 
-    open fun getDepthLimit(board: T): Int =
-        SPARSE_BOARD_MAX_DEPTH
+    private fun getDepthLimit(board: Board4): Int {
+        val distinctTiles = board.countDistinctTiles()
+        return max(SPARSE_BOARD_MAX_DEPTH, distinctTiles - 2)
+    }
 
-    private fun logResults(duration: Duration, direction: Direction, score: Float) {
+    private fun logResults(
+        duration: Duration,
+        direction: Direction,
+        state: State,
+        score: Float
+    ) {
         if (!log) return
 
         println(
             "Move ${direction.toString().padEnd(6)}: " +
                 "score=${score.format(20)}, " +
-                "evaluated=${evaluations.format(8)}, " +
-                "moves=${moves.format(8)}, " +
-                "cacheHits=${cacheHits.format(8)}, cacheSize=${
+                "evaluated=${state.evaluations.format(8)}, " +
+                "moves=${state.moves.format(8)}, " +
+                "cacheHits=${state.cacheHits.format(8)}, cacheSize=${
                     cacheSize.toLong().format(8)
                 }, " +
-                "maxDepth=${maxDepth.toString().padStart(2)}, " +
+                "maxDepth=${state.maxDepth.toString().padStart(2)}, " +
                 "elapsed=$duration"
         )
     }
 
     companion object {
+        private data class ScoreResult(
+            val direction: Direction,
+            val state: State,
+            val score: Float
+        )
+
+        private class State(
+            var evaluations: Long = 0,
+            var moves: Long = 0,
+            var cacheHits: Long = 0,
+            var maxDepth: Int = 0,
+        ) {
+            operator fun plus(other: State): State =
+                State(
+                    evaluations + other.evaluations,
+                    moves + other.moves,
+                    cacheHits + other.cacheHits,
+                    max(maxDepth, other.maxDepth)
+                )
+        }
+
+        private fun List<ScoreResult>.state(): State =
+            map { it.state }.reduce { acc, state -> state + acc }
+
+        const val CACHE_DEPTH_LIMIT = 15
         const val PROBABILITY_THRESHOLD = 0.0001f// one in ten thousands
         const val SPARSE_BOARD_MAX_DEPTH = 3
+        private val dispatcher: CoroutineDispatcher =
+            Dispatchers.createFixedThreadDispatcher("expectimax", Direction.values().size)
 
         fun Float.format(padStart: Int = 0): String {
             return this.roundDecimalPlaces(2).toString().padStart(padStart)

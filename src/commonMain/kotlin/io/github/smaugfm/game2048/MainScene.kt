@@ -1,9 +1,9 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.board.Board
 import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.input.InputEvent
 import io.github.smaugfm.game2048.input.KorgeInputManager
@@ -11,7 +11,6 @@ import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.AnimationSpeed
 import io.github.smaugfm.game2048.ui.StaticUi
-import io.github.smaugfm.game2048.ui.UIConstants
 import io.github.smaugfm.game2048.ui.UiBoard
 import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
 import korlibs.io.async.ObservableProperty
@@ -26,42 +25,23 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 
-class MainScene<T : Board<T>> : Scene() {
-    private val aiDispatcher = Dispatchers.createFixedThreadDispatcher("ai", 2)
+class MainScene(
+    private var inputManager: KorgeInputManager,
+    private val gs: GameState,
+    private val history: History,
+    private val boardFactory: BoardFactory<Board4>,
+    private val expectimax: Expectimax,
+    private val staticUi: StaticUi
+) : Scene() {
+    private val aiDispatcher =
+        Dispatchers.createFixedThreadDispatcher("ai", 2)
     private var isAnimationRunning = false
     private var isGameOverModal = false
 
-    private lateinit var gs: GameState
     private val isAiStopping: ObservableProperty<Boolean> = ObservableProperty(false)
-
-    private lateinit var history: History
-    private lateinit var inputManager: KorgeInputManager
-
-    private lateinit var boardFactory: BoardFactory<T>
-    private lateinit var board: T
-    private lateinit var expectimax: Expectimax<T>
-
-    private lateinit var staticUi: StaticUi
-    private lateinit var uiConstants: UIConstants
+    private var board: Board4 = boardFactory.createEmpty()
 
     private lateinit var uiBoard: UiBoard
-
-
-    override suspend fun SContainer.sceneInit() {
-        with(injector) {
-            gs = get<GameState>()
-
-            inputManager = get()
-            history = get()
-
-            boardFactory = get()
-            board = boardFactory.createEmpty()
-            staticUi = get()
-            uiConstants = get()
-
-            expectimax = get()
-        }
-    }
 
     override suspend fun SContainer.sceneMain() {
         uiBoard = addBoard(injector)

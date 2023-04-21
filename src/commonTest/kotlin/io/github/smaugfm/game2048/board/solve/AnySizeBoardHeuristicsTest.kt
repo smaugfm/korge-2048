@@ -1,8 +1,6 @@
 package io.github.smaugfm.game2048.board.solve
 
-import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
-import io.github.smaugfm.game2048.expectimax.impl.AnySizeExpectimax
 import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
 import korlibs.datastructure.IntArray2
 import kotlin.math.roundToLong
@@ -10,26 +8,6 @@ import kotlin.test.Test
 
 class AnySizeBoardHeuristicsTest {
     private val heuristics = AnySizeBoardHeuristics()
-//private val heuristics = SleepyCoderAnySizeHeuristic()
-//    private val heuristics = AzakyAnySizeHeuristics()
-
-    private val expectimax = AnySizeExpectimax(heuristics)
-
-    @Test
-    fun t() {
-        val b = AnySizeBoard.fromArray(
-            intArrayOf(
-                9, 6, 1, 1,
-                3, 5, 2, 0,
-                4, 4, 4, 1,
-                2, 1, 8, 0,
-            )
-        )
-        val right = b.move(Direction.RIGHT)
-        val rightScore = heuristics.evaluate(right)
-        expectimax.findBestMove(b)
-        println("Right score: $rightScore")
-    }
 
     @Test
     fun evaluateTest() {

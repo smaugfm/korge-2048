@@ -8,7 +8,8 @@ import korlibs.io.lang.assert
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class Board4 private constructor(val bits: ULong) : Board<Board4> {
+value class Board4(val bits: ULong) :
+    Board<Board4> {
     fun transpose(): Board4 {
         val a1 = bits and 0xF0F00F0FF0F00F0FUL
         val a2 = bits and 0x0000F0F00000F0F0UL
@@ -74,16 +75,16 @@ value class Board4 private constructor(val bits: ULong) : Board<Board4> {
         direction: Direction
     ): Board4 = when (direction) {
         Direction.LEFT ->
-            lookupRows(PrecomputedBoard4Tables.leftLinesTable)
+            lookupRows(PrecomputedTables.leftLinesTable)
 
         Direction.RIGHT ->
-            lookupRows(PrecomputedBoard4Tables.rightLinesTable)
+            lookupRows(PrecomputedTables.rightLinesTable)
 
         Direction.TOP ->
-            lookupColumns(PrecomputedBoard4Tables.upLinesTable)
+            lookupColumns(PrecomputedTables.upLinesTable)
 
         Direction.BOTTOM ->
-            lookupColumns(PrecomputedBoard4Tables.downLinesTable)
+            lookupColumns(PrecomputedTables.downLinesTable)
     }
 
     private fun lookupColumns(table: ULongArray): Board4 {

@@ -22,7 +22,6 @@ class ZobristHashTranspositionTable : TranspositionTable {
             }
             return hash
         }
-
     }
 
     private val table = LongArray(SIZE * 2)
