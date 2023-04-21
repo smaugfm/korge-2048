@@ -8,10 +8,14 @@ import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.heuristics.Heuristics
 import io.github.smaugfm.game2048.transposition.TranspositionTable
+import korlibs.io.async.runBlockingNoJs
 import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.math.roundDecimalPlaces
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.measureTimedValue
@@ -22,9 +26,9 @@ import kotlin.time.measureTimedValue
 class Expectimax(
     private val heuristics: Heuristics<Board4>,
     private val transpositionTable: TranspositionTable,
+    private val scope: CoroutineScope? = null,
     private val log: Boolean = true,
 ) {
-
     private var cacheSize: Int = 0
     private var depthLimit: Long = 0
 
@@ -35,8 +39,10 @@ class Expectimax(
 
         val (sortedResults, duration) =
             measureTimedValue {
-                directions.map { d -> topLevelNode(board, d) }
-                    .sortedByDescending { it.score }
+                if (scope != null)
+                    searchParallel(scope, board)
+                else
+                    search(board)
             }
         val state = sortedResults.state()
         cacheSize = transpositionTable.size
@@ -47,11 +53,22 @@ class Expectimax(
             ?.direction
     }
 
+    private fun searchParallel(scope: CoroutineScope, board: Board4) =
+        runBlockingNoJs {
+            directions.map { d -> scope.async(dispatcher) { topLevelNode(board, d) } }
+                .awaitAll()
+                .sortedByDescending { it.score }
+        }
+
+    private fun search(board: Board4) =
+        directions.map { d -> topLevelNode(board, d) }
+            .sortedByDescending { it.score }
+
     private fun topLevelNode(
         board: Board4,
         dir: Direction
     ): ScoreResult {
-        val state = State()
+        val state = DiagnosticState()
         val newBoard = board.move(dir)
         state.moves++
         if (newBoard == board)
@@ -61,7 +78,7 @@ class Expectimax(
     }
 
     private fun expectimaxNode(
-        state: State,
+        state: DiagnosticState,
         board: Board4,
         depth: Int,
         prob: Float,
@@ -119,7 +136,7 @@ class Expectimax(
     }
 
     private fun moveNode(
-        state: State,
+        state: DiagnosticState,
         board: Board4,
         prob: Float,
         depth: Int,
@@ -134,7 +151,7 @@ class Expectimax(
             }.max()
     }
 
-    private fun evaluateBoard(state: State, depth: Int, board: Board4): Float {
+    private fun evaluateBoard(state: DiagnosticState, depth: Int, board: Board4): Float {
         state.evaluations++
         state.maxDepth = max(depth, state.maxDepth)
         return heuristics.evaluate(board)
@@ -148,7 +165,7 @@ class Expectimax(
     private fun logResults(
         duration: Duration,
         direction: Direction,
-        state: State,
+        state: DiagnosticState,
         score: Float
     ) {
         if (!log) return
@@ -169,18 +186,18 @@ class Expectimax(
     companion object {
         private data class ScoreResult(
             val direction: Direction,
-            val state: State,
+            val state: DiagnosticState,
             val score: Float
         )
 
-        private class State(
+        private class DiagnosticState(
             var evaluations: Long = 0,
             var moves: Long = 0,
             var cacheHits: Long = 0,
             var maxDepth: Int = 0,
         ) {
-            operator fun plus(other: State): State =
-                State(
+            operator fun plus(other: DiagnosticState): DiagnosticState =
+                DiagnosticState(
                     evaluations + other.evaluations,
                     moves + other.moves,
                     cacheHits + other.cacheHits,
@@ -188,7 +205,7 @@ class Expectimax(
                 )
         }
 
-        private fun List<ScoreResult>.state(): State =
+        private fun List<ScoreResult>.state(): DiagnosticState =
             map { it.state }.reduce { acc, state -> state + acc }
 
         const val CACHE_DEPTH_LIMIT = 15

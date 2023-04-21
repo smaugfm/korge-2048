@@ -70,6 +70,6 @@ korge {
     jvmMainClassName = "io.github.smaugfm.game2048.MainKt"
 
     targetJvm()
-    targetJs()
-    targetDesktop()
+//    targetJs()
+//    targetDesktop()
 }

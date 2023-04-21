@@ -1,14 +1,16 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
+import io.github.smaugfm.game2048.transposition.ConcurrentHashMapTranspositionTable
 import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
 import io.github.smaugfm.game2048.transposition.ZobristHashTranspositionTable
 import kotlinx.benchmark.*
-import kotlin.random.Random
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 
+@OptIn(DelicateCoroutinesApi::class)
 @State(Scope.Benchmark)
 @Measurement(
     iterations = 2,
@@ -31,18 +33,43 @@ class FindBestMoveBenchmark {
             1, 0, 0, 1
         )
     private var board4HashMapExpectimax =
-        Expectimax(Board4Heuristics(), HashMapTranspositionTable(), false)
-    private var board4ZobristExpectimax =
-        Expectimax(Board4Heuristics(), ZobristHashTranspositionTable(), false)
+        Expectimax(Board4Heuristics(), HashMapTranspositionTable(), null, false)
+    private var board4ConcurrentHashMapExpectimax =
+        Expectimax(Board4Heuristics(), ConcurrentHashMapTranspositionTable(), null, false)
+
+    private var board4parallelZobristExpectimax =
+        Expectimax(
+            Board4Heuristics(),
+            ZobristHashTranspositionTable(),
+            GlobalScope,
+            false
+        )
+    private var board4parallelConcurrentHashMapExpectimax =
+        Expectimax(
+            Board4Heuristics(),
+            ConcurrentHashMapTranspositionTable(),
+            GlobalScope,
+            false
+        )
     private var board4 = Board4.fromArray(arr)
 
     @Benchmark
-    fun board4HashMap() {
+    fun board4HashMapExpectimax() {
         board4HashMapExpectimax.findBestMove(board4)
     }
 
     @Benchmark
-    fun board4Zobrist() {
-        board4ZobristExpectimax.findBestMove(board4)
+    fun board4ConcurrentHashMapExpectimax() {
+        board4ConcurrentHashMapExpectimax.findBestMove(board4)
+    }
+
+    @Benchmark
+    fun board4ZobristParallelExpectimax() {
+        board4parallelZobristExpectimax.findBestMove(board4)
+    }
+
+    @Benchmark
+    fun board4ZobristParallelConcurrentHashMapExpectimax() {
+        board4parallelConcurrentHashMapExpectimax.findBestMove(board4)
     }
 }
