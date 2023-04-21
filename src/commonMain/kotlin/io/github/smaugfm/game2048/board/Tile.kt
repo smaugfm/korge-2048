@@ -1,7 +1,6 @@
 package io.github.smaugfm.game2048.board
 
 import korlibs.datastructure.random.FastRandom
-import kotlin.jvm.JvmInline
 
 @JvmInline
 value class Tile(val power: Int) {

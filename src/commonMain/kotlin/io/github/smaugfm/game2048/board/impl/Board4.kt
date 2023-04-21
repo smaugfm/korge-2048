@@ -1,11 +1,16 @@
 package io.github.smaugfm.game2048.board.impl
 
-import io.github.smaugfm.game2048.board.*
+import io.github.smaugfm.game2048.board.Board
+import io.github.smaugfm.game2048.board.BoardFactory
+import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
+import io.github.smaugfm.game2048.board.MoveBoardResult
+import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.TileIndex
+import io.github.smaugfm.game2048.board.TilePlacementResult
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.io.lang.assert
-import kotlin.jvm.JvmInline
 
 @JvmInline
 value class Board4(val bits: ULong) :

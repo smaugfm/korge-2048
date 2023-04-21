@@ -2,7 +2,6 @@ package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.board.impl.Board4
 import korlibs.datastructure.IntArray2
-import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

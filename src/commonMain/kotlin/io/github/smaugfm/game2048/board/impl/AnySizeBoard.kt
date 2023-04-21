@@ -19,7 +19,7 @@ import kotlin.math.sqrt
 
 class AnySizeBoard private constructor(
     val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power }
-) : Board<io.github.smaugfm.game2048.board.impl.AnySizeBoard> {
+) : Board<AnySizeBoard> {
 
     override fun tiles() =
         array.map(::Tile).toTypedArray()
@@ -35,12 +35,12 @@ class AnySizeBoard private constructor(
             hasAdjacentEqualPosition(i)
         }
 
-    override fun move(direction: Direction): io.github.smaugfm.game2048.board.impl.AnySizeBoard =
+    override fun move(direction: Direction): AnySizeBoard =
         moveBoardInternal(direction, emptyAddMove, emptyAddMerge)
 
     override fun moveGenerateMoves(
         direction: Direction
-    ): MoveBoardResult<io.github.smaugfm.game2048.board.impl.AnySizeBoard> {
+    ): MoveBoardResult<AnySizeBoard> {
         val moves = mutableListOf<BoardMove>()
 
         val newBoard = moveBoardInternal(
@@ -61,7 +61,7 @@ class AnySizeBoard private constructor(
         return MoveBoardResult(newBoard, moves)
     }
 
-    override fun placeRandomTile(): TilePlacementResult<io.github.smaugfm.game2048.board.impl.AnySizeBoard>? {
+    override fun placeRandomTile(): TilePlacementResult<AnySizeBoard>? {
         val index = tiles()
             .withIndex()
             .filter { it.value.isEmpty }
@@ -78,7 +78,7 @@ class AnySizeBoard private constructor(
     override fun countEmptyTiles(): Int =
         array.count { Tile(it).isEmpty }
 
-    override fun placeTile(tile: Tile, i: TileIndex): io.github.smaugfm.game2048.board.impl.AnySizeBoard {
+    override fun placeTile(tile: Tile, i: TileIndex): AnySizeBoard {
         val copy = array.copyOf()
         copy[i] = tile.power
 
@@ -87,12 +87,12 @@ class AnySizeBoard private constructor(
 
     fun moveLineToStart(
         indexes: IntArray,
-        newBoard: io.github.smaugfm.game2048.board.impl.AnySizeBoard,
+        newBoard: AnySizeBoard,
     ) = moveLineLeftInternal(indexes, newBoard, emptyAddMove, emptyAddMerge)
 
     fun moveLineToStartGenerateMoves(
         indexes: IntArray,
-        newBoard: io.github.smaugfm.game2048.board.impl.AnySizeBoard,
+        newBoard: AnySizeBoard,
         moves: MutableList<BoardMove>
     ) {
         moveLineLeftInternal(indexes, newBoard, { from, to ->
@@ -106,7 +106,7 @@ class AnySizeBoard private constructor(
 
     private fun moveLineLeftInternal(
         indexes: IntArray,
-        newBoard: io.github.smaugfm.game2048.board.impl.AnySizeBoard,
+        newBoard: AnySizeBoard,
         addMove: (from: Int, to: Int) -> Unit,
         addMerge: (from1: Int, from2: Int, to: Int, newTile: Tile) -> Unit,
     ) {
@@ -149,7 +149,7 @@ class AnySizeBoard private constructor(
         direction: Direction,
         addMove: (from: Int, to: Int) -> Unit,
         addMerge: (from1: Int, from2: Int, to: Int, newTile: Tile) -> Unit,
-    ): io.github.smaugfm.game2048.board.impl.AnySizeBoard {
+    ): AnySizeBoard {
         val newBoard = AnySizeBoard()
 
         repeat(boardSize) { i: Int ->
@@ -196,7 +196,7 @@ class AnySizeBoard private constructor(
 
 
     override fun equals(other: Any?): Boolean =
-        (other is io.github.smaugfm.game2048.board.impl.AnySizeBoard) && this.array.contentEquals(other.array)
+        (other is AnySizeBoard) && this.array.contentEquals(other.array)
 
     override fun hashCode() = array.hashCode()
 
@@ -207,7 +207,7 @@ class AnySizeBoard private constructor(
             array
         ).toString()
 
-    companion object : BoardFactory<io.github.smaugfm.game2048.board.impl.AnySizeBoard> {
+    companion object : BoardFactory<AnySizeBoard> {
         private val emptyAddMove = { _: Int, _: Int -> }
         private val emptyAddMerge = { _: Int, _: Int, _: Int, _: Tile -> }
         private val indices = (0 until boardArraySize).toList().toIntArray()
@@ -234,13 +234,13 @@ class AnySizeBoard private constructor(
                 }.toTypedArray<IntArray>()
             }.toTypedArray<Array<IntArray>>()
 
-        override fun createEmpty(): io.github.smaugfm.game2048.board.impl.AnySizeBoard =
+        override fun createEmpty(): AnySizeBoard =
             AnySizeBoard()
 
-        override fun fromTiles(tiles: Array<Tile>): io.github.smaugfm.game2048.board.impl.AnySizeBoard =
+        override fun fromTiles(tiles: Array<Tile>): AnySizeBoard =
             AnySizeBoard(tiles.map { it.power }.toIntArray())
 
-        override fun fromArray(tiles: IntArray): io.github.smaugfm.game2048.board.impl.AnySizeBoard =
+        override fun fromArray(tiles: IntArray): AnySizeBoard =
             AnySizeBoard(tiles)
     }
 }
