@@ -1,6 +1,7 @@
 package io.github.smaugfm.game2048.board.impl
 
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Direction.*
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
@@ -13,14 +14,14 @@ object PrecomputedTables {
 
     val leftLinesTable = UShortArray(65536)
     val rightLinesTable = UShortArray(65536)
-    val upLinesTable = ULongArray(65536)
-    val downLinesTable = ULongArray(65536)
+    val topLinesTable = ULongArray(65536)
+    val bottomLinesTable = ULongArray(65536)
     val heuristicsTable = FloatArray(65536)
 
     val zHashUpdateTableLeft = Array(4) { IntArray(65536) }
     val zHashUpdateTableRight = Array(4) { IntArray(65536) }
-    val zHashUpdateTableUp = Array(4) { IntArray(65536) }
-    val zHashUpdateTableDown = Array(4) { IntArray(65536) }
+    val zHashUpdateTableTop = Array(4) { IntArray(65536) }
+    val zHashUpdateTableBottom = Array(4) { IntArray(65536) }
 
     init {
         for (line in (0u until 65536u)) {
@@ -53,8 +54,8 @@ object PrecomputedTables {
 
         leftLinesTable[line.toInt()] = result
         rightLinesTable[reverseLine.toInt()] = reverseResult
-        upLinesTable[line.toInt()] = transposeColumn(result)
-        downLinesTable[reverseLine.toInt()] = transposeColumn(reverseResult)
+        topLinesTable[line.toInt()] = transposeColumn(result)
+        bottomLinesTable[reverseLine.toInt()] = transposeColumn(reverseResult)
     }
 
     private fun initHeuristicsTable(newBoard: AnySizeBoard, line: UInt) {
@@ -67,56 +68,47 @@ object PrecomputedTables {
             listOf(
                 zHashUpdateTableLeft,
                 zHashUpdateTableRight,
-                zHashUpdateTableUp,
-                zHashUpdateTableDown
+                zHashUpdateTableTop,
+                zHashUpdateTableBottom
             )
         ).forEach { (dir, table) ->
             repeat(4) { lineNum ->
-                when (dir) {
-                    Direction.LEFT, Direction.RIGHT -> {
-                        table[lineNum][line.toInt()] =
-                            updateHashLeftRight(line, dir, lineNum)
-                    }
+                table[lineNum][line.toInt()] = when (dir) {
+                    LEFT, RIGHT -> calculateZHashDiff(
+                        line, dir == LEFT, lineNum, false
+                    )
 
-                    Direction.TOP, Direction.BOTTOM -> {
-                        table[lineNum][line.toInt()] =
-                            updateHashUpDown(line, dir, lineNum)
-                    }
+                    TOP, BOTTOM -> calculateZHashDiff(
+                        line, dir == TOP, lineNum, true
+                    )
                 }
             }
         }
     }
 
-    private fun updateHashLeftRight(
-        line: UInt, dir: Direction, lineNum: Int
+    private fun calculateZHashDiff(
+        line: UInt,
+        left: Boolean,
+        lineNum: Int,
+        unTransposeIndexes: Boolean
     ): Int {
         val board = AnySizeBoard.fromArray(
             Board4(line.toULong() shl (lineNum * 16)).toIntArray()
         )
-        val newBoard = board.move(dir)
+        val newBoard = board.move(if (left) LEFT else RIGHT)
 
-        return (lineNum * 4 until (lineNum * 4) + 4).map { i ->
-            if (newBoard[i].power > 15) newBoard.array[i] = 15
-            zMapValue(board[i], i) xor zMapValue(newBoard[i], i)
-        }.xorSum()
-    }
+        return (lineNum * 4 until (lineNum * 4) + 4).map { index ->
+            if (newBoard[index].power > 15) newBoard.array[index] = 15
+            if (unTransposeIndexes) {
+                val unTransposedIndex = (index % 4) * 4 + (index / 4)
 
-    private fun updateHashUpDown(
-        line: UInt, dir: Direction, lineNum: Int
-    ): Int {
-        val d = if (dir == Direction.TOP) Direction.LEFT else Direction.RIGHT
-        val board = AnySizeBoard.fromArray(
-            Board4(line.toULong() shl (lineNum * 16)).toIntArray()
-        )
-        val newBoard = board.move(d)
+                zMapValue(board[index], unTransposedIndex) xor
+                    zMapValue(newBoard[index], unTransposedIndex)
+            } else {
+                zMapValue(board[index], index) xor
+                    zMapValue(newBoard[index], index)
+            }
 
-        return (lineNum * 4 until (lineNum * 4) + 4).map { i ->
-            if (newBoard[i].power > 15)
-                newBoard.array[i] = 15
-
-            val originalI = (i % 4) * 4 + (i / 4)
-            zMapValue(board[i], originalI) xor
-                zMapValue(newBoard[i], originalI)
         }.xorSum()
     }
 

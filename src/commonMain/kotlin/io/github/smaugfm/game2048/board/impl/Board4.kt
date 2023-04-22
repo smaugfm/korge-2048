@@ -86,10 +86,10 @@ value class Board4(val bits: ULong) :
             lookupRows(PrecomputedTables.rightLinesTable)
 
         Direction.TOP ->
-            lookupColumns(PrecomputedTables.upLinesTable)
+            lookupColumns(PrecomputedTables.topLinesTable)
 
         Direction.BOTTOM ->
-            lookupColumns(PrecomputedTables.downLinesTable)
+            lookupColumns(PrecomputedTables.bottomLinesTable)
     }
 
     private fun lookupColumns(table: ULongArray): Board4 {

@@ -106,9 +106,9 @@ class PrecomputedTablesTest {
 
         val table =
             if (dir == Direction.TOP)
-                PrecomputedTables.zHashUpdateTableUp
+                PrecomputedTables.zHashUpdateTableTop
             else
-                PrecomputedTables.zHashUpdateTableDown
+                PrecomputedTables.zHashUpdateTableBottom
 
         val u = table[lineNum][line.toInt()]
         assertEquals(result, u)
