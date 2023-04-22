@@ -1,8 +1,7 @@
 package io.github.smaugfm.game2048.board.impl
 
-import io.github.smaugfm.game2048.board.BoardMove.Merge
-import io.github.smaugfm.game2048.board.BoardMove.Move
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
 import io.github.smaugfm.game2048.transposition.ZobristHashTranspositionTable.Companion.zMap
@@ -18,7 +17,10 @@ object PrecomputedTables {
     val downLinesTable = ULongArray(65536)
     val heuristicsTable = FloatArray(65536)
 
-    val zHashUpdateTable = Array(4) { Array(4) { IntArray(65536) } }
+    val zHashUpdateTableLeft = Array(4) { IntArray(65536) }
+    val zHashUpdateTableRight = Array(4) { IntArray(65536) }
+    val zHashUpdateTableUp = Array(4) { IntArray(65536) }
+    val zHashUpdateTableDown = Array(4) { IntArray(65536) }
 
     init {
         for (line in (0u until 65536u)) {
@@ -31,8 +33,7 @@ object PrecomputedTables {
             )
 
             generalBoard.moveLineToStart(
-                firstLineLeftIndexes,
-                newBoard
+                firstLineLeftIndexes, newBoard
             )
 
             initMoveTables(newBoard, line)
@@ -42,13 +43,10 @@ object PrecomputedTables {
     }
 
     private fun initMoveTables(newBoard: AnySizeBoard, line: UInt) {
-        val result = newBoard.array
-            .map {
-                //4 bits per tile, so maximum tile is 32768
-                if (it > 15) 15 else it
-            }
-            .toIntArray()
-            .toUIntArray().packArray().toUShort()
+        val result = newBoard.array.map {
+            //4 bits per tile, so maximum tile is 32768
+            if (it > 15) 15 else it
+        }.toIntArray().toUIntArray().packArray().toUShort()
 
         val reverseResult = reverseLine(result)
         val reverseLine = reverseLine(line.toUShort())
@@ -65,42 +63,71 @@ object PrecomputedTables {
     }
 
     private fun initZobristUpdateTable(line: UInt) {
-        Direction.values().forEach { dir ->
-            val dirArr = zHashUpdateTable[dir.ordinal]
+        Direction.values().zip(
+            listOf(
+                zHashUpdateTableLeft,
+                zHashUpdateTableRight,
+                zHashUpdateTableUp,
+                zHashUpdateTableDown
+            )
+        ).forEach { (dir, table) ->
             repeat(4) { lineNum ->
-                val lineArr = dirArr[lineNum]
-
-                val board = AnySizeBoard.fromArray(
-                    Board4(line.toULong() shl (lineNum * 16)).toIntArray()
-                )
-                val (_, moves) = board.moveGenerateMoves(dir)
-
-                val result = moves.map {
-                    when (it) {
-                        is Move -> {
-                            zMapValue(board, it.from) xor
-                                zMapValue(board, it.to)
-                        }
-
-                        is Merge -> {
-                            zMapValue(board, it.from1) xor
-                                zMapValue(board, it.from2) xor
-                                zMapValue(board, it.to)
-                        }
+                when (dir) {
+                    Direction.LEFT, Direction.RIGHT -> {
+                        table[lineNum][line.toInt()] =
+                            updateHashLeftRight(line, dir, lineNum)
                     }
-                }.fold(0) { acc, x -> acc xor x }
 
-                lineArr[line.toInt()] = result
+                    Direction.TOP, Direction.BOTTOM -> {
+                        table[lineNum][line.toInt()] =
+                            updateHashUpDown(line, dir, lineNum)
+                    }
+                }
             }
         }
     }
 
-    private fun zMapValue(
-        board: AnySizeBoard,
-        i: TileIndex
+    private fun updateHashLeftRight(
+        line: UInt, dir: Direction, lineNum: Int
     ): Int {
-        val v = board[i].power.toUInt()
-        return zMap[(i shl 4) or (v and 0xfu).toInt()]
+        val board = AnySizeBoard.fromArray(
+            Board4(line.toULong() shl (lineNum * 16)).toIntArray()
+        )
+        val newBoard = board.move(dir)
+
+        return (lineNum * 4 until (lineNum * 4) + 4).map { i ->
+            if (newBoard[i].power > 15) newBoard.array[i] = 15
+            zMapValue(board[i], i) xor zMapValue(newBoard[i], i)
+        }.xorSum()
+    }
+
+    private fun updateHashUpDown(
+        line: UInt, dir: Direction, lineNum: Int
+    ): Int {
+        val d = if (dir == Direction.TOP) Direction.LEFT else Direction.RIGHT
+        val board = AnySizeBoard.fromArray(
+            Board4(line.toULong() shl (lineNum * 16)).toIntArray()
+        )
+        val newBoard = board.move(d)
+
+        return (lineNum * 4 until (lineNum * 4) + 4).map { i ->
+            if (newBoard[i].power > 15)
+                newBoard.array[i] = 15
+
+            val originalI = (i % 4) * 4 + (i / 4)
+            zMapValue(board[i], originalI) xor
+                zMapValue(newBoard[i], originalI)
+        }.xorSum()
+    }
+
+    fun zMapValue(
+        tile: Tile, i: TileIndex
+    ): Int {
+        val v = tile.power.toUInt() and 0xfu
+        val ix = (i shl 4)
+
+        val zMapIndex = ix or v.toInt()
+        return zMap[zMapIndex]
     }
 
     private fun transposeColumn(line: UShort): ULong {
@@ -116,10 +143,7 @@ object PrecomputedTables {
     )
 
     private fun UIntArray.packArray() =
-        ((this[0] and 0xFu) shl 0) or
-            ((this[1] and 0xFu) shl 4) or
-            ((this[2] and 0xFu) shl 8) or
-            ((this[3] and 0xFu) shl 12)
+        ((this[0] and 0xFu) shl 0) or ((this[1] and 0xFu) shl 4) or ((this[2] and 0xFu) shl 8) or ((this[3] and 0xFu) shl 12)
 
     internal fun reverseLine(l: UShort): UShort {
         val line = l.toUInt()
@@ -128,8 +152,6 @@ object PrecomputedTables {
         return result.toUShort()
     }
 
-    private val Int.row get() = this / 4
-    private val Int.col get() = this % 4
+    fun List<Int>.xorSum() = fold(0) { x, y -> x xor y }
 
-    private fun toIndex(row: Int, col: Int) = col + row * 4
 }

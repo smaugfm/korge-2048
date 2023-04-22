@@ -15,7 +15,7 @@ import korlibs.io.lang.assert
 @JvmInline
 value class Board4(val bits: ULong) :
     Board<Board4> {
-    fun transpose(): Board4 {
+    override fun transpose(): Board4 {
         val a1 = bits and 0xF0F00F0FF0F00F0FUL
         val a2 = bits and 0x0000F0F00000F0F0UL
         val a3 = bits and 0x0F0F00000F0F0000UL

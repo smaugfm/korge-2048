@@ -2,6 +2,7 @@ package io.github.smaugfm.game2048.board
 
 interface Board<out T : Board<T>> {
 
+    fun transpose(): T
     fun hasAvailableMoves(): Boolean
     fun move(direction: Direction): T
     fun moveGenerateMoves(direction: Direction): MoveBoardResult<T>

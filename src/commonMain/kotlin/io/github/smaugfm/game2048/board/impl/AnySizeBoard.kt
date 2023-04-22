@@ -24,8 +24,21 @@ class AnySizeBoard private constructor(
     override fun tiles() =
         array.map(::Tile).toTypedArray()
 
+    override fun transpose(): AnySizeBoard =
+        AnySizeBoard(array.copyOf()).also { b ->
+            repeat(boardSize) { x ->
+                repeat(boardSize) { y ->
+                    b[x, y] = this[y, x]
+                }
+            }
+        }
+
     operator fun get(x: Int, y: Int) =
         Tile(this.array[x * boardSize + y])
+
+    operator fun set(x: Int, y: Int, value: Tile) {
+        this.array[x * boardSize + y] = value.power
+    }
 
     operator fun get(i: Int) =
         Tile(this.array[i])
