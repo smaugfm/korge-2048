@@ -6,9 +6,10 @@ import kotlin.random.Random
 
 class ZobristHashTranspositionTable : TranspositionTable {
     companion object {
-        private const val SIZE = (1 shl 22) // ~4.2m
-        private val zMap = IntArray(256) {
-            Random.nextInt(SIZE - 1)
+        const val ZOBRIST_TABLE_SIZE = (1 shl 22) // ~4.2m
+
+        val zMap = IntArray(256) {
+            Random.nextInt(ZOBRIST_TABLE_SIZE - 1)
         }
 
         fun zHash(board: Board4): Int {
@@ -24,7 +25,7 @@ class ZobristHashTranspositionTable : TranspositionTable {
         }
     }
 
-    private val table = LongArray(SIZE * 2)
+    private val table = LongArray(ZOBRIST_TABLE_SIZE * 2)
 
     override var size = 0
         private set
@@ -48,7 +49,7 @@ class ZobristHashTranspositionTable : TranspositionTable {
     override fun clear() {
         var i = 0
         size = 0
-        while (i < SIZE * 2) {
+        while (i < ZOBRIST_TABLE_SIZE * 2) {
             table[i] = 0L
             i++
         }
