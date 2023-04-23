@@ -11,6 +11,7 @@ object PrecomputedTables {
     val rightLinesTable = UShortArray(65536)
     val topLinesTable = ULongArray(65536)
     val bottomLinesTable = ULongArray(65536)
+
     val heuristicsTable = FloatArray(65536)
 
     init {

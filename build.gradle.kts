@@ -38,7 +38,11 @@ kotlin {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
             languageSettings.optIn("kotlin.time.ExperimentalTime")
         }
-        val commonMain by getting
+        val commonMain by getting {
+            dependencies {
+                implementation("co.touchlab:stately-concurrent-collections:2.0.0-rc1")
+            }
+        }
         val jvmMain by getting
         val commonBenchmark by creating {
             dependsOn(commonMain)
@@ -70,6 +74,6 @@ korge {
     jvmMainClassName = "io.github.smaugfm.game2048.MainKt"
 
     targetJvm()
-//    targetJs()
-//    targetDesktop()
+    targetJs()
+    targetDesktop()
 }

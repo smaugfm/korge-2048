@@ -1,6 +1,7 @@
 package io.github.smaugfm.game2048.transposition
 
 import io.github.smaugfm.game2048.board.impl.Board4
+import kotlin.jvm.JvmInline
 
 interface TranspositionTable {
     val size: Int

@@ -34,7 +34,12 @@ class FindBestMoveBenchmark {
     private var board4HashMapExpectimax =
         Expectimax(Board4Heuristics(), HashMapTranspositionTable(), null, false)
     private var board4ConcurrentHashMapExpectimax =
-        Expectimax(Board4Heuristics(), ConcurrentHashMapTranspositionTable(), null, false)
+        Expectimax(
+            Board4Heuristics(),
+            ConcurrentHashMapTranspositionTable(),
+            null,
+            false
+        )
 
     private var board4parallelConcurrentHashMapExpectimax =
         Expectimax(
