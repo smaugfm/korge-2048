@@ -8,7 +8,6 @@ import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.heuristics.Heuristics
 import io.github.smaugfm.game2048.transposition.TranspositionTable
-import korlibs.io.async.runBlockingNoJs
 import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.math.roundDecimalPlaces
 import kotlinx.coroutines.CoroutineDispatcher
@@ -23,27 +22,22 @@ import kotlin.time.measureTimedValue
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
-class Expectimax(
+open class Expectimax protected constructor(
     private val heuristics: Heuristics<Board4>,
     private val transpositionTable: TranspositionTable,
-    private val scope: CoroutineScope? = null,
     private val log: Boolean = true,
 ) {
     private var cacheSize: Int = 0
     private var depthLimit: Long = 0
 
-    fun findBestMove(board: Board4): Direction? {
+    suspend fun findBestMove(board: Board4): Direction? {
         transpositionTable.clear()
 
         depthLimit = getDepthLimit(board).toLong()
 
         val (sortedResults, duration) =
-            measureTimedValue {
-                if (scope != null)
-                    searchParallel(scope, board)
-                else
-                    search(board)
-            }
+            measureTimedValue { search(board) }
+
         val state = sortedResults.state()
         cacheSize = transpositionTable.size
 
@@ -53,18 +47,12 @@ class Expectimax(
             ?.direction
     }
 
-    private fun searchParallel(scope: CoroutineScope, board: Board4) =
-        runBlockingNoJs {
-            directions.map { d -> scope.async(dispatcher) { topLevelNode(board, d) } }
-                .awaitAll()
-                .sortedByDescending { it.score }
-        }
-
-    private fun search(board: Board4) =
-        directions.map { d -> topLevelNode(board, d) }
+    protected open suspend fun search(board: Board4) =
+        directions.map { d -> scope.async(dispatcher) { topLevelNode(board, d) } }
+            .awaitAll()
             .sortedByDescending { it.score }
 
-    private fun topLevelNode(
+    protected fun topLevelNode(
         board: Board4,
         dir: Direction
     ): ScoreResult {
@@ -183,27 +171,34 @@ class Expectimax(
         )
     }
 
-    companion object {
-        private data class ScoreResult(
-            val direction: Direction,
-            val state: DiagnosticState,
-            val score: Float
-        )
+    protected data class ScoreResult(
+        val direction: Direction,
+        val state: DiagnosticState,
+        val score: Float
+    )
 
-        private class DiagnosticState(
-            var evaluations: Long = 0,
-            var moves: Long = 0,
-            var cacheHits: Long = 0,
-            var maxDepth: Int = 0,
-        ) {
-            operator fun plus(other: DiagnosticState): DiagnosticState =
-                DiagnosticState(
-                    evaluations + other.evaluations,
-                    moves + other.moves,
-                    cacheHits + other.cacheHits,
-                    max(maxDepth, other.maxDepth)
-                )
-        }
+    protected class DiagnosticState(
+        var evaluations: Long = 0,
+        var moves: Long = 0,
+        var cacheHits: Long = 0,
+        var maxDepth: Int = 0,
+    ) {
+        operator fun plus(other: DiagnosticState): DiagnosticState =
+            DiagnosticState(
+                evaluations + other.evaluations,
+                moves + other.moves,
+                cacheHits + other.cacheHits,
+                max(maxDepth, other.maxDepth)
+            )
+    }
+
+    companion object {
+        fun create(
+            heuristics: Heuristics<Board4>,
+            transpositionTable: TranspositionTable,
+            log: Boolean = true,
+        ): Expectimax =
+            ExpectimaxImpl(heuristics, transpositionTable, log)
 
         private fun List<ScoreResult>.state(): DiagnosticState =
             map { it.state }.reduce { acc, state -> state + acc }
@@ -213,6 +208,7 @@ class Expectimax(
         const val SPARSE_BOARD_MAX_DEPTH = 3
         private val dispatcher: CoroutineDispatcher =
             Dispatchers.createFixedThreadDispatcher("expectimax", Direction.values().size)
+        private val scope = CoroutineScope(dispatcher)
 
         fun Float.format(padStart: Int = 0): String {
             return this.roundDecimalPlaces(2).toString().padStart(padStart)

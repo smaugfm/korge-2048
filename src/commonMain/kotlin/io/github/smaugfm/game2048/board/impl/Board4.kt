@@ -11,6 +11,7 @@ import io.github.smaugfm.game2048.board.TilePlacementResult
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.io.lang.assert
+import kotlin.jvm.JvmInline
 
 @JvmInline
 value class Board4(val bits: ULong) :

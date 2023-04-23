@@ -11,6 +11,11 @@ import kotlinx.benchmark.*
     time = 10,
     timeUnit = BenchmarkTimeUnit.SECONDS
 )
+@Warmup(
+    iterations = 5,
+    time = 10,
+    timeUnit = BenchmarkTimeUnit.SECONDS
+)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.Throughput)
 class MoveBoardBenchmark {

@@ -4,20 +4,17 @@ import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.transposition.ConcurrentHashMapTranspositionTable
-import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
+import korlibs.io.async.runBlockingNoJs
 import kotlinx.benchmark.*
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 
-@OptIn(DelicateCoroutinesApi::class)
 @State(Scope.Benchmark)
 @Measurement(
-    iterations = 2,
+    iterations = 5,
     time = 10,
     timeUnit = BenchmarkTimeUnit.SECONDS
 )
 @Warmup(
-    iterations = 2,
+    iterations = 5,
     time = 10,
     timeUnit = BenchmarkTimeUnit.SECONDS
 )
@@ -31,37 +28,18 @@ class FindBestMoveBenchmark {
             1, 1, 1, 1,
             1, 0, 0, 1
         )
-    private var board4HashMapExpectimax =
-        Expectimax(Board4Heuristics(), HashMapTranspositionTable(), null, false)
-    private var board4ConcurrentHashMapExpectimax =
-        Expectimax(
+    private var expectimax =
+        Expectimax.create(
             Board4Heuristics(),
             ConcurrentHashMapTranspositionTable(),
-            null,
-            false
-        )
-
-    private var board4parallelConcurrentHashMapExpectimax =
-        Expectimax(
-            Board4Heuristics(),
-            ConcurrentHashMapTranspositionTable(),
-            GlobalScope,
             false
         )
     private var board4 = Board4.fromArray(arr)
 
     @Benchmark
-    fun board4HashMapExpectimax() {
-        board4HashMapExpectimax.findBestMove(board4)
-    }
-
-    @Benchmark
-    fun board4ConcurrentHashMapExpectimax() {
-        board4ConcurrentHashMapExpectimax.findBestMove(board4)
-    }
-
-    @Benchmark
     fun board4parallelConcurrentHashMapExpectimax() {
-        board4parallelConcurrentHashMapExpectimax.findBestMove(board4)
+        runBlockingNoJs {
+            expectimax.findBestMove(board4)
+        }
     }
 }
