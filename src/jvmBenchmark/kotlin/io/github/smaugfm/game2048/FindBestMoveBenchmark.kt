@@ -5,7 +5,6 @@ import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.transposition.ConcurrentHashMapTranspositionTable
 import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
-import io.github.smaugfm.game2048.transposition.ZobristHashTranspositionTable
 import kotlinx.benchmark.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -37,13 +36,6 @@ class FindBestMoveBenchmark {
     private var board4ConcurrentHashMapExpectimax =
         Expectimax(Board4Heuristics(), ConcurrentHashMapTranspositionTable(), null, false)
 
-    private var board4parallelZobristExpectimax =
-        Expectimax(
-            Board4Heuristics(),
-            ZobristHashTranspositionTable(),
-            GlobalScope,
-            false
-        )
     private var board4parallelConcurrentHashMapExpectimax =
         Expectimax(
             Board4Heuristics(),
@@ -64,12 +56,7 @@ class FindBestMoveBenchmark {
     }
 
     @Benchmark
-    fun board4ZobristParallelExpectimax() {
-        board4parallelZobristExpectimax.findBestMove(board4)
-    }
-
-    @Benchmark
-    fun board4ZobristParallelConcurrentHashMapExpectimax() {
+    fun board4parallelConcurrentHashMapExpectimax() {
         board4parallelConcurrentHashMapExpectimax.findBestMove(board4)
     }
 }

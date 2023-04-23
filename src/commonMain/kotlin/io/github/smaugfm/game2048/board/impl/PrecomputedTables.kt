@@ -1,11 +1,6 @@
 package io.github.smaugfm.game2048.board.impl
 
-import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.Direction.*
-import io.github.smaugfm.game2048.board.Tile
-import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
-import io.github.smaugfm.game2048.transposition.ZobristHashTranspositionTable.Companion.zMap
 
 object PrecomputedTables {
     private const val COL_MASK = 0x000F000F000F000FUL
@@ -17,11 +12,6 @@ object PrecomputedTables {
     val topLinesTable = ULongArray(65536)
     val bottomLinesTable = ULongArray(65536)
     val heuristicsTable = FloatArray(65536)
-
-    val zHashUpdateTableLeft = Array(4) { IntArray(65536) }
-    val zHashUpdateTableRight = Array(4) { IntArray(65536) }
-    val zHashUpdateTableTop = Array(4) { IntArray(65536) }
-    val zHashUpdateTableBottom = Array(4) { IntArray(65536) }
 
     init {
         for (line in (0u until 65536u)) {
@@ -39,7 +29,6 @@ object PrecomputedTables {
 
             initMoveTables(newBoard, line)
             initHeuristicsTable(newBoard, line)
-            initZobristUpdateTable(line)
         }
     }
 
@@ -61,65 +50,6 @@ object PrecomputedTables {
     private fun initHeuristicsTable(newBoard: AnySizeBoard, line: UInt) {
         val score = anySizeHeuristics.evaluateLine(newBoard, firstLineLeftIndexes)
         heuristicsTable[line.toInt()] = score
-    }
-
-    private fun initZobristUpdateTable(line: UInt) {
-        Direction.values().zip(
-            listOf(
-                zHashUpdateTableLeft,
-                zHashUpdateTableRight,
-                zHashUpdateTableTop,
-                zHashUpdateTableBottom
-            )
-        ).forEach { (dir, table) ->
-            repeat(4) { lineNum ->
-                table[lineNum][line.toInt()] = when (dir) {
-                    LEFT, RIGHT -> calculateZHashDiff(
-                        line, dir == LEFT, lineNum, false
-                    )
-
-                    TOP, BOTTOM -> calculateZHashDiff(
-                        line, dir == TOP, lineNum, true
-                    )
-                }
-            }
-        }
-    }
-
-    private fun calculateZHashDiff(
-        line: UInt,
-        left: Boolean,
-        lineNum: Int,
-        unTransposeIndexes: Boolean
-    ): Int {
-        val board = AnySizeBoard.fromArray(
-            Board4(line.toULong() shl (lineNum * 16)).toIntArray()
-        )
-        val newBoard = board.move(if (left) LEFT else RIGHT)
-
-        return (lineNum * 4 until (lineNum * 4) + 4).map { index ->
-            if (newBoard[index].power > 15) newBoard.array[index] = 15
-            if (unTransposeIndexes) {
-                val unTransposedIndex = (index % 4) * 4 + (index / 4)
-
-                zMapValue(board[index], unTransposedIndex) xor
-                    zMapValue(newBoard[index], unTransposedIndex)
-            } else {
-                zMapValue(board[index], index) xor
-                    zMapValue(newBoard[index], index)
-            }
-
-        }.xorSum()
-    }
-
-    fun zMapValue(
-        tile: Tile, i: TileIndex
-    ): Int {
-        val v = tile.power.toUInt() and 0xfu
-        val ix = (i shl 4)
-
-        val zMapIndex = ix or v.toInt()
-        return zMap[zMapIndex]
     }
 
     private fun transposeColumn(line: UShort): ULong {
