@@ -13,24 +13,24 @@ allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
+val benchmarksExtension: BenchmarksExtension = the<BenchmarksExtension>()
+
 kotlin {
     targets {
         jvm {
             val benchmarkCompilation = compilations
                 .create("benchmark")
 
-            val benchmarksSourceSetName: String =
-                benchmarkCompilation.defaultSourceSet.name
-            val benchmarksExtension: BenchmarksExtension = the<BenchmarksExtension>()
-            val benchmarkTarget = KotlinJvmBenchmarkTarget(
-                extension = benchmarksExtension,
-                name = benchmarksSourceSetName,
-                compilation = benchmarkCompilation
-            ).apply {
-                val jmhVersion: String by project
-                this.jmhVersion = jmhVersion
-            }
-            benchmarksExtension.targets.add(benchmarkTarget)
+            benchmarksExtension.targets.add(
+                KotlinJvmBenchmarkTarget(
+                    extension = benchmarksExtension,
+                    name = "jvm",
+                    compilation = benchmarkCompilation
+                ).apply {
+                    val jmhVersion: String by project
+                    this.jmhVersion = jmhVersion
+                }
+            )
         }
     }
     sourceSets {
@@ -46,11 +46,11 @@ kotlin {
         val jvmMain by getting
         val commonBenchmark by creating {
             dependsOn(commonMain)
-        }
-        val jvmBenchmark by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
             }
+        }
+        val jvmBenchmark by getting {
             dependsOn(commonBenchmark)
             dependsOn(jvmMain)
         }

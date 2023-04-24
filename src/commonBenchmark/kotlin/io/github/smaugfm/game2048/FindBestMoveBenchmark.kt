@@ -37,7 +37,7 @@ class FindBestMoveBenchmark {
     private var board4 = Board4.fromArray(arr)
 
     @Benchmark
-    fun board4parallelConcurrentHashMapExpectimax() {
+    fun expectimax() {
         runBlockingNoJs {
             expectimax.findBestMove(board4)
         }
