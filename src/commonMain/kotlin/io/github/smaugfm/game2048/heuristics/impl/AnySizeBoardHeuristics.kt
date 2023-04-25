@@ -2,9 +2,9 @@ package io.github.smaugfm.game2048.heuristics.impl
 
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.boardSize
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard.Companion.directionIndexesMap
-import io.github.smaugfm.game2048.boardSize
 import io.github.smaugfm.game2048.heuristics.Heuristics
 import kotlin.math.min
 import kotlin.math.pow

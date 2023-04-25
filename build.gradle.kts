@@ -15,6 +15,15 @@ allOpen {
 
 val benchmarksExtension: BenchmarksExtension = the<BenchmarksExtension>()
 
+korge {
+    id = "io.github.smaugfm.game2048"
+    name = "game2048"
+    jvmMainClassName = "io.github.smaugfm.game2048.MainKt"
+
+    targetJvm()
+    targetJs()
+}
+
 kotlin {
     targets {
         jvm {
@@ -32,30 +41,52 @@ kotlin {
                 }
             )
         }
+        js("worker", IR) {
+            binaries.executable()
+            browser {
+                webpackTask {
+                    outputFileName = "worker.js"
+                }
+                @Suppress("OPT_IN_USAGE")
+                distribution {
+                    name = "worker"
+                }
+            }
+        }
     }
     sourceSets {
         all {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
             languageSettings.optIn("kotlin.time.ExperimentalTime")
         }
+        val commonWorker by creating
         val commonMain by getting {
             dependencies {
                 implementation("co.touchlab:stately-concurrent-collections:2.0.0-rc1")
             }
         }
-        val jvmMain by getting
         val commonBenchmark by creating {
             dependsOn(commonMain)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
             }
         }
+        val workerMain by getting {
+            dependsOn(commonWorker)
+        }
+        val jsMain by getting {
+            dependsOn(commonWorker)
+            resources.srcDirs("./build/worker")
+        }
+        val jvmMain by getting
         val jvmBenchmark by getting {
             dependsOn(commonBenchmark)
             dependsOn(jvmMain)
         }
     }
 }
+tasks["jsProcessResources"]
+    .dependsOn.add("workerBrowserDistribution")
 
 benchmark {
     configurations {
@@ -66,13 +97,4 @@ benchmark {
             include(".*MoveBoardBenchmark.*")
         }
     }
-}
-
-korge {
-    id = "io.github.smaugfm.game2048"
-    name = "game2048"
-    jvmMainClassName = "io.github.smaugfm.game2048.MainKt"
-
-    targetJvm()
-    targetJs()
 }

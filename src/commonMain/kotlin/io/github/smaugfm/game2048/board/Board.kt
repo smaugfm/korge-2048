@@ -1,5 +1,8 @@
 package io.github.smaugfm.game2048.board
 
+const val boardSize = 4
+const val boardArraySize = boardSize * boardSize
+
 interface Board<out T : Board<T>> {
 
     fun transpose(): T

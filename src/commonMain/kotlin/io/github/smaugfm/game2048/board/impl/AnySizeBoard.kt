@@ -9,8 +9,8 @@ import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.board.TilePlacementResult
-import io.github.smaugfm.game2048.boardArraySize
-import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.board.boardArraySize
+import io.github.smaugfm.game2048.board.boardSize
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
 import korlibs.datastructure.toIntList

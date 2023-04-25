@@ -3,6 +3,7 @@ package io.github.smaugfm.game2048
 import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax
+import io.github.smaugfm.game2048.expectimax.ExpectimaxImpl
 import io.github.smaugfm.game2048.heuristics.Heuristics
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.input.KorgeInputManager
@@ -18,23 +19,7 @@ import korlibs.korge.Korge
 import korlibs.korge.KorgeConfig
 import korlibs.render.GameWindow
 
-const val boardSize = 4
-const val boardArraySize = boardSize * boardSize
-
-suspend fun main() {
-    val injector = AsyncInjector().apply {
-        mapInstance(TranspositionTable::class, ConcurrentHashMapTranspositionTable())
-        mapInstance(Heuristics::class, Board4Heuristics())
-        mapInstance(BoardFactory::class, Board4.Companion)
-        mapSingleton(Expectimax::class) { Expectimax.create(get(), get()) }
-        GameState(this)
-        UIConstants(this)
-        History(this)
-        KorgeInputManager(this)
-        StaticUi(this)
-
-        mapSingleton { MainScene(get(), get(), get(), get(), get(), get()) }
-    }
+suspend fun startKorge(injector: AsyncInjector) {
     Korge(
         KorgeConfig(
             virtualSize = UIConstants.virtualSize,
@@ -47,4 +32,21 @@ suspend fun main() {
         )
     ) {
     }
+}
+
+suspend fun createInjector(): AsyncInjector {
+    val injector = AsyncInjector().apply {
+        mapInstance(TranspositionTable::class, ConcurrentHashMapTranspositionTable())
+        mapInstance(Heuristics::class, Board4Heuristics())
+        mapInstance(BoardFactory::class, Board4)
+        mapSingleton(Expectimax::class) { ExpectimaxImpl(get(), get()) }
+        GameState(this)
+        UIConstants(this)
+        History(this)
+        KorgeInputManager(this)
+        StaticUi(this)
+
+        mapSingleton { MainScene(get(), get(), get(), get(), get(), get()) }
+    }
+    return injector
 }

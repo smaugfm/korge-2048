@@ -2,7 +2,7 @@ package io.github.smaugfm.game2048.ui
 
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
-import io.github.smaugfm.game2048.boardSize
+import io.github.smaugfm.game2048.board.boardSize
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.accentColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelBackgroundColor
 import korlibs.image.color.Colors

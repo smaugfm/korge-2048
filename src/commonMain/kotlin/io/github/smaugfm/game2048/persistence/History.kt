@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.persistence
 
 import io.github.smaugfm.game2048.board.Tile
-import io.github.smaugfm.game2048.boardArraySize
+import io.github.smaugfm.game2048.board.boardArraySize
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.inject.AsyncInjector
 import korlibs.korge.service.storage.storage

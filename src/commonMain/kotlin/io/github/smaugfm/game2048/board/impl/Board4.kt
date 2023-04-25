@@ -10,7 +10,6 @@ import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.board.TilePlacementResult
 import korlibs.datastructure.IntArray2
 import korlibs.datastructure.random.FastRandom
-import korlibs.io.lang.assert
 import kotlin.jvm.JvmInline
 
 @JvmInline
@@ -150,7 +149,8 @@ value class Board4(val bits: ULong) :
     }
 
     override fun countEmptyTiles(): Int {
-        assert(bits != 0UL)
+        if (bits == 0UL)
+            throw Error("bits == 0")
 
         var x = bits
         x = x or ((x shr 2) and 0x3333333333333333UL)

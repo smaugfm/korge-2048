@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
-import io.github.smaugfm.game2048.boardArraySize
+import boardArraySize
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -8,21 +8,16 @@ import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.heuristics.Heuristics
 import io.github.smaugfm.game2048.transposition.TranspositionTable
-import korlibs.io.concurrent.createFixedThreadDispatcher
-import korlibs.math.roundDecimalPlaces
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.round
 import kotlin.time.Duration
 import kotlin.time.measureTimedValue
 
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
-open class Expectimax protected constructor(
+abstract class Expectimax protected constructor(
     private val heuristics: Heuristics<Board4>,
     private val transpositionTable: TranspositionTable,
     private val log: Boolean = true,
@@ -47,10 +42,7 @@ open class Expectimax protected constructor(
             ?.direction
     }
 
-    protected open suspend fun search(board: Board4) =
-        directions.map { d -> scope.async(dispatcher) { topLevelNode(board, d) } }
-            .awaitAll()
-            .sortedByDescending { it.score }
+    protected abstract suspend fun search(board: Board4): List<ScoreResult>
 
     protected fun topLevelNode(
         board: Board4,
@@ -193,12 +185,6 @@ open class Expectimax protected constructor(
     }
 
     companion object {
-        fun create(
-            heuristics: Heuristics<Board4>,
-            transpositionTable: TranspositionTable,
-            log: Boolean = true,
-        ): Expectimax =
-            ExpectimaxImpl(heuristics, transpositionTable, log)
 
         private fun List<ScoreResult>.state(): DiagnosticState =
             map { it.state }.reduce { acc, state -> state + acc }
@@ -206,12 +192,21 @@ open class Expectimax protected constructor(
         const val CACHE_DEPTH_LIMIT = 15
         const val PROBABILITY_THRESHOLD = 0.0001f// one in ten thousands
         const val SPARSE_BOARD_MAX_DEPTH = 3
-        private val dispatcher: CoroutineDispatcher =
-            Dispatchers.createFixedThreadDispatcher("expectimax", Direction.values().size)
-        private val scope = CoroutineScope(dispatcher)
 
         fun Float.format(padStart: Int = 0): String {
             return this.roundDecimalPlaces(2).toString().padStart(padStart)
+        }
+
+        private fun Float.roundDecimalPlaces(places: Int): Float {
+            if (places < 0) return this
+            val placesFactor: Float = 10f.pow(places.toFloat())
+            return round(this * placesFactor) / placesFactor
+        }
+
+        private fun Double.roundDecimalPlaces(places: Int): Double {
+            if (places < 0) return this
+            val placesFactor: Double = 10.0.pow(places.toDouble())
+            return kotlin.math.round(this * placesFactor) / placesFactor
         }
 
         fun Long.format(padStart: Int = 0): String {
