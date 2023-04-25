@@ -75,5 +75,4 @@ korge {
 
     targetJvm()
     targetJs()
-    targetDesktop()
 }
