@@ -2,15 +2,14 @@ package io.github.smaugfm.game2048
 
 import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.expectimax.Expectimax
-import io.github.smaugfm.game2048.expectimax.ExpectimaxImpl
+import io.github.smaugfm.game2048.expectimax.FindBestMove
+import io.github.smaugfm.game2048.expectimax.FindBestMoveImpl
 import io.github.smaugfm.game2048.heuristics.Heuristics
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.transposition.ConcurrentHashMapTranspositionTable
-import io.github.smaugfm.game2048.transposition.TranspositionTable
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
 import korlibs.image.color.RGBA
@@ -36,10 +35,11 @@ suspend fun startKorge(injector: AsyncInjector) {
 
 suspend fun createInjector(): AsyncInjector {
     val injector = AsyncInjector().apply {
-        mapInstance(TranspositionTable::class, ConcurrentHashMapTranspositionTable())
         mapInstance(Heuristics::class, Board4Heuristics())
         mapInstance(BoardFactory::class, Board4)
-        mapSingleton(Expectimax::class) { ExpectimaxImpl(get(), get()) }
+        mapSingleton(FindBestMove::class) {
+            FindBestMoveImpl(get(), { ConcurrentHashMapTranspositionTable() })
+        }
         GameState(this)
         UIConstants(this)
         History(this)
