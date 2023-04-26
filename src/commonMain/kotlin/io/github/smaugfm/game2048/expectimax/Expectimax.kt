@@ -132,10 +132,4 @@ class Expectimax internal constructor(
         maxDepth = max(depth, maxDepth)
         return heuristics.evaluate(board)
     }
-
-    data class ExpectimaxResult(
-        val score: Float,
-        val direction: Direction,
-        val diagnostics: ExpectimaxDiagnostics,
-    )
 }

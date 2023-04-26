@@ -17,12 +17,8 @@ abstract class FindBestMove protected constructor(
         val depthLimit = max(SPARSE_BOARD_MAX_DEPTH, distinctTiles - 2)
 
         val (results, duration) = measureTimedValue {
-            scoreAllDirections(
-                ScoreRequest(
-                    board,
-                    depthLimit,
-                )
-            ).filterNotNull()
+            scoreAllDirections(ScoreRequest(board, depthLimit))
+                .filterNotNull()
         }
         val result = results.firstOrNull() ?: return null
         val combinedDiagnostics =
@@ -35,7 +31,7 @@ abstract class FindBestMove protected constructor(
 
     protected abstract suspend fun scoreAllDirections(
         req: ScoreRequest
-    ): List<Expectimax.ExpectimaxResult?>
+    ): List<ExpectimaxResult?>
 
     private fun logResults(
         duration: Duration,
@@ -65,19 +61,19 @@ abstract class FindBestMove protected constructor(
             val board: Board4,
             val depthLimit: Int
         ) {
-//            fun toMap() =
-//                mapOf(
-//                    ScoreRequest::board.name to board.bits.toString(),
-//                    ScoreRequest::depthLimit.name to depthLimit.toString()
-//                )
-//
-//            companion object {
-//                fun fromMap(map: Map<String, String>): ScoreRequest =
-//                    ScoreRequest(
-//                        Board4(map[ScoreRequest::board.name]!!.toULong()),
-//                        map[ScoreRequest::depthLimit.name]!!.toInt()
-//                    )
-//            }
+            fun toMap() =
+                mapOf(
+                    ScoreRequest::board.name to board.bits.toString(),
+                    ScoreRequest::depthLimit.name to depthLimit.toString()
+                )
+
+            companion object {
+                fun fromMap(map: Map<String, String>): ScoreRequest =
+                    ScoreRequest(
+                        Board4(map[ScoreRequest::board.name]!!.toULong()),
+                        map[ScoreRequest::depthLimit.name]!!.toInt()
+                    )
+            }
         }
 
         fun Float.format(padStart: Int = 0): String =

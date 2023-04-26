@@ -16,7 +16,7 @@ actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove(lo
 
     override suspend fun scoreAllDirections(
         req: ScoreRequest
-    ): List<Expectimax.ExpectimaxResult?> {
+    ): List<ExpectimaxResult?> {
         table.clear()
 
         return directions.map {

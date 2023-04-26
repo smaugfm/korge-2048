@@ -6,7 +6,7 @@ actual class FindBestMoveImpl actual constructor(log: Boolean) :
     FindBestMove() {
     override suspend fun scoreAllDirections(
         req: ScoreRequest
-    ): List<Expectimax.ExpectimaxResult?> {
+    ): List<ExpectimaxResult?> {
         throw UnsupportedOperationException()
     }
 }

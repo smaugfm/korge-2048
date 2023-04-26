@@ -91,7 +91,7 @@ kotlin {
     }
 }
 tasks["jsProcessResources"]
-    .dependsOn.add("workerBrowserDistribution")
+    .dependsOn("workerBrowserDistribution")
 
 benchmark {
     configurations {
