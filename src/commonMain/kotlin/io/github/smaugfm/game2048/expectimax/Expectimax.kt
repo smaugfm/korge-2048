@@ -6,7 +6,7 @@ import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.heuristics.Heuristics
+import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.transposition.TranspositionTable
 import kotlin.math.max
 
@@ -14,21 +14,16 @@ import kotlin.math.max
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
 class Expectimax internal constructor(
-    private val heuristics: Heuristics<Board4>,
-    private val transpositionTable: TranspositionTable,
-    val initialDirection: Direction,
-    private val depthLimit: Int,
-) : ExpectimaxDiagnostics {
-    override var cacheSize: Int = 0
-        private set
-    override var evaluations: Long = 0
-        private set
-    override var moves: Long = 0
-        private set
-    override var cacheHits: Long = 0
-        private set
-    override var maxDepth: Int = 0
-        private set
+    private val dir: Direction,
+    val transpositionTable: TranspositionTable
+) {
+    private var cacheSize: Int = 0
+    private var evaluations: Long = 0
+    private var moves: Long = 0
+    private var cacheHits: Long = 0
+    private var maxDepth: Int = 0
+    private var depthLimit: Int = 0
+    private val heuristics = Board4Heuristics()
 
     companion object {
         const val CACHE_DEPTH_LIMIT = 15
@@ -36,16 +31,30 @@ class Expectimax internal constructor(
         const val SPARSE_BOARD_MAX_DEPTH = 3
     }
 
-    fun score(board: Board4): Float? {
-        val newBoard = board.move(initialDirection)
-        moves++
+    fun score(board: Board4, depthLimit: Int): ExpectimaxResult? {
+        val newBoard = board.move(dir)
 
         if (newBoard == board)
             return null
+        this.depthLimit = depthLimit
+        moves++
 
-        return expectimaxNode(newBoard, 0, 1.0f).also {
+        val score = expectimaxNode(newBoard, 0, 1.0f).also {
             cacheSize = transpositionTable.size
         }
+
+        return ExpectimaxResult(
+            score,
+            dir,
+            object : ExpectimaxDiagnostics {
+                override val cacheSize = this@Expectimax.cacheSize
+                override val evaluations = this@Expectimax.evaluations
+                override val moves = this@Expectimax.moves
+                override val cacheHits = this@Expectimax.cacheHits
+                override val maxDepth = this@Expectimax.maxDepth
+                override val depthLimit = this@Expectimax.depthLimit
+            }
+        )
     }
 
     private fun expectimaxNode(
@@ -123,4 +132,10 @@ class Expectimax internal constructor(
         maxDepth = max(depth, maxDepth)
         return heuristics.evaluate(board)
     }
+
+    data class ExpectimaxResult(
+        val score: Float,
+        val direction: Direction,
+        val diagnostics: ExpectimaxDiagnostics,
+    )
 }

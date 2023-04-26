@@ -8,6 +8,7 @@ interface ExpectimaxDiagnostics {
     val moves: Long
     val cacheHits: Long
     val maxDepth: Int
+    val depthLimit: Int
 
     operator fun plus(other: ExpectimaxDiagnostics): ExpectimaxDiagnostics {
         val that = this@ExpectimaxDiagnostics
@@ -17,6 +18,7 @@ interface ExpectimaxDiagnostics {
             override val moves = that.moves + other.moves
             override val cacheHits = that.cacheHits + other.cacheHits
             override val maxDepth = max(that.maxDepth, other.maxDepth)
+            override val depthLimit = max(that.depthLimit, other.depthLimit)
         }
     }
 }

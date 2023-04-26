@@ -1,18 +1,12 @@
 package io.github.smaugfm.game2048.expectimax
 
-import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.heuristics.Heuristics
-import io.github.smaugfm.game2048.transposition.TranspositionTable
+import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.ScoreRequest
 
-actual class FindBestMoveImpl actual constructor(
-    heuristics: Heuristics<Board4>,
-    transpositionTableFactory: () -> TranspositionTable,
-    log: Boolean
-) : FindBestMove(heuristics, transpositionTableFactory, log) {
-    override suspend fun executeScores(
-        board: Board4,
-        expectimaxList: List<Expectimax>
-    ): List<Float?> {
+actual class FindBestMoveImpl actual constructor(log: Boolean) :
+    FindBestMove() {
+    override suspend fun scoreAllDirections(
+        req: ScoreRequest
+    ): List<Expectimax.ExpectimaxResult?> {
         throw UnsupportedOperationException()
     }
 }

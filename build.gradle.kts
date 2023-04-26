@@ -1,3 +1,4 @@
+import korlibs.korge.gradle.coroutinesVersion
 import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
 
@@ -59,7 +60,11 @@ kotlin {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
             languageSettings.optIn("kotlin.time.ExperimentalTime")
         }
-        val commonWorker by creating
+        val commonWorker by creating {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+            }
+        }
         val commonMain by getting {
             dependencies {
                 implementation("co.touchlab:stately-concurrent-collections:2.0.0-rc1")

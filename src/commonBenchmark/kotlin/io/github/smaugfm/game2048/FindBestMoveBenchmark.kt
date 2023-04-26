@@ -1,9 +1,7 @@
 package io.github.smaugfm.game2048
 
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.expectimax.FindBestMove
-import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
-import io.github.smaugfm.game2048.transposition.ConcurrentHashMapTranspositionTable
+import io.github.smaugfm.game2048.expectimax.FindBestMoveImpl
 import korlibs.io.async.runBlockingNoJs
 import kotlinx.benchmark.*
 
@@ -29,11 +27,7 @@ class FindBestMoveBenchmark {
             1, 0, 0, 1
         )
     private var expectimax =
-        FindBestMove.create(
-            Board4Heuristics(),
-            ConcurrentHashMapTranspositionTable(),
-            false
-        )
+        FindBestMoveImpl(false)
     private var board4 = Board4.fromArray(arr)
 
     @Benchmark

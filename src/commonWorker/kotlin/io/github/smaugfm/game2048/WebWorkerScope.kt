@@ -9,7 +9,8 @@ class WebWorkerScope(
     private val self: DedicatedWorkerGlobalScope,
     scope: CoroutineScope
 ) : CoroutineScope by scope {
-    val workerId = URLSearchParams(self.location.search).get("id") ?: "Unknown worker"
+    val workerId = URLSearchParams(self.location.search).get("id")
+        ?: "Unknown worker"
 
     fun onMessage(block: suspend (String) -> String) {
         self.onmessage = { messageEvent ->
@@ -18,10 +19,6 @@ class WebWorkerScope(
                 self.postMessage(result)
             }
         }
-    }
-
-    fun postMessage(msg: String) {
-        self.postMessage(msg)
     }
 
     companion object {

@@ -1,11 +1,8 @@
 package io.github.smaugfm.game2048.expectimax
 
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax.Companion.SPARSE_BOARD_MAX_DEPTH
-import io.github.smaugfm.game2048.heuristics.Heuristics
-import io.github.smaugfm.game2048.transposition.TranspositionTable
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.round
@@ -13,87 +10,75 @@ import kotlin.time.Duration
 import kotlin.time.measureTimedValue
 
 abstract class FindBestMove protected constructor(
-    private val heuristics: Heuristics<Board4>,
-    private val transpositionTableFactory: () -> TranspositionTable,
     private val log: Boolean = true,
 ) {
-    private var cacheSize: Int = 0
-    private val tables =
-        directions.map { transpositionTableFactory() }
-
     suspend fun findBestMove(board: Board4): Direction? {
-        tables.forEach { it.clear() }
-
         val distinctTiles = board.countDistinctTiles()
         val depthLimit = max(SPARSE_BOARD_MAX_DEPTH, distinctTiles - 2)
 
-        val (result, duration) = measureTimedValue {
-            computeScore(depthLimit, board) ?: return null
+        val (results, duration) = measureTimedValue {
+            scoreAllDirections(
+                ScoreRequest(
+                    board,
+                    depthLimit,
+                )
+            ).filterNotNull()
         }
+        val result = results.firstOrNull() ?: return null
+        val combinedDiagnostics =
+            results.map { it.diagnostics }.reduce { acc, d -> acc + d }
 
-        logResults(duration, result)
+        logResults(duration, result.score, result.direction, combinedDiagnostics)
 
         return result.direction
     }
 
-    private suspend fun FindBestMove.computeScore(
-        depthLimit: Int,
-        board: Board4
-    ): ScoreResult? {
-        val expectimaxList = directions.mapIndexed { i, dir ->
-            Expectimax(heuristics, tables[i], dir, depthLimit)
-        }
-
-        val (i, score) = executeScores(
-            board,
-            expectimaxList
-        ).mapIndexedNotNull { i, score ->
-            score?.let {
-                i to score
-            }
-        }
-            .maxByOrNull { it.second } ?: return null
-
-        return ScoreResult(
-            directions[i],
-            expectimaxList[i],
-            score
-        )
-    }
-
-    protected abstract suspend fun executeScores(
-        board: Board4,
-        expectimaxList: List<Expectimax>
-    ): List<Float?>
-
-    data class ScoreResult(
-        val direction: Direction,
-        val state: ExpectimaxDiagnostics,
-        val score: Float
-    )
+    protected abstract suspend fun scoreAllDirections(
+        req: ScoreRequest
+    ): List<Expectimax.ExpectimaxResult?>
 
     private fun logResults(
         duration: Duration,
-        result: ScoreResult,
+        score: Float,
+        direction: Direction,
+        d: ExpectimaxDiagnostics
     ) {
         if (!log) return
-
-        val (direction, state, score) = result
 
         println(
             "Move ${direction.toString().padEnd(6)}: " +
                 "score=${score.format(20)}, " +
-                "evaluated=${state.evaluations.format(8)}, " +
-                "moves=${state.moves.format(8)}, " +
-                "cacheHits=${state.cacheHits.format(8)}, cacheSize=${
-                    cacheSize.toLong().format(8)
+                "evaluated=${d.evaluations.format(8)}, " +
+                "moves=${d.moves.format(8)}, " +
+                "cacheHits=${d.cacheHits.format(8)}, cacheSize=${
+                    d.cacheSize.toLong().format(8)
                 }, " +
-                "maxDepth=${state.maxDepth.toString().padStart(2)}, " +
-                "elapsed=$duration"
+                "maxDepth=${d.maxDepth.toString().padStart(2)}, " +
+                "elapsed=$duration, " +
+                "depthLimit=${d.depthLimit}"
         )
     }
 
     companion object {
+
+        data class ScoreRequest(
+            val board: Board4,
+            val depthLimit: Int
+        ) {
+//            fun toMap() =
+//                mapOf(
+//                    ScoreRequest::board.name to board.bits.toString(),
+//                    ScoreRequest::depthLimit.name to depthLimit.toString()
+//                )
+//
+//            companion object {
+//                fun fromMap(map: Map<String, String>): ScoreRequest =
+//                    ScoreRequest(
+//                        Board4(map[ScoreRequest::board.name]!!.toULong()),
+//                        map[ScoreRequest::depthLimit.name]!!.toInt()
+//                    )
+//            }
+        }
 
         fun Float.format(padStart: Int = 0): String =
             this.roundDecimalPlaces(2).toString().padStart(padStart)
