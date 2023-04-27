@@ -65,7 +65,6 @@ value class Board4(val bits: ULong) :
         return tiles().map { it.power }.toIntArray()
     }
 
-
     override fun moveGenerateMoves(direction: Direction): MoveBoardResult<Board4> =
         AnySizeBoard.fromArray(toIntArray())
             .moveGenerateMoves(direction)
@@ -77,15 +76,15 @@ value class Board4(val bits: ULong) :
             }
 
     override fun move(
-        direction: Direction
+        direction: Direction,
     ): Board4 = when (direction) {
-        Direction.LEFT ->
+        Direction.LEFT   ->
             lookupRows(PrecomputedTables.leftLinesTable)
 
-        Direction.RIGHT ->
+        Direction.RIGHT  ->
             lookupRows(PrecomputedTables.rightLinesTable)
 
-        Direction.TOP ->
+        Direction.TOP    ->
             lookupColumns(PrecomputedTables.topLinesTable)
 
         Direction.BOTTOM ->

@@ -9,7 +9,7 @@ import korlibs.korge.view.Views
 
 class History private constructor(
     from: String?,
-    private val onUpdate: (History) -> Unit
+    private val onUpdate: (History) -> Unit,
 ) {
     class Element(val tiles: Array<Tile>, val score: Int)
 

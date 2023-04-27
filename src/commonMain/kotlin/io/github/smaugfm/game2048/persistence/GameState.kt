@@ -16,7 +16,7 @@ class GameState(
     val aiAnimationSpeed: ObservableProperty<AnimationSpeed> =
         ObservableProperty(AnimationSpeed.Normal),
     val aiDepth: ObservableProperty<Int> = ObservableProperty(0),
-    val aiElapsedMs: ObservableProperty<Float> = ObservableProperty(0f)
+    val aiElapsedMs: ObservableProperty<Float> = ObservableProperty(0f),
 ) {
     init {
         score.observe {

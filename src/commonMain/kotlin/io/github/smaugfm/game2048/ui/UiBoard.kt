@@ -10,7 +10,6 @@ import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.backgroundColorLight
 import io.github.smaugfm.game2048.ui.UiBlock.Companion.addBlock
 import korlibs.inject.AsyncInjector
-import korlibs.io.async.ObservableProperty
 import korlibs.korge.animate.Animator
 import korlibs.korge.animate.animate
 import korlibs.korge.animate.block
@@ -26,7 +25,7 @@ import korlibs.math.geom.Size
 class UiBoard(
     virtualWidth: Int,
     private val uiConstants: UIConstants,
-    private val gs: GameState
+    private val gs: GameState,
 ) : Container() {
     private val blocks = arrayOfNulls<UiBlock>(boardArraySize)
 
@@ -74,13 +73,13 @@ class UiBoard(
 
     suspend fun animate(
         boardMoves: List<BoardMove>,
-        onEnd: () -> Unit
+        onEnd: () -> Unit,
     ): Animator {
         return animate {
             parallel {
                 boardMoves.forEach {
                     when (it) {
-                        is BoardMove.Move -> {
+                        is BoardMove.Move  -> {
                             animateMove(it.from, it.to)
                         }
 

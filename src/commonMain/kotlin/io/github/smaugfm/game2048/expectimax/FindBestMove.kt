@@ -35,14 +35,14 @@ abstract class FindBestMove protected constructor(
     }
 
     protected abstract suspend fun scoreAllDirections(
-        req: ScoreRequest
+        req: ScoreRequest,
     ): Pair<List<ScoreResult>, ExpectimaxDiagnostics?>
 
     private fun logResults(
         duration: Duration,
         score: Float,
         direction: Direction,
-        d: ExpectimaxDiagnostics
+        d: ExpectimaxDiagnostics,
     ) {
         if (!log) return
 
@@ -69,12 +69,12 @@ abstract class FindBestMove protected constructor(
         data class FindBestMoveResult(
             val direction: Direction,
             val elapsedMs: Float,
-            val maxDepth: Int
+            val maxDepth: Int,
         )
 
         data class ScoreRequest(
             val board: Board4,
-            val depthLimit: Int
+            val depthLimit: Int,
         ) {
             fun toMap() =
                 mapOf(

@@ -17,7 +17,7 @@ class UIConstants private constructor(
     val font: Font,
     val fontBold: Font,
     val restartImg: Bitmap,
-    val undoImg: Bitmap
+    val undoImg: Bitmap,
 ) {
     val tileSize = views.virtualWidth / 5.0
     val tilePadding = tileSize / 12

@@ -1,14 +1,14 @@
 [*]
-charset=utf-8
+charset = utf-8
 max_line_length = 90
-end_of_line=lf
-insert_final_newline=true
-indent_style=space
-indent_size=4
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
 ij_kotlin_name_count_to_use_star_import = 2147483647
 
 [*.json]
-indent_size=2
+indent_size = 4
 
 [*.yml]
 indent_size = 2

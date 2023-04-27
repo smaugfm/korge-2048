@@ -15,7 +15,7 @@ import kotlin.math.max
  */
 class Expectimax internal constructor(
     private val dir: Direction,
-    val transpositionTable: TranspositionTable
+    val transpositionTable: TranspositionTable,
 ) {
     private var cacheSize: Int = 0
     private var evaluations: Long = 0

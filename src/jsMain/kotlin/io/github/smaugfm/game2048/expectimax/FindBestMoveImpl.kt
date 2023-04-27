@@ -13,7 +13,7 @@ actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove() 
         }
 
     override suspend fun scoreAllDirections(
-        req: ScoreRequest
+        req: ScoreRequest,
     ): Pair<List<Companion.ScoreResult>, ExpectimaxDiagnostics?> =
         workers.mapNotNull { worker ->
             computeScoreInWebWorker(req, worker)
@@ -22,7 +22,7 @@ actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove() 
     @Suppress("UNCHECKED_CAST")
     private suspend fun computeScoreInWebWorker(
         req: ScoreRequest,
-        worker: Worker
+        worker: Worker,
     ): ExpectimaxResult? {
         val reqMapStr = Json.stringify(req.toMap())
         val evt = worker.send(reqMapStr)

@@ -4,7 +4,7 @@ import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.transposition.TranspositionTable.CacheEntry
 
 abstract class MutableMapTranspositionTable(
-    private val table: MutableMap<Long, Long>
+    private val table: MutableMap<Long, Long>,
 ) : TranspositionTable {
 
     override val size: Int

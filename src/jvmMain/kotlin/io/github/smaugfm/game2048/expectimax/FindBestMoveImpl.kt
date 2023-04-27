@@ -6,13 +6,17 @@ import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.ScoreRequest
 import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.ScoreResult
 import io.github.smaugfm.game2048.transposition.ConcurrentHashMapTranspositionTable
 import korlibs.io.concurrent.createFixedThreadDispatcher
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 
 actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove(log) {
     private val table = ConcurrentHashMapTranspositionTable()
 
     override suspend fun scoreAllDirections(
-        req: ScoreRequest
+        req: ScoreRequest,
     ): Pair<List<ScoreResult>, ExpectimaxDiagnostics?> {
         table.clear()
 

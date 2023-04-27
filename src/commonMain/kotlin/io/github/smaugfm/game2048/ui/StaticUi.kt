@@ -49,7 +49,7 @@ import kotlin.math.roundToInt
 class StaticUi(
     private val gs: GameState,
     private val inputManager: KorgeInputManager,
-    private val uiConstants: UIConstants
+    private val uiConstants: UIConstants,
 ) {
     private val buttonSize: Double = uiConstants.tileSize * 0.3
     private val padding = uiConstants.tileSize / 10
@@ -199,7 +199,7 @@ class StaticUi(
     private fun Container.addBtn(
         bgBest: View,
         onClick: suspend () -> Unit,
-        content: Container.(RoundRect) -> Unit
+        content: Container.(RoundRect) -> Unit,
     ): Container =
         container {
             val bg = roundRect(
@@ -217,7 +217,7 @@ class StaticUi(
     private fun Container.addStat(
         label: String,
         prop: ObservableProperty<Int>,
-        callback: @ViewDslMarker (RoundRect.() -> Unit) = {}
+        callback: @ViewDslMarker (RoundRect.() -> Unit) = {},
     ): RoundRect {
         val bgStat = roundRect(
             Size(uiConstants.tileSize * 1.5, uiConstants.tileSize * 0.8),
@@ -255,7 +255,7 @@ class StaticUi(
 
     fun showGameOver(
         uiBoard: UiBoard,
-        container: Container
+        container: Container,
     ) = container.container {
         suspend fun handleTryAgainClick() {
             this@container.removeFromParent()
@@ -284,11 +284,10 @@ class StaticUi(
         keys.down {
             when (it.key) {
                 Key.ENTER, Key.SPACE -> handleTryAgainClick()
-                else -> Unit
+                else                 -> Unit
             }
         }
     }
-
 
     private fun Container.addLogo(uiBoard: UiBoard): RoundRect {
         val bgLogo = roundRect(

@@ -24,7 +24,7 @@ import korlibs.math.interpolation.Easing
 class UiBlock(
     private val tile: Tile,
     private val uiConstants: UIConstants,
-    private val gs: GameState
+    private val gs: GameState,
 ) : Container() {
     init {
         roundRect(
@@ -49,25 +49,24 @@ class UiBlock(
 
     private val color
         get() = when (tile.power) {
-            1 -> Colors["#F0E4DA"]
-            2 -> Colors["#ECE0C9"]
-            3 -> Colors["#FFB278"]
-            4 -> Colors["#FE965C"]
-            5 -> Colors["#F77B61"]
-            6 -> Colors["#EB5837"]
-            7 -> Colors["#F6DC92"]
-            8 -> Colors["#F0D479"]
-            9 -> Colors["#F4CE60"]
-            10 -> Colors["#F8C847"]
-            11 -> accentColor
-            12 -> labelBackgroundColor
-            13 -> Colors["#3B3631"]
-            14 -> Colors["#332F2A"]
-            15 -> Colors["#3D4354"]
-            16 -> Colors["#343947"]
+            1    -> Colors["#F0E4DA"]
+            2    -> Colors["#ECE0C9"]
+            3    -> Colors["#FFB278"]
+            4    -> Colors["#FE965C"]
+            5    -> Colors["#F77B61"]
+            6    -> Colors["#EB5837"]
+            7    -> Colors["#F6DC92"]
+            8    -> Colors["#F0D479"]
+            9    -> Colors["#F4CE60"]
+            10   -> Colors["#F8C847"]
+            11   -> accentColor
+            12   -> labelBackgroundColor
+            13   -> Colors["#3B3631"]
+            14   -> Colors["#332F2A"]
+            15   -> Colors["#3D4354"]
+            16   -> Colors["#343947"]
             else -> Colors["#252933"]
         }
-
 
     private val textSize
         get() =

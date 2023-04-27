@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 class AnySizeBoard private constructor(
-    val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power }
+    val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power },
 ) : Board<AnySizeBoard> {
 
     override fun tiles() =
@@ -52,7 +52,7 @@ class AnySizeBoard private constructor(
         moveBoardInternal(direction, emptyAddMove, emptyAddMerge)
 
     override fun moveGenerateMoves(
-        direction: Direction
+        direction: Direction,
     ): MoveBoardResult<AnySizeBoard> {
         val moves = mutableListOf<BoardMove>()
 
@@ -106,7 +106,7 @@ class AnySizeBoard private constructor(
     fun moveLineToStartGenerateMoves(
         indexes: IntArray,
         newBoard: AnySizeBoard,
-        moves: MutableList<BoardMove>
+        moves: MutableList<BoardMove>,
     ) {
         moveLineLeftInternal(indexes, newBoard, { from, to ->
             moves.add(BoardMove.Move(from, to))
@@ -175,7 +175,7 @@ class AnySizeBoard private constructor(
 
     private fun firstNotEmpty(
         indexes: IntArray,
-        startFrom: Int? = -1
+        startFrom: Int? = -1,
     ): Int? {
         if (startFrom == null)
             return null
@@ -188,7 +188,6 @@ class AnySizeBoard private constructor(
 
         return null
     }
-
 
     private fun hasAdjacentEqualPosition(i: TileIndex): Boolean {
         val value = Tile(this.array[i])
@@ -206,7 +205,6 @@ class AnySizeBoard private constructor(
             return Tile.EMPTY
         return Tile(this.array[index])
     }
-
 
     override fun equals(other: Any?): Boolean =
         (other is AnySizeBoard) && this.array.contentEquals(other.array)

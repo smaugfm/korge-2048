@@ -32,7 +32,7 @@ class MainScene(
     private val history: History,
     private val boardFactory: BoardFactory<Board4>,
     private val expectimax: FindBestMove,
-    private val staticUi: StaticUi
+    private val staticUi: StaticUi,
 ) : Scene() {
     private val aiDispatcher =
         Dispatchers.createFixedThreadDispatcher("ai", 2)
@@ -58,7 +58,7 @@ class MainScene(
                 .eventsFlow()
                 .collect { inputEvent ->
                     when (inputEvent) {
-                        InputEvent.ClickInput.AiButtonClick -> {
+                        InputEvent.ClickInput.AiButtonClick       -> {
                             if (isGameOverModal) return@collect
                             if (!gs.isAiPlaying.value)
                                 gs.isAiPlaying.update(true)
@@ -66,15 +66,15 @@ class MainScene(
                                 isAiStopping.update(true)
                         }
 
-                        InputEvent.ClickInput.RestartClick ->
+                        InputEvent.ClickInput.RestartClick        ->
                             if (!gs.isAiPlaying.value)
                                 restart()
 
-                        InputEvent.ClickInput.TryAgainClick ->
+                        InputEvent.ClickInput.TryAgainClick       ->
                             if (!gs.isAiPlaying.value)
                                 restart()
 
-                        InputEvent.ClickInput.UndoClick -> {
+                        InputEvent.ClickInput.UndoClick           -> {
                             if (isGameOverModal || gs.isAiPlaying.value) return@collect
                             restoreField(history.undo())
                         }
@@ -85,13 +85,13 @@ class MainScene(
                             gs.aiAnimationSpeed.update(
                                 when (gs.aiAnimationSpeed.value) {
                                     AnimationSpeed.Normal -> AnimationSpeed.Fast
-                                    AnimationSpeed.Fast -> AnimationSpeed.Faster
+                                    AnimationSpeed.Fast   -> AnimationSpeed.Faster
                                     AnimationSpeed.Faster -> AnimationSpeed.Normal
                                 }
                             )
                         }
 
-                        is InputEvent.DirectionInput -> {
+                        is InputEvent.DirectionInput              -> {
                             if (isGameOverModal) return@collect
                             if (!gs.isAiPlaying.value)
                                 handleMoveBlocks(inputEvent.dir)
@@ -182,7 +182,7 @@ class MainScene(
 
     private fun animateMoves(
         moves: List<BoardMove>,
-        onEnd: () -> Unit = {}
+        onEnd: () -> Unit = {},
     ) {
         isAnimationRunning = true
         launchImmediately {

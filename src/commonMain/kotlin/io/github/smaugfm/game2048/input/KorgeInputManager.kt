@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 
 class KorgeInputManager private constructor(
     views: Views,
-    isAiPlaying: ObservableProperty<Boolean>
+    isAiPlaying: ObservableProperty<Boolean>,
 ) : InputManager {
     private val flow = MutableSharedFlow<InputEvent>()
 
@@ -25,11 +25,11 @@ class KorgeInputManager private constructor(
                     return@down
 
                 when (keyEvent.key) {
-                    Key.LEFT -> Direction.LEFT
+                    Key.LEFT  -> Direction.LEFT
                     Key.RIGHT -> Direction.RIGHT
-                    Key.UP -> Direction.TOP
-                    Key.DOWN -> Direction.BOTTOM
-                    else -> null
+                    Key.UP    -> Direction.TOP
+                    Key.DOWN  -> Direction.BOTTOM
+                    else      -> null
                 }?.let { dir ->
                     flow.emit(InputEvent.DirectionInput(dir))
                 }
@@ -40,9 +40,9 @@ class KorgeInputManager private constructor(
                 return@onSwipe
 
             when (it.direction) {
-                SwipeDirection.LEFT -> Direction.LEFT
-                SwipeDirection.RIGHT -> Direction.RIGHT
-                SwipeDirection.TOP -> Direction.TOP
+                SwipeDirection.LEFT   -> Direction.LEFT
+                SwipeDirection.RIGHT  -> Direction.RIGHT
+                SwipeDirection.TOP    -> Direction.TOP
                 SwipeDirection.BOTTOM -> Direction.BOTTOM
             }.let { dir ->
                 flow.emit(InputEvent.DirectionInput(dir))

@@ -35,7 +35,8 @@ data class ExpectimaxResult(
                             diagnostics[ExpectimaxDiagnostics::cacheSize.name].toString()
                                 .toInt()
                         override val evaluations: Long =
-                            diagnostics[ExpectimaxDiagnostics::evaluations.name].toString()
+                            diagnostics[ExpectimaxDiagnostics::evaluations.name]
+                                .toString()
                                 .toLong()
                         override val moves: Long =
                             diagnostics[ExpectimaxDiagnostics::moves.name].toString()

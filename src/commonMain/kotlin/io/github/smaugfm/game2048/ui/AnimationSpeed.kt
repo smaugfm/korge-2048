@@ -5,7 +5,7 @@ import korlibs.time.seconds
 
 sealed class AnimationSpeed(
     val moveAnimationDuration: TimeSpan,
-    val scaleAnimationDuration: TimeSpan
+    val scaleAnimationDuration: TimeSpan,
 ) {
     object Faster : AnimationSpeed(0.0375.seconds, 0.05.seconds)
     object Fast : AnimationSpeed(0.075.seconds, 0.1.seconds)
@@ -18,9 +18,9 @@ sealed class AnimationSpeed(
         fun fromString(str: String): AnimationSpeed? =
             when (str) {
                 "Faster" -> Faster
-                "Fast" -> Fast
+                "Fast"   -> Fast
                 "Normal" -> Normal
-                else -> null
+                else     -> null
             }
     }
 }
