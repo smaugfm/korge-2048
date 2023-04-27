@@ -12,26 +12,31 @@ import kotlin.time.measureTimedValue
 abstract class FindBestMove protected constructor(
     private val log: Boolean = true,
 ) {
-    suspend fun findBestMove(board: Board4): Direction? {
+    suspend fun findBestMove(board: Board4): FindBestMoveResult? {
         val distinctTiles = board.countDistinctTiles()
         val depthLimit = max(SPARSE_BOARD_MAX_DEPTH, distinctTiles - 2)
 
-        val (results, duration) = measureTimedValue {
+        val (pair, duration) = measureTimedValue {
             scoreAllDirections(ScoreRequest(board, depthLimit))
-                .filterNotNull()
         }
-        val result = results.firstOrNull() ?: return null
-        val combinedDiagnostics =
-            results.map { it.diagnostics }.reduce { acc, d -> acc + d }
+        val (results, diagnostics) = pair
+        val result = results.maxByOrNull { it.score } ?: return null
 
-        logResults(duration, result.score, result.direction, combinedDiagnostics)
+        return if (diagnostics != null) {
+            logResults(duration, result.score, result.direction, diagnostics)
 
-        return result.direction
+            FindBestMoveResult(
+                result.direction,
+                duration.inWholeMicroseconds / 1000f,
+                diagnostics.maxDepth
+            )
+        } else
+            null
     }
 
     protected abstract suspend fun scoreAllDirections(
         req: ScoreRequest
-    ): List<ExpectimaxResult?>
+    ): Pair<List<ScoreResult>, ExpectimaxDiagnostics?>
 
     private fun logResults(
         duration: Duration,
@@ -56,6 +61,16 @@ abstract class FindBestMove protected constructor(
     }
 
     companion object {
+        data class ScoreResult(
+            val score: Float,
+            val direction: Direction,
+        )
+
+        data class FindBestMoveResult(
+            val direction: Direction,
+            val elapsedMs: Float,
+            val maxDepth: Int
+        )
 
         data class ScoreRequest(
             val board: Board4,

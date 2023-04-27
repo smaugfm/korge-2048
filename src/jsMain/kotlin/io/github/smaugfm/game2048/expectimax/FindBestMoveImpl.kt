@@ -12,17 +12,28 @@ actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove() 
             Worker("./worker.js?id=$it")
         }
 
-    @Suppress("UNCHECKED_CAST")
     override suspend fun scoreAllDirections(
         req: ScoreRequest
-    ): List<ExpectimaxResult?> =
-        workers.map { worker ->
-            val reqMapStr = Json.stringify(req.toMap())
-            val evt = worker.send(reqMapStr)
-            if (evt.data == null || evt.data.toString() == "null")
-                return@map null
+    ): Pair<List<Companion.ScoreResult>, ExpectimaxDiagnostics?> =
+        workers.mapNotNull { worker ->
+            computeScoreInWebWorker(req, worker)
+        }.let(::transformResults)
 
-            val map = Json.parse(evt.data.toString()) as Map<String, Any>
-            ExpectimaxResult.fromMap(map)
-        }
+    @Suppress("UNCHECKED_CAST")
+    private suspend fun computeScoreInWebWorker(
+        req: ScoreRequest,
+        worker: Worker
+    ): ExpectimaxResult? {
+        val reqMapStr = Json.stringify(req.toMap())
+        val evt = worker.send(reqMapStr)
+        val map = Json.parse(evt.data.toString()) as? Map<String, Any>
+        return ExpectimaxResult.fromMap(map)
+    }
+
+    private fun transformResults(results: List<ExpectimaxResult>) =
+        Pair(
+            results.map { Companion.ScoreResult(it.score, it.direction) },
+            results.map { it.diagnostics }
+                .reduce(ExpectimaxDiagnostics::combineShared)
+        )
 }

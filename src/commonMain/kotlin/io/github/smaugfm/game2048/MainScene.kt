@@ -5,6 +5,7 @@ import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.FindBestMove
+import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.FindBestMoveResult
 import io.github.smaugfm.game2048.input.InputEvent
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.GameState
@@ -81,8 +82,8 @@ class MainScene(
                         InputEvent.ClickInput.AnimationSpeedClick -> {
                             if (isGameOverModal || !gs.isAiPlaying.value) return@collect
 
-                            gs.animationSpeed.update(
-                                when (gs.animationSpeed.value) {
+                            gs.aiAnimationSpeed.update(
+                                when (gs.aiAnimationSpeed.value) {
                                     AnimationSpeed.Normal -> AnimationSpeed.Fast
                                     AnimationSpeed.Fast -> AnimationSpeed.Faster
                                     AnimationSpeed.Faster -> AnimationSpeed.Normal
@@ -109,22 +110,24 @@ class MainScene(
 
     private fun SContainer.startAiPlay() {
         launchAsap(aiDispatcher) {
-            var bestDirectionDeferred: Deferred<Direction?> =
+            var bestMoveResultDeferred: Deferred<FindBestMoveResult?> =
                 CompletableDeferred(null)
-            var bestDirection = expectimax.findBestMove(board)
+            var bestMoveResult = expectimax.findBestMove(board)
             isAiStopping.observe {
                 if (it)
-                    bestDirectionDeferred.cancel()
+                    bestMoveResultDeferred.cancel()
             }
             while (!isAiStopping.value) {
                 val waitForAnimation = CompletableDeferred<Unit>()
 
-                if (bestDirection == null) {
+                if (bestMoveResult == null) {
                     gs.isAiPlaying.update(false)
                     gameOver()
                     break
                 }
-                var (newBoard, moves) = board.moveGenerateMoves(bestDirection)
+                var (newBoard, moves) = board.moveGenerateMoves(bestMoveResult.direction)
+                gs.aiDepth.update(bestMoveResult.maxDepth)
+                gs.aiElapsedMs.update(bestMoveResult.elapsedMs)
                 animateMoves(moves) {
                     waitForAnimation.complete(Unit)
                 }
@@ -136,7 +139,7 @@ class MainScene(
                 if (!gs.isAiPlaying.value) {
                     break
                 }
-                bestDirectionDeferred = async(aiDispatcher) {
+                bestMoveResultDeferred = async(aiDispatcher) {
                     expectimax.findBestMove(newBoard)
                 }
                 waitForAnimation.await()
@@ -146,7 +149,7 @@ class MainScene(
 
                 board = newBoard
                 try {
-                    bestDirection = bestDirectionDeferred.await()
+                    bestMoveResult = bestMoveResultDeferred.await()
                 } catch (e: CancellationException) {
                     break
                 }
@@ -161,6 +164,8 @@ class MainScene(
         if (isAnimationRunning) {
             return
         }
+        gs.aiDepth.update(0)
+        gs.aiElapsedMs.update(0f)
 
         val (newBoard, moves) = board.moveGenerateMoves(direction)
         if (board != newBoard) {

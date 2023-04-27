@@ -14,6 +14,7 @@ import korlibs.image.color.RGBA
 import korlibs.image.text.TextAlignment
 import korlibs.inject.AsyncInjector
 import korlibs.io.async.ObservableProperty
+import korlibs.io.lang.format
 import korlibs.korge.input.keys
 import korlibs.korge.input.onClick
 import korlibs.korge.input.onDown
@@ -43,18 +44,14 @@ import korlibs.korge.view.size
 import korlibs.korge.view.text
 import korlibs.math.geom.Rectangle
 import korlibs.math.geom.Size
+import kotlin.math.roundToInt
 
 class StaticUi(
-    gameState: GameState,
+    private val gs: GameState,
     private val inputManager: KorgeInputManager,
     private val uiConstants: UIConstants
 ) {
     private val buttonSize: Double = uiConstants.tileSize * 0.3
-    private val best = gameState.best
-    private val score = gameState.score
-    private val moveNumber = gameState.moveNumber
-    private val isAiPlaying = gameState.isAiPlaying
-    private val animationSpeed = gameState.animationSpeed
     private val padding = uiConstants.tileSize / 10
     private val statMargin = padding
     private val statInnerPadding = uiConstants.tileSize / 8
@@ -65,36 +62,67 @@ class StaticUi(
     ) {
         with(container) {
             val bgLogo = addLogo(uiBoard)
-            val bgBest = addStat("BEST", best) {
+            val bgBest = addStat("BEST", gs.best) {
                 alignRightToRightOf(uiBoard)
                 alignTopToTopOf(bgLogo)
             }
-            addStat("SCORE", score) {
+            addStat("SCORE", gs.score) {
                 alignRightToLeftOf(bgBest, statMargin)
                 alignTopToTopOf(bgBest)
             }
 
             addButtons(bgBest, uiBoard)
             addMoveLabel(uiBoard)
+            addAiLabels(uiBoard)
+        }
+    }
+
+    private fun Container.addAiLabels(uiBoard: UiBoard) {
+        val depthText = addUnderBoardLabel(gs.aiDepth, { "depth %d".format(it) }) {
+            alignRightToRightOf(uiBoard)
+            alignTopToBottomOf(uiBoard, padding / 2)
+        }
+        addUnderBoardLabel(gs.aiElapsedMs, {
+            if (it > 1)
+                "%dms".format(it.roundToInt())
+            else
+                "0ms"
+        }) {
+            alignRightToLeftOf(depthText, padding / 2)
+            alignTopToBottomOf(uiBoard, padding / 2)
         }
     }
 
     private fun Container.addMoveLabel(uiBoard: UiBoard) {
-        fun Text.updateMoveNumber(moveNumber: Int) {
-            text = "move #${moveNumber}"
-        }
-        text(
-            "",
-            (buttonSize * 0.5).toFloat(),
-            UIConstants.moveLabelColor,
-            uiConstants.fontBold
+        addUnderBoardLabel(
+            gs.moveNumber,
+            { "move #%d".format(it) }
         ) {
             alignLeftToLeftOf(uiBoard)
             alignTopToBottomOf(uiBoard, padding / 2)
-            updateMoveNumber(moveNumber.value)
-            moveNumber.observe {
-                updateMoveNumber(it)
+        }
+    }
+
+    private fun <T> Container.addUnderBoardLabel(
+        prop: ObservableProperty<T>,
+        format: (T) -> String,
+        align: Text.() -> Unit,
+    ): Text {
+        fun Text.update(propValue: T) {
+            text = format(propValue)
+        }
+        return text(
+            "",
+            (buttonSize * 0.5).toFloat(),
+            UIConstants.underboardLabelColor,
+            uiConstants.fontBold
+        ) {
+            update(prop.value)
+            prop.observe {
+                update(it)
+                align()
             }
+            align()
         }
     }
 
@@ -123,7 +151,7 @@ class StaticUi(
                 else
                     backgroundColor
             }
-            onAiPlaying(bg, isAiPlaying.value)
+            onAiPlaying(bg, gs.isAiPlaying.value)
             alignRightToLeftOf(undoBlock, padding / 2)
             text(
                 "AI",
@@ -134,21 +162,21 @@ class StaticUi(
                 centerXOn(bg)
                 alignTopToTopOf(bg, -1)
             }
-            isAiPlaying.observe {
+            gs.isAiPlaying.observe {
                 onAiPlaying(bg, it)
             }
         }
         addBtn(bgBest, inputManager::handleAnimationSpeedClick) { bg ->
-            fun onAnimationSpeed(textView: Text) {
-                textView.text = when (animationSpeed.value) {
+            fun Text.onAnimationSpeed(speed: AnimationSpeed) {
+                text = when (speed) {
                     AnimationSpeed.Fast -> "x2"
                     AnimationSpeed.Faster -> "x3"
                     AnimationSpeed.Normal -> "x1"
                 }
             }
 
-            this.visible = isAiPlaying.value
-            isAiPlaying.observe {
+            this.visible = gs.isAiPlaying.value
+            gs.isAiPlaying.observe {
                 this.visible = it
             }
             alignRightToLeftOf(aiBlock, padding / 2)
@@ -158,11 +186,11 @@ class StaticUi(
                 textColor,
                 uiConstants.fontBold
             ) {
-                onAnimationSpeed(this)
+                onAnimationSpeed(gs.aiAnimationSpeed.value)
                 centerXOn(bg)
                 alignTopToTopOf(bg, -1)
-                animationSpeed.observe {
-                    onAnimationSpeed(this)
+                gs.aiAnimationSpeed.observe {
+                    onAnimationSpeed(it)
                 }
             }
         }

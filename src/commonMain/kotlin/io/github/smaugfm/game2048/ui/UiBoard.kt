@@ -26,7 +26,7 @@ import korlibs.math.geom.Size
 class UiBoard(
     virtualWidth: Int,
     private val uiConstants: UIConstants,
-    private val animationSpeed: ObservableProperty<AnimationSpeed>
+    private val gs: GameState
 ) : Container() {
     private val blocks = arrayOfNulls<UiBlock>(boardArraySize)
 
@@ -67,7 +67,7 @@ class UiBoard(
     }
 
     fun createNewBlock(power: Tile, index: TileIndex): UiBlock =
-        addBlock(power, index, uiConstants, animationSpeed)
+        addBlock(power, index, uiConstants, gs)
             .also {
                 blocks[index] = it
             }
@@ -131,7 +131,7 @@ class UiBoard(
             UiBoard(
                 injector.get<Views>().virtualWidth,
                 injector.get(),
-                injector.get<GameState>().animationSpeed
+                injector.get<GameState>()
             ).addTo(this)
 
         private operator fun Scale.plus(d: Double): Scale = Scale(scaleX + d, scaleY + d)

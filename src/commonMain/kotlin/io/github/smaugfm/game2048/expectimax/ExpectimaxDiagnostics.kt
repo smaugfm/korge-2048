@@ -10,10 +10,22 @@ interface ExpectimaxDiagnostics {
     val maxDepth: Int
     val depthLimit: Int
 
-    operator fun plus(other: ExpectimaxDiagnostics): ExpectimaxDiagnostics {
+    fun combine(other: ExpectimaxDiagnostics): ExpectimaxDiagnostics {
         val that = this@ExpectimaxDiagnostics
         return object : ExpectimaxDiagnostics {
             override val cacheSize: Int get() = that.cacheSize + other.cacheSize
+            override val evaluations = that.evaluations + other.evaluations
+            override val moves = that.moves + other.moves
+            override val cacheHits = that.cacheHits + other.cacheHits
+            override val maxDepth = max(that.maxDepth, other.maxDepth)
+            override val depthLimit = max(that.depthLimit, other.depthLimit)
+        }
+    }
+
+    fun combineShared(other: ExpectimaxDiagnostics): ExpectimaxDiagnostics {
+        val that = this@ExpectimaxDiagnostics
+        return object : ExpectimaxDiagnostics {
+            override val cacheSize: Int get() = that.cacheSize
             override val evaluations = that.evaluations + other.evaluations
             override val moves = that.moves + other.moves
             override val cacheHits = that.cacheHits + other.cacheHits
