@@ -2,7 +2,7 @@ package io.github.smaugfm.game2048.board.solve
 
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.heuristics.impl.AnySizeBoardHeuristics
-import korlibs.datastructure.IntArray2
+import io.github.smaugfm.game2048.util.toMatrixString
 import kotlin.math.roundToLong
 import kotlin.test.Test
 
@@ -225,7 +225,7 @@ class AnySizeBoardHeuristicsTest {
             AnySizeBoard.fromArray(it)
         )
         println(
-            "${IntArray2(4, 4, it)} ${e.roundToLong()} \n"
+            "${it.toMatrixString(4)} ${e.roundToLong()} \n"
         )
         return e
     }

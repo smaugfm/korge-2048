@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE")
+
 import korlibs.korge.gradle.BuildVersions
 import korlibs.korge.gradle.coroutinesVersion
 import korlibs.korge.gradle.kdsVersion
@@ -38,6 +40,7 @@ korge {
     targetJvm()
     targetJs()
 }
+
 afterEvaluate {
     project.configurations
         .filter { it.name.startsWith("commonMain") }
@@ -69,15 +72,25 @@ kotlin {
                 }
             )
         }
-        js("worker", IR) {
+        js("jsWorker", IR) {
             binaries.executable()
             browser {
                 webpackTask {
                     outputFileName = "worker.js"
                 }
-                @Suppress("OPT_IN_USAGE")
                 distribution {
                     name = "worker"
+                }
+            }
+        }
+        wasm("wasmWorker") {
+            binaries.executable()
+            browser {
+                webpackTask {
+                    outputFileName = "wasmWorker.js"
+                }
+                distribution {
+                    name = "wasm"
                 }
             }
         }
@@ -117,13 +130,14 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
             }
         }
-        val workerMain by getting {
+        val jsWorkerMain by getting {
             dependsOn(commonWorker)
         }
         val jsMain by getting {
             dependsOn(commonKorge)
             dependsOn(commonWorker)
             resources.srcDirs("./build/worker")
+            resources.srcDirs("./build/wasm")
         }
         val jvmMain by getting {
             dependsOn(commonKorge)
@@ -132,10 +146,19 @@ kotlin {
             dependsOn(commonBenchmark)
             dependsOn(jvmMain)
         }
+        val wasmWorkerMain by getting
+
+//        val t1 = tasks.getByName("wasmWorkerProductionExecutableCompileSync")
+//        val t2 = tasks.getByName("wasmWorkerBrowserProductionWebpack")
+//        val t3 = tasks.getByName("wasmWorkerBrowserDistribution")
+//        println("$t1, $t2, $t3")
     }
 }
-tasks["jsProcessResources"]
-    .dependsOn("workerBrowserDistribution")
+tasks {
+    getByName("jsProcessResources") {
+        dependsOn("jsWorkerBrowserDistribution", "wasmWorkerBrowserDistribution")
+    }
+}
 
 benchmark {
     configurations {

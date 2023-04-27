@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.board
 
 import io.github.smaugfm.game2048.board.impl.Board4
-import korlibs.datastructure.IntArray2
+import io.github.smaugfm.game2048.util.toMatrixString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -65,8 +65,8 @@ class Board4Test {
                 power == Tile.TWO || power == Tile.FOUR
             }
             assertTrue(
-                "try #$it:\n board:\n${IntArray2(4, 4, board.toIntArray())}\n" +
-                    "newboard:\n${IntArray2(4, 4, newBoard.toIntArray())}"
+                "try #$it:\n board:\n${board.toIntArray().toMatrixString(4)}\n" +
+                    "newboard:\n${newBoard.toIntArray().toMatrixString(4)}"
             ) {
                 ((newBoard.bits xor board.bits) shr (index * 4)) or 0xFUL == 0xFUL
             }
