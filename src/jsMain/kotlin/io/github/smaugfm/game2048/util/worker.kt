@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.util
 
 import org.w3c.dom.Worker
 import kotlin.coroutines.resume

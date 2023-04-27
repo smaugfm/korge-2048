@@ -1,5 +1,4 @@
 pluginManagement {
-    val jmhVersion: String by settings
     val korgeVersion: String by settings
     val kotlinxBenchmarkVersion: String by settings
     val allOpenVersion: String by settings

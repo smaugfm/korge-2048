@@ -13,6 +13,8 @@ import korlibs.korge.gradle.kormaVersion
 import korlibs.korge.gradle.kryptoVersion
 import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     id("com.soywiz.korge")
@@ -118,12 +120,6 @@ kotlin {
                 implementation("com.soywiz.korlibs.korgw:korgw:${korgwVersion}")
             }
         }
-        val commonWorker by creating {
-            dependsOn(commonMain)
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-            }
-        }
         val commonBenchmark by creating {
             dependsOn(commonMain)
             dependencies {
@@ -131,11 +127,9 @@ kotlin {
             }
         }
         val jsWorkerMain by getting {
-            dependsOn(commonWorker)
         }
         val jsMain by getting {
             dependsOn(commonKorge)
-            dependsOn(commonWorker)
             resources.srcDirs("./build/worker")
             resources.srcDirs("./build/wasm")
         }
@@ -154,6 +148,10 @@ kotlin {
 //        println("$t1, $t2, $t3")
     }
 }
+
+// Use a proper version of webpack, TODO remove after updating to Kotlin 1.9.
+rootProject.the<NodeJsRootExtension>().versions.webpack.version = "5.76.2"
+
 tasks {
     getByName("jsProcessResources") {
         dependsOn("jsWorkerBrowserDistribution", "wasmWorkerBrowserDistribution")

@@ -9,9 +9,9 @@ import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
 fun main() =
     webWorker {
         val expectimax =
-            Expectimax(Direction.valueOf(workerId), HashMapTranspositionTable())
+            Expectimax(Direction.valueOf(direction), HashMapTranspositionTable())
 
-        println("Web-worker id=$workerId started")
+        println("Web-worker id=$direction started")
         onMessage {
             val request = ScoreRequest.deserialize(it)!!
             expectimax.transpositionTable.clear()
