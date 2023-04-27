@@ -1,7 +1,6 @@
 package io.github.smaugfm.game2048
 
 import io.github.smaugfm.game2048.WebWorkerScope.Companion.webWorker
-import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.expectimax.Expectimax
 import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.ScoreRequest
 import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
@@ -9,7 +8,7 @@ import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
 fun main() =
     webWorker {
         val expectimax =
-            Expectimax(Direction.valueOf(direction), HashMapTranspositionTable())
+            Expectimax(direction, HashMapTranspositionTable())
 
         println("Web-worker id=$direction started")
         onMessage {

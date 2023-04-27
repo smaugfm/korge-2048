@@ -13,17 +13,11 @@ import korlibs.korge.gradle.kormaVersion
 import korlibs.korge.gradle.kryptoVersion
 import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     id("com.soywiz.korge")
     id("org.jetbrains.kotlin.plugin.allopen")
     id("org.jetbrains.kotlinx.benchmark")
-}
-
-repositories {
-    maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
 }
 
 val korgeVersion: String by project
@@ -85,17 +79,6 @@ kotlin {
                 }
             }
         }
-        wasm("wasmWorker") {
-            binaries.executable()
-            browser {
-                webpackTask {
-                    outputFileName = "wasmWorker.js"
-                }
-                distribution {
-                    name = "wasm"
-                }
-            }
-        }
     }
     sourceSets {
         all {
@@ -126,12 +109,10 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
             }
         }
-        val jsWorkerMain by getting {
-        }
+        val jsWorkerMain by getting
         val jsMain by getting {
             dependsOn(commonKorge)
             resources.srcDirs("./build/worker")
-            resources.srcDirs("./build/wasm")
         }
         val jvmMain by getting {
             dependsOn(commonKorge)
@@ -140,21 +121,12 @@ kotlin {
             dependsOn(commonBenchmark)
             dependsOn(jvmMain)
         }
-        val wasmWorkerMain by getting
-
-//        val t1 = tasks.getByName("wasmWorkerProductionExecutableCompileSync")
-//        val t2 = tasks.getByName("wasmWorkerBrowserProductionWebpack")
-//        val t3 = tasks.getByName("wasmWorkerBrowserDistribution")
-//        println("$t1, $t2, $t3")
     }
 }
 
-// Use a proper version of webpack, TODO remove after updating to Kotlin 1.9.
-rootProject.the<NodeJsRootExtension>().versions.webpack.version = "5.76.2"
-
 tasks {
     getByName("jsProcessResources") {
-        dependsOn("jsWorkerBrowserDistribution", "wasmWorkerBrowserDistribution")
+        dependsOn("jsWorkerBrowserDistribution")
     }
 }
 

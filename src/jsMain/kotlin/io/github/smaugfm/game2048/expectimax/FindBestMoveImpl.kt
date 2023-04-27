@@ -8,7 +8,7 @@ import org.w3c.dom.Worker
 actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove() {
     private val workers =
         directions.map {
-            Worker("./wasmWorker.js?id=$it")
+            Worker("./worker.js?id=$it")
         }
 
     override suspend fun scoreAllDirections(

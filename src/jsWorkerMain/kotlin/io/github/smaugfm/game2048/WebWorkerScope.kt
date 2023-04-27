@@ -1,13 +1,15 @@
 package io.github.smaugfm.game2048
 
+import io.github.smaugfm.game2048.board.Direction
 import org.w3c.dom.DedicatedWorkerGlobalScope
 import org.w3c.dom.url.URLSearchParams
 
 class WebWorkerScope(
     private val self: DedicatedWorkerGlobalScope,
 ) {
-    val direction = URLSearchParams(self.location.search).get("id")
-        ?: "Unknown worker"
+    val direction = Direction.valueOf(
+        URLSearchParams(self.location.search).get("id")!!
+    )
 
     fun onMessage(block: (String) -> String) {
         self.onmessage = { messageEvent ->
