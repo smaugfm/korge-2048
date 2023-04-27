@@ -11,11 +11,10 @@ import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.board.TilePlacementResult
 import io.github.smaugfm.game2048.board.boardArraySize
 import io.github.smaugfm.game2048.board.boardSize
-import korlibs.datastructure.IntArray2
-import korlibs.datastructure.random.FastRandom
-import korlibs.datastructure.toIntList
+import io.github.smaugfm.game2048.util.toMatrixString
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 class AnySizeBoard private constructor(
     val array: IntArray = IntArray(boardArraySize) { Tile.EMPTY.power },
@@ -80,7 +79,7 @@ class AnySizeBoard private constructor(
             .filter { it.value.isEmpty }
             .randomOrNull()?.index ?: return null
         val tile =
-            if (FastRandom.nextDouble() < TILE_TWO_PROBABILITY)
+            if (Random.nextDouble() < TILE_TWO_PROBABILITY)
                 Tile.TWO
             else
                 Tile.FOUR
@@ -211,12 +210,7 @@ class AnySizeBoard private constructor(
 
     override fun hashCode() = array.hashCode()
 
-    override fun toString() =
-        IntArray2(
-            sqrt(array.size.toDouble()).roundToInt(),
-            sqrt(array.size.toDouble()).roundToInt(),
-            array
-        ).toString()
+    override fun toString(): String = array.toMatrixString()
 
     companion object : BoardFactory<AnySizeBoard> {
         private val emptyAddMove = { _: Int, _: Int -> }
@@ -240,7 +234,6 @@ class AnySizeBoard private constructor(
                             (it * boardSize until ((it + 1) * boardSize)).reversed()
                     }
                         .toList()
-                        .toIntList()
                         .toIntArray()
                 }.toTypedArray<IntArray>()
             }.toTypedArray<Array<IntArray>>()

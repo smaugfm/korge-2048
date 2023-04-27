@@ -7,51 +7,33 @@ data class ExpectimaxResult(
     val direction: Direction,
     val diagnostics: ExpectimaxDiagnostics,
 ) {
-    fun toMap(): Map<String, Any> =
-        mapOf(
-            ExpectimaxResult::score.name to score.toString(),
-            ExpectimaxResult::direction.name to direction.toString(),
-            ExpectimaxResult::diagnostics.name to mapOf(
-                ExpectimaxDiagnostics::cacheSize.name to diagnostics.cacheSize,
-                ExpectimaxDiagnostics::evaluations.name to diagnostics.evaluations,
-                ExpectimaxDiagnostics::moves.name to diagnostics.moves,
-                ExpectimaxDiagnostics::cacheHits.name to diagnostics.cacheHits,
-                ExpectimaxDiagnostics::maxDepth.name to diagnostics.maxDepth,
-                ExpectimaxDiagnostics::depthLimit.name to diagnostics.depthLimit,
-            )
-        )
+    fun serialize(): String {
+        val res = "$score|$direction"
+        val diag = with(diagnostics) {
+            "$cacheSize|$evaluations|$moves|$cacheHits|$maxDepth|$depthLimit"
+        }
+
+        return "$res|$diag"
+    }
 
     companion object {
-        @Suppress("UNCHECKED_CAST")
-        fun fromMap(map: Map<String, Any>?): ExpectimaxResult? =
-            map?.let {
-                val diagnostics =
-                    it[ExpectimaxResult::diagnostics.name] as Map<String, String>
-                ExpectimaxResult(
-                    it[ExpectimaxResult::score.name].toString().toFloat(),
-                    Direction.valueOf(it[ExpectimaxResult::direction.name].toString()),
-                    object : ExpectimaxDiagnostics {
-                        override val cacheSize: Int =
-                            diagnostics[ExpectimaxDiagnostics::cacheSize.name].toString()
-                                .toInt()
-                        override val evaluations: Long =
-                            diagnostics[ExpectimaxDiagnostics::evaluations.name]
-                                .toString()
-                                .toLong()
-                        override val moves: Long =
-                            diagnostics[ExpectimaxDiagnostics::moves.name].toString()
-                                .toLong()
-                        override val cacheHits: Long =
-                            diagnostics[ExpectimaxDiagnostics::cacheHits.name].toString()
-                                .toLong()
-                        override val maxDepth: Int =
-                            diagnostics[ExpectimaxDiagnostics::maxDepth.name].toString()
-                                .toInt()
-                        override val depthLimit: Int =
-                            diagnostics[ExpectimaxDiagnostics::depthLimit.name].toString()
-                                .toInt()
-                    }
-                )
-            }
+        fun deserialize(str: String?): ExpectimaxResult? {
+            if (str == null || str == "null")
+                return null
+            val s = str.split("|")
+
+            return ExpectimaxResult(
+                s[0].toFloat(),
+                Direction.valueOf(s[1]),
+                object : ExpectimaxDiagnostics {
+                    override val cacheSize = s[2].toInt()
+                    override val evaluations = s[3].toLong()
+                    override val moves = s[4].toLong()
+                    override val cacheHits = s[5].toLong()
+                    override val maxDepth = s[6].toInt()
+                    override val depthLimit = s[7].toInt()
+                }
+            )
+        }
     }
 }

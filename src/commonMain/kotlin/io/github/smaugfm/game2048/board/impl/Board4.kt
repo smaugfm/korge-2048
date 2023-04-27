@@ -8,8 +8,8 @@ import io.github.smaugfm.game2048.board.MoveBoardResult
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.TileIndex
 import io.github.smaugfm.game2048.board.TilePlacementResult
-import korlibs.datastructure.IntArray2
-import korlibs.datastructure.random.FastRandom
+import io.github.smaugfm.game2048.util.FastRandom
+import io.github.smaugfm.game2048.util.toMatrixString
 import kotlin.jvm.JvmInline
 
 @JvmInline
@@ -116,9 +116,8 @@ value class Board4(val bits: ULong) :
         return Board4(result)
     }
 
-    override fun toString(): String {
-        return IntArray2(4, 4, toIntArray()).toString()
-    }
+    override fun toString(): String =
+        toIntArray().toMatrixString(4)
 
     operator fun get(i: Int): ULong = (bits shr (i * 4)) and 0xFUL
 

@@ -1,6 +1,6 @@
 package io.github.smaugfm.game2048.board
 
-import korlibs.datastructure.random.FastRandom
+import io.github.smaugfm.game2048.util.FastRandom
 import kotlin.jvm.JvmInline
 
 @JvmInline

@@ -1,4 +1,14 @@
+import korlibs.korge.gradle.BuildVersions
 import korlibs.korge.gradle.coroutinesVersion
+import korlibs.korge.gradle.kdsVersion
+import korlibs.korge.gradle.klockVersion
+import korlibs.korge.gradle.kmemVersion
+import korlibs.korge.gradle.korauVersion
+import korlibs.korge.gradle.korgwVersion
+import korlibs.korge.gradle.korimVersion
+import korlibs.korge.gradle.korioVersion
+import korlibs.korge.gradle.kormaVersion
+import korlibs.korge.gradle.kryptoVersion
 import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
 
@@ -6,6 +16,10 @@ plugins {
     id("com.soywiz.korge")
     id("org.jetbrains.kotlin.plugin.allopen")
     id("org.jetbrains.kotlinx.benchmark")
+}
+
+repositories {
+    maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
 }
 
 val korgeVersion: String by project
@@ -23,6 +37,19 @@ korge {
 
     targetJvm()
     targetJs()
+}
+afterEvaluate {
+    project.configurations
+        .filter { it.name.startsWith("commonMain") }
+        .forEach { conf ->
+            conf.dependencies
+                .removeIf {
+                    it.group?.startsWith("com.soywiz") == true ||
+                        it.group?.startsWith("korlibs") == true ||
+                        (it.group == "org.jetbrains.kotlinx" && it.name == "kotlinx-coroutines-core") ||
+                        (it.group == "org.jetbrains.kotlinx" && it.name == "kotlinx-serialization-json")
+                }
+        }
 }
 
 kotlin {
@@ -60,14 +87,28 @@ kotlin {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
             languageSettings.optIn("kotlin.time.ExperimentalTime")
         }
-        val commonWorker by creating {
+        val commonMain by getting
+        val commonKorge by creating {
+            dependsOn(commonMain)
             dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                implementation("com.soywiz.korlibs.klock:klock:${klockVersion}")
+                implementation("com.soywiz.korlibs.kmem:kmem:${kmemVersion}")
+                implementation("com.soywiz.korlibs.kds:kds:${kdsVersion}")
+                implementation("com.soywiz.korlibs.krypto:krypto:${kryptoVersion}")
+                implementation("com.soywiz.korlibs.korge2:korge:${korgeVersion}")
+                implementation("com.soywiz.korlibs.korma:korma:${kormaVersion}")
+                implementation("com.soywiz.korlibs.korio:korio:${korioVersion}")
+                implementation("com.soywiz.korlibs.korim:korim:${korimVersion}")
+                implementation("com.soywiz.korlibs.korau:korau:${korauVersion}")
+                implementation("com.soywiz.korlibs.korgw:korgw:${korgwVersion}")
             }
         }
-        val commonMain by getting {
+        val commonWorker by creating {
+            dependsOn(commonMain)
             dependencies {
-                implementation("co.touchlab:stately-concurrent-collections:2.0.0-rc1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
         }
         val commonBenchmark by creating {
@@ -80,10 +121,13 @@ kotlin {
             dependsOn(commonWorker)
         }
         val jsMain by getting {
+            dependsOn(commonKorge)
             dependsOn(commonWorker)
             resources.srcDirs("./build/worker")
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependsOn(commonKorge)
+        }
         val jvmBenchmark by getting {
             dependsOn(commonBenchmark)
             dependsOn(jvmMain)

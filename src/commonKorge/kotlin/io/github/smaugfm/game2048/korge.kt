@@ -11,6 +11,8 @@ import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
+import korlibs.datastructure.IntArray2
+import korlibs.datastructure.random.FastRandom
 import korlibs.image.color.RGBA
 import korlibs.inject.AsyncInjector
 import korlibs.korge.Korge
@@ -18,6 +20,7 @@ import korlibs.korge.KorgeConfig
 import korlibs.render.GameWindow
 
 suspend fun startKorge(injector: AsyncInjector) {
+    IntArray2
     Korge(
         KorgeConfig(
             virtualSize = UIConstants.virtualSize,

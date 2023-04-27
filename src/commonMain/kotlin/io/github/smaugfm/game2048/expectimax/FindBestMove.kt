@@ -76,18 +76,20 @@ abstract class FindBestMove protected constructor(
             val board: Board4,
             val depthLimit: Int,
         ) {
-            fun toMap() =
-                mapOf(
-                    ScoreRequest::board.name to board.bits.toString(),
-                    ScoreRequest::depthLimit.name to depthLimit.toString()
-                )
+            fun serialize(): String =
+                "${board.bits}|$depthLimit"
 
             companion object {
-                fun fromMap(map: Map<String, String>): ScoreRequest =
-                    ScoreRequest(
-                        Board4(map[ScoreRequest::board.name]!!.toULong()),
-                        map[ScoreRequest::depthLimit.name]!!.toInt()
+                fun deserialize(str: String?): ScoreRequest? {
+                    if (str == null || str == "null")
+                        return null
+
+                    val (bits, depthLimit) = str.split("|")
+                    return ScoreRequest(
+                        Board4(bits.toULong()),
+                        depthLimit.toInt()
                     )
+                }
             }
         }
 
