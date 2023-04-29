@@ -16,11 +16,11 @@ actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove(lo
     private val table = ConcurrentHashMapTranspositionTable()
 
     override suspend fun scoreAllDirections(
-        req: ScoreRequest,
+        requests: List<ScoreRequest>,
     ): Pair<List<ScoreResult>, ExpectimaxDiagnostics?> {
         table.clear()
 
-        val results = asyncComputeResults(req)
+        val results = asyncComputeResults(requests)
 
         return transformResults(results)
     }
@@ -35,12 +35,9 @@ actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove(lo
         return scoreResults to diagnostics
     }
 
-    private suspend fun asyncComputeResults(req: ScoreRequest): List<ExpectimaxResult> =
-        directions.map {
-            scope.async {
-                Expectimax(it, table)
-                    .score(req.board, req.depthLimit)
-            }
+    private suspend fun asyncComputeResults(requests: List<ScoreRequest>): List<ExpectimaxResult> =
+        requests.map {
+            scope.async { Expectimax(table).score(it) }
         }
             .awaitAll()
             .filterNotNull()

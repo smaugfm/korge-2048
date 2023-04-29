@@ -1,6 +1,7 @@
 package io.github.smaugfm.game2048.expectimax
 
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.expectimax.Expectimax.Companion.SPARSE_BOARD_MAX_DEPTH
 import kotlin.math.max
@@ -17,7 +18,7 @@ abstract class FindBestMove protected constructor(
         val depthLimit = max(SPARSE_BOARD_MAX_DEPTH, distinctTiles - 2)
 
         val (pair, duration) = measureTimedValue {
-            scoreAllDirections(ScoreRequest(board, depthLimit))
+            scoreAllDirections(directions.map { ScoreRequest(board, depthLimit, it) })
         }
         val (results, diagnostics) = pair
         val result = results.maxByOrNull { it.score } ?: return null
@@ -35,7 +36,7 @@ abstract class FindBestMove protected constructor(
     }
 
     protected abstract suspend fun scoreAllDirections(
-        req: ScoreRequest,
+        requests: List<ScoreRequest>,
     ): Pair<List<ScoreResult>, ExpectimaxDiagnostics?>
 
     private fun logResults(
@@ -75,19 +76,21 @@ abstract class FindBestMove protected constructor(
         data class ScoreRequest(
             val board: Board4,
             val depthLimit: Int,
+            val dir: Direction,
         ) {
             fun serialize(): String =
-                "${board.bits}|$depthLimit"
+                "${board.bits}|$depthLimit|$dir"
 
             companion object {
                 fun deserialize(str: String?): ScoreRequest? {
                     if (str == null || str == "null")
                         return null
 
-                    val (bits, depthLimit) = str.split("|")
+                    val (bits, depthLimit, dir) = str.split("|")
                     return ScoreRequest(
                         Board4(bits.toULong()),
-                        depthLimit.toInt()
+                        depthLimit.toInt(),
+                        Direction.valueOf(dir)
                     )
                 }
             }

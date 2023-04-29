@@ -4,4 +4,3 @@ suspend fun main() {
     val injector = createInjector()
     startKorge(injector)
 }
-

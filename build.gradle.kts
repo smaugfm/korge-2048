@@ -13,8 +13,6 @@ import korlibs.korge.gradle.kormaVersion
 import korlibs.korge.gradle.kryptoVersion
 import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     id("com.soywiz.korge")
@@ -37,6 +35,7 @@ val benchmarksExtension: BenchmarksExtension = the<BenchmarksExtension>()
 korge {
     id = "io.github.smaugfm.game2048"
     name = "game2048"
+    esbuildVersion = "0.17.18"
     jvmMainClassName = "io.github.smaugfm.game2048.MainKt"
 
     targetJvm()
@@ -74,25 +73,14 @@ kotlin {
                 }
             )
         }
-        js("jsWorker", IR) {
-            binaries.executable()
-            browser {
-                webpackTask {
-                    outputFileName = "worker.js"
-                }
-                distribution {
-                    name = "worker"
-                }
-            }
-        }
         wasm("wasmWorker") {
             binaries.executable()
             browser {
                 webpackTask {
-                    outputFileName = "wasmWorker.js"
+                    outputFileName = "wasm-worker.js"
                 }
                 distribution {
-                    name = "wasm"
+                    name = "wasmWorker"
                 }
             }
         }
@@ -126,12 +114,9 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
             }
         }
-        val jsWorkerMain by getting {
-        }
         val jsMain by getting {
             dependsOn(commonKorge)
-            resources.srcDirs("./build/worker")
-            resources.srcDirs("./build/wasm")
+            resources.srcDirs("./build/wasmWorker")
         }
         val jvmMain by getting {
             dependsOn(commonKorge)
@@ -140,22 +125,27 @@ kotlin {
             dependsOn(commonBenchmark)
             dependsOn(jvmMain)
         }
-        val wasmWorkerMain by getting
-
-//        val t1 = tasks.getByName("wasmWorkerProductionExecutableCompileSync")
-//        val t2 = tasks.getByName("wasmWorkerBrowserProductionWebpack")
-//        val t3 = tasks.getByName("wasmWorkerBrowserDistribution")
-//        println("$t1, $t2, $t3")
+        val wasmWorkerMain by getting {
+            dependencies {
+                implementation(npm("copy-webpack-plugin", "11.0.0"))
+                implementation(npm("string-replace-loader", "3.1.0"))
+            }
+        }
     }
 }
 
-// Use a proper version of webpack, TODO remove after updating to Kotlin 1.9.
-rootProject.the<NodeJsRootExtension>().versions.webpack.version = "5.76.2"
-
 tasks {
     getByName("jsProcessResources") {
-        dependsOn("jsWorkerBrowserDistribution", "wasmWorkerBrowserDistribution")
+        dependsOn("wasmWorkerBrowserDistribution")
     }
+    getByName("jsBrowserProductionWebpack")
+        .dependsOn(
+            "wasmWorkerBrowserProductionWebpack"
+        )
+    getByName("jsBrowserDevelopmentWebpack")
+        .dependsOn(
+            "wasmWorkerBrowserDevelopmentWebpack"
+        )
 }
 
 benchmark {

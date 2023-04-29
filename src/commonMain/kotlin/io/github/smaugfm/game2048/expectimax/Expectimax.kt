@@ -6,6 +6,7 @@ import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
+import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.ScoreRequest
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.transposition.TranspositionTable
 import kotlin.math.max
@@ -14,7 +15,6 @@ import kotlin.math.max
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
 class Expectimax internal constructor(
-    private val dir: Direction,
     val transpositionTable: TranspositionTable,
 ) {
     private var cacheSize: Int = 0
@@ -31,12 +31,12 @@ class Expectimax internal constructor(
         const val SPARSE_BOARD_MAX_DEPTH = 3
     }
 
-    fun score(board: Board4, depthLimit: Int): ExpectimaxResult? {
-        val newBoard = board.move(dir)
+    fun score(request: ScoreRequest): ExpectimaxResult? {
+        val newBoard = request.board.move(request.dir)
 
-        if (newBoard == board)
+        if (newBoard == request.board)
             return null
-        this.depthLimit = depthLimit
+        this.depthLimit = request.depthLimit
         moves++
 
         val score = expectimaxNode(newBoard, 0, 1.0f).also {
@@ -45,7 +45,7 @@ class Expectimax internal constructor(
 
         return ExpectimaxResult(
             score,
-            dir,
+            request.dir,
             object : ExpectimaxDiagnostics {
                 override val cacheSize = this@Expectimax.cacheSize
                 override val evaluations = this@Expectimax.evaluations

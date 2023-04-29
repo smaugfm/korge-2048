@@ -8,23 +8,16 @@ import org.w3c.dom.Worker
 actual class FindBestMoveImpl actual constructor(log: Boolean) : FindBestMove() {
     private val workers =
         directions.map {
-            Worker("./wasmWorker.js?id=$it")
+            Worker("./wasm-worker.js")
         }
 
     override suspend fun scoreAllDirections(
-        req: ScoreRequest,
+        requests: List<ScoreRequest>,
     ): Pair<List<Companion.ScoreResult>, ExpectimaxDiagnostics?> =
-        workers.mapNotNull { worker ->
-            computeScoreInWebWorker(req, worker)
+        workers.zip(requests).mapNotNull { (worker, req) ->
+            val evt = worker.send(req.serialize())
+            ExpectimaxResult.deserialize(evt.data.toString())
         }.let(::transformResults)
-
-    private suspend fun computeScoreInWebWorker(
-        req: ScoreRequest,
-        worker: Worker,
-    ): ExpectimaxResult? {
-        val evt = worker.send(req.serialize())
-        return ExpectimaxResult.deserialize(evt.data.toString())
-    }
 
     private fun transformResults(results: List<ExpectimaxResult>) =
         Pair(
