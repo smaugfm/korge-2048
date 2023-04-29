@@ -15,6 +15,7 @@ class GameState(
     val moveNumber: ObservableProperty<Int>,
     val aiAnimationSpeed: ObservableProperty<AnimationSpeed> =
         ObservableProperty(AnimationSpeed.Normal),
+    val showAiStats: ObservableProperty<Boolean> = ObservableProperty(false),
     val aiDepth: ObservableProperty<Int> = ObservableProperty(0),
     val aiElapsedMs: ObservableProperty<Float> = ObservableProperty(0f),
 ) {
@@ -27,6 +28,10 @@ class GameState(
         }
         moveNumber.observe {
             storage["moveNumber"] = it.toString()
+        }
+        isAiPlaying.observe {
+            if (it)
+                showAiStats.update(true)
         }
         aiAnimationSpeed.observe {
             storage["animationSpeed"] = it.toString()

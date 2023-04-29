@@ -94,7 +94,7 @@ class MainScene(
                         is InputEvent.DirectionInput              -> {
                             if (isGameOverModal) return@collect
                             if (!gs.isAiPlaying.value)
-                                handleMoveBlocks(inputEvent.dir)
+                                handleUserDirectionInput(inputEvent.dir)
                         }
                     }
                 }
@@ -160,12 +160,11 @@ class MainScene(
         }
     }
 
-    private fun SContainer.handleMoveBlocks(direction: Direction) {
+    private fun SContainer.handleUserDirectionInput(direction: Direction) {
         if (isAnimationRunning) {
             return
         }
-        gs.aiDepth.update(0)
-        gs.aiElapsedMs.update(0f)
+        hideAiStats()
 
         val (newBoard, moves) = board.moveGenerateMoves(direction)
         if (board != newBoard) {
@@ -178,6 +177,12 @@ class MainScene(
             }
         }
 
+    }
+
+    private fun hideAiStats() {
+        gs.showAiStats.update(false)
+        gs.aiDepth.update(0)
+        gs.aiElapsedMs.update(0f)
     }
 
     private fun animateMoves(
@@ -209,6 +214,7 @@ class MainScene(
     }
 
     private fun restart() {
+        hideAiStats()
         isGameOverModal = false
         board = boardFactory.createEmpty()
         uiBoard.clear()
@@ -226,6 +232,7 @@ class MainScene(
     }
 
     private fun restoreField(historyElement: History.Element) {
+        hideAiStats()
         uiBoard.clear()
         board = boardFactory.fromTiles(historyElement.tiles)
         gs.score.update(historyElement.score)

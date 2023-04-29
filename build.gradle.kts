@@ -13,15 +13,12 @@ import korlibs.korge.gradle.kormaVersion
 import korlibs.korge.gradle.kryptoVersion
 import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     id("com.soywiz.korge")
     id("org.jetbrains.kotlin.plugin.allopen")
     id("org.jetbrains.kotlinx.benchmark")
-}
-
-repositories {
-    maven("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental")
 }
 
 val korgeVersion: String by project
@@ -73,6 +70,20 @@ kotlin {
                 }
             )
         }
+        js(IR) {
+            binaries.executable()
+            browser {
+                commonWebpackConfig {
+                    devServer = (devServer ?: KotlinWebpackConfig.DevServer()).copy(
+                        open = mapOf(
+                            "app" to mapOf(
+                                "name" to "google chrome",
+                            )
+                        ),
+                    )
+                }
+            }
+        }
         wasm("wasmWorker") {
             binaries.executable()
             browser {
@@ -116,6 +127,8 @@ kotlin {
         }
         val jsMain by getting {
             dependsOn(commonKorge)
+            // Make gradle to copy the *.js and *.wasm files to the output dir for the
+            // main js target
             resources.srcDirs("./build/wasmWorker")
         }
         val jvmMain by getting {
@@ -127,6 +140,8 @@ kotlin {
         }
         val wasmWorkerMain by getting {
             dependencies {
+                // For the hacks to work.
+                // See ./webpack.config.d/wasm-worker.webpack.config.js
                 implementation(npm("copy-webpack-plugin", "11.0.0"))
                 implementation(npm("string-replace-loader", "3.1.0"))
             }
@@ -135,6 +150,7 @@ kotlin {
 }
 
 tasks {
+    // Make main js target be dependent on wasm target
     getByName("jsProcessResources") {
         dependsOn("wasmWorkerBrowserDistribution")
     }

@@ -78,15 +78,22 @@ class StaticUi(
     }
 
     private fun Container.addAiLabels(uiBoard: UiBoard) {
-        val depthText = addUnderBoardLabel(gs.aiDepth, { "depth %d".format(it) }) {
+        val depthText = addUnderBoardLabel(gs.aiDepth, {
+            if (gs.showAiStats.value) {
+                "depth %d".format(it)
+            } else ""
+        }) {
             alignRightToRightOf(uiBoard)
             alignTopToBottomOf(uiBoard, padding / 2)
         }
         addUnderBoardLabel(gs.aiElapsedMs, {
-            if (it > 1)
-                "%dms".format(it.roundToInt())
-            else
-                "0ms"
+            if (gs.showAiStats.value) {
+                if (it > 1)
+                    "%dms".format(it.roundToInt())
+                else
+                    "0ms"
+            } else
+                ""
         }) {
             alignRightToLeftOf(depthText, padding / 2)
             alignTopToBottomOf(uiBoard, padding / 2)
