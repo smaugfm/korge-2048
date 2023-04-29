@@ -1,12 +1,10 @@
-package io.github.smaugfm.game2048.expectimax
+package io.github.smaugfm.game2048.search
 
-import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_FOUR_PROBABILITY
 import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.ScoreRequest
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.transposition.TranspositionTable
 import kotlin.math.max
@@ -14,7 +12,7 @@ import kotlin.math.max
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
-class Expectimax internal constructor(
+class ExpectimaxSearch internal constructor(
     val transpositionTable: TranspositionTable,
 ) {
     private var cacheSize: Int = 0
@@ -28,10 +26,9 @@ class Expectimax internal constructor(
     companion object {
         const val CACHE_DEPTH_LIMIT = 15
         const val PROBABILITY_THRESHOLD = 0.0001f// one in ten thousands
-        const val SPARSE_BOARD_MAX_DEPTH = 3
     }
 
-    fun score(request: ScoreRequest): ExpectimaxResult? {
+    fun score(request: SearchRequest): SearchResult? {
         val newBoard = request.board.move(request.dir)
 
         if (newBoard == request.board)
@@ -43,16 +40,15 @@ class Expectimax internal constructor(
             cacheSize = transpositionTable.size
         }
 
-        return ExpectimaxResult(
+        return SearchResult(
             score,
             request.dir,
-            object : ExpectimaxDiagnostics {
-                override val cacheSize = this@Expectimax.cacheSize
-                override val evaluations = this@Expectimax.evaluations
-                override val moves = this@Expectimax.moves
-                override val cacheHits = this@Expectimax.cacheHits
-                override val maxDepth = this@Expectimax.maxDepth
-                override val depthLimit = this@Expectimax.depthLimit
+            object : SearchStats {
+                override val cacheSize = this@ExpectimaxSearch.cacheSize
+                override val evaluations = this@ExpectimaxSearch.evaluations
+                override val moves = this@ExpectimaxSearch.moves
+                override val cacheHits = this@ExpectimaxSearch.cacheHits
+                override val maxDepthReached = this@ExpectimaxSearch.maxDepth
             }
         )
     }

@@ -4,8 +4,8 @@ import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.expectimax.FindBestMove
-import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.FindBestMoveResult
+import io.github.smaugfm.game2048.search.Search
+import io.github.smaugfm.game2048.search.Search.Companion.FindBestMoveResult
 import io.github.smaugfm.game2048.input.InputEvent
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.GameState
@@ -31,7 +31,7 @@ class MainScene(
     private val gs: GameState,
     private val history: History,
     private val boardFactory: BoardFactory<Board4>,
-    private val expectimax: FindBestMove,
+    private val expectimax: Search,
     private val staticUi: StaticUi,
 ) : Scene() {
     private val aiDispatcher =

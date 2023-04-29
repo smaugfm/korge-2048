@@ -1,13 +1,12 @@
 package io.github.smaugfm.game2048
 
-import io.github.smaugfm.game2048.expectimax.Expectimax
-import io.github.smaugfm.game2048.expectimax.FindBestMove.Companion.ScoreRequest
+import io.github.smaugfm.game2048.search.ExpectimaxSearch
+import io.github.smaugfm.game2048.search.SearchRequest
 import io.github.smaugfm.game2048.transposition.HashMapTranspositionTable
 import org.w3c.dom.DedicatedWorkerGlobalScope
 
 fun main() {
-    val expectimax =
-        Expectimax(HashMapTranspositionTable())
+    val table = HashMapTranspositionTable()
 
     println("Web-worker (wasm) started")
 
@@ -15,10 +14,10 @@ fun main() {
     self.onmessage = { messageEvent ->
         val requestStr = messageEvent.data.toString()
 
-        val request = ScoreRequest.deserialize(requestStr)!!
-        expectimax.transpositionTable.clear()
+        val request = SearchRequest.deserialize(requestStr)!!
+        table.clear()
 
-        val scoreResult = expectimax.score(request)
+        val scoreResult = ExpectimaxSearch(table).score(request)
         self.postMessage(
             scoreResult
                 ?.serialize()
