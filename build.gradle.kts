@@ -11,6 +11,7 @@ import korlibs.korge.gradle.korimVersion
 import korlibs.korge.gradle.korioVersion
 import korlibs.korge.gradle.kormaVersion
 import korlibs.korge.gradle.kryptoVersion
+import korlibs.korge.gradle.util.staticHttpServer
 import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
@@ -169,15 +170,15 @@ tasks {
         )
     getByName("jsBrowserProductionWebpack")
         .dependsOn(
-            "jsWorkerBrowserDistribution",
+            "jsWorkerBrowserProductionWebpack",
             "wasmWorkerBrowserProductionWebpack",
-            "wasmTestBrowserDistribution"
+            "wasmTestBrowserProductionWebpack"
         )
     getByName("jsBrowserDevelopmentWebpack")
         .dependsOn(
-            "jsWorkerBrowserDistribution",
+            "jsWorkerBrowserDevelopmentWebpack",
             "wasmWorkerBrowserDevelopmentWebpack",
-            "wasmTestBrowserDistribution"
+            "wasmTestBrowserDevelopmentWebpack"
         )
 }
 
