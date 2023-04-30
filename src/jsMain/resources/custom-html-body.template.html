@@ -1,0 +1,36 @@
+<script type="text/javascript">
+    (async () => {
+        const isWasmSupportedAtAll = (() => {
+            try {
+                if (typeof WebAssembly === "object"
+                    && typeof WebAssembly.instantiate === "function") {
+                    const module = new WebAssembly.Module(
+                        Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+                    if (module instanceof WebAssembly.Module) {
+                        return new WebAssembly.Instance(module)
+                            instanceof WebAssembly.Instance;
+                    }
+                }
+            } catch (e) {
+            }
+            return false;
+        });
+        if (isWasmSupportedAtAll()) {
+            const module = await import("./game2048-wasm-test.uninstantiated.mjs");
+            try {
+                await module.instantiate();
+                hasWasmSupport = true;
+            } catch (e) {
+                if (e instanceof WebAssembly.CompileError) {
+                    console.log("WASM COMPILE ERROR")
+                } else {
+                    console.log("OTHER WASM ERROR")
+                }
+                hasWasmSupport = false;
+            }
+        } else {
+            hasWasmSupport = false;
+            console.log("isWasmSupportedAtAll = false")
+        }
+    })()
+</script>

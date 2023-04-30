@@ -70,17 +70,14 @@ kotlin {
                 }
             )
         }
-        js(IR) {
+        wasm("wasmTest") {
             binaries.executable()
             browser {
-                commonWebpackConfig {
-                    devServer = (devServer ?: KotlinWebpackConfig.DevServer()).copy(
-                        open = mapOf(
-                            "app" to mapOf(
-                                "name" to "google chrome",
-                            )
-                        ),
-                    )
+                webpackTask {
+                    outputFileName = "wasm-test.js"
+                }
+                distribution {
+                    name = "wasmTest"
                 }
             }
         }
@@ -130,6 +127,7 @@ kotlin {
             // Make gradle to copy the *.js and *.wasm files to the output dir for the
             // main js target
             resources.srcDirs("./build/wasmWorker")
+            resources.srcDirs("./build/wasmTest")
         }
         val jvmMain by getting {
             dependsOn(commonKorge)
@@ -146,21 +144,31 @@ kotlin {
                 implementation(npm("string-replace-loader", "3.1.0"))
             }
         }
+        val wasmTestMain by getting {
+            dependencies {
+                implementation(npm("copy-webpack-plugin", "11.0.0"))
+                implementation(npm("string-replace-loader", "3.1.0"))
+            }
+        }
     }
 }
 
 tasks {
-    // Make main js target be dependent on wasm target
-    getByName("jsProcessResources") {
-        dependsOn("wasmWorkerBrowserDistribution")
-    }
+    // Make main js target be dependent on wasm targets
+    getByName("jsProcessResources")
+        .dependsOn(
+            "wasmWorkerBrowserDistribution",
+            "wasmTestBrowserDistribution"
+        )
     getByName("jsBrowserProductionWebpack")
         .dependsOn(
-            "wasmWorkerBrowserProductionWebpack"
+            "wasmWorkerBrowserProductionWebpack",
+            "wasmTestBrowserDistribution"
         )
     getByName("jsBrowserDevelopmentWebpack")
         .dependsOn(
-            "wasmWorkerBrowserDevelopmentWebpack"
+            "wasmWorkerBrowserDevelopmentWebpack",
+            "wasmTestBrowserDistribution"
         )
 }
 
