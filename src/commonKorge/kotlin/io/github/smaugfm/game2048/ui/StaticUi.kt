@@ -27,7 +27,6 @@ import korlibs.korge.view.RoundRect
 import korlibs.korge.view.Text
 import korlibs.korge.view.View
 import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.align.alignBottomToBottomOf
 import korlibs.korge.view.align.alignLeftToLeftOf
 import korlibs.korge.view.align.alignRightToLeftOf
 import korlibs.korge.view.align.alignRightToRightOf
@@ -38,12 +37,10 @@ import korlibs.korge.view.align.centerXOn
 import korlibs.korge.view.align.centerYOn
 import korlibs.korge.view.container
 import korlibs.korge.view.image
-import korlibs.korge.view.position
 import korlibs.korge.view.positionY
 import korlibs.korge.view.roundRect
 import korlibs.korge.view.setText
 import korlibs.korge.view.size
-import korlibs.korge.view.solidRect
 import korlibs.korge.view.text
 import korlibs.math.geom.Rectangle
 import korlibs.math.geom.Size
@@ -276,41 +273,58 @@ class StaticUi(
         return bgStat
     }
 
-    fun showGameOver(
-        uiBoard: UiBoard,
-        container: Container,
-    ) = container.container {
-        suspend fun handleTryAgainClick() {
-            this@container.removeFromParent()
-            inputManager.handleTryAgainClick()
-        }
-        position(uiBoard.pos)
-        roundRect(uiBoard.size, uiConstants.rectCorners, Colors["#FFFFFF33"])
-        text("Game Over", 60f, textColor, uiConstants.font) {
-            centerOn(uiBoard)
-            y -= 60
-        }
-        text("Try again", 40f, gameOverTextColor, uiConstants.font) {
-            centerOn(uiBoard)
-            y += 20
-            onOver {
-                onOver { color = RGBA(90, 90, 90) }
-                onOut { color = RGBA(0, 0, 0) }
-                onDown { color = RGBA(120, 120, 120) }
-                onUp { color = RGBA(120, 120, 120) }
+    fun showGameOver(uiBoard: UiBoard) =
+        uiBoard.container {
+            suspend fun handleTryAgainClick() {
+                this@container.removeFromParent()
+                inputManager.handleTryAgainClick()
+            }
+            roundRect(uiBoard.size, uiConstants.rectCorners, Colors["#FFFFFFBB"])
+            text("Game Over", 90f, gameOverTextColor, uiConstants.font) {
+                centerOn(uiBoard)
+                y -= 50
+            }
+            val tryAgainText =
+                Text(
+                    "Try again",
+                    60f,
+                    textColor,
+                    uiConstants.font,
+                )
+            val bg = Colors["#000000AA"]
+            val hover = Colors["#464646AA"]
+            val pressed = Colors["#646464AA"]
+            val tryAgainBg = roundRect(
+                Size(
+                    tryAgainText.width + padding,
+                    tryAgainText.height + smallPadding,
+                ),
+                uiConstants.rectCorners,
+            ) {
+                centerOn(uiBoard)
+                y += 70
 
-                onClick {
-                    handleTryAgainClick()
+                color = bg
+                onOver {
+                    onOver { color = hover }
+                    onOut { color = bg }
+                    onDown { color = pressed }
+                    onUp { color = pressed }
+
+                    onClick {
+                        handleTryAgainClick()
+                    }
+                }
+            }
+            addChild(tryAgainText)
+            tryAgainText.centerOn(tryAgainBg)
+            keys.down {
+                when (it.key) {
+                    Key.ENTER, Key.SPACE -> handleTryAgainClick()
+                    else                 -> Unit
                 }
             }
         }
-        keys.down {
-            when (it.key) {
-                Key.ENTER, Key.SPACE -> handleTryAgainClick()
-                else                 -> Unit
-            }
-        }
-    }
 
     private fun Container.addLogo(uiBoard: UiBoard): RoundRect {
         val bgLogo = roundRect(

@@ -106,7 +106,7 @@ class MainScene(
             startAiPlay()
     }
 
-    private fun SContainer.startAiPlay() {
+    private fun startAiPlay() {
         launchAsap(aiDispatcher) {
             var bestMoveResultDeferred: Deferred<FindBestMoveResult?> =
                 CompletableDeferred(null)
@@ -158,7 +158,7 @@ class MainScene(
         }
     }
 
-    private fun SContainer.handleUserDirectionInput(direction: Direction) {
+    private fun handleUserDirectionInput(direction: Direction) {
         if (isAnimationRunning) {
             return
         }
@@ -204,10 +204,10 @@ class MainScene(
         gs.score.update(gs.score.value + points)
     }
 
-    private fun SContainer.gameOver() {
+    private fun gameOver() {
         if (!isGameOverModal) {
             isGameOverModal = true
-            staticUi.showGameOver(uiBoard, this)
+            staticUi.showGameOver(uiBoard)
         }
     }
 
