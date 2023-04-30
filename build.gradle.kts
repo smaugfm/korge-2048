@@ -13,7 +13,7 @@ import korlibs.korge.gradle.kormaVersion
 import korlibs.korge.gradle.kryptoVersion
 import kotlinx.benchmark.gradle.BenchmarksExtension
 import kotlinx.benchmark.gradle.KotlinJvmBenchmarkTarget
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 
 plugins {
     id("com.soywiz.korge")
@@ -70,27 +70,31 @@ kotlin {
                 }
             )
         }
-        wasm("wasmTest") {
+        fun KotlinJsTargetDsl.configureJsOrWasm() {
+            fun snakeToDashes(s: String) =
+                s.replace("\\B[A-Z]".toRegex()) {
+                    "-${it.value}"
+                }.toLowerCase()
+
             binaries.executable()
+            val targetName = this@configureJsOrWasm.name
             browser {
                 webpackTask {
-                    outputFileName = "wasm-test.js"
+                    outputFileName = "${snakeToDashes(targetName)}.js"
                 }
                 distribution {
-                    name = "wasmTest"
+                    name = targetName
                 }
             }
         }
+        wasm("wasmTest") {
+            configureJsOrWasm()
+        }
+        js("jsWorker", IR) {
+            configureJsOrWasm()
+        }
         wasm("wasmWorker") {
-            binaries.executable()
-            browser {
-                webpackTask {
-                    outputFileName = "wasm-worker.js"
-                }
-                distribution {
-                    name = "wasmWorker"
-                }
-            }
+            configureJsOrWasm()
         }
     }
     sourceSets {
@@ -126,6 +130,7 @@ kotlin {
             dependsOn(commonKorge)
             // Make gradle to copy the *.js and *.wasm files to the output dir for the
             // main js target
+            resources.srcDirs("./build/jsWorker")
             resources.srcDirs("./build/wasmWorker")
             resources.srcDirs("./build/wasmTest")
         }
@@ -136,6 +141,7 @@ kotlin {
             dependsOn(commonBenchmark)
             dependsOn(jvmMain)
         }
+        val jsWorkerMain by getting
         val wasmWorkerMain by getting {
             dependencies {
                 // For the hacks to work.
@@ -157,16 +163,19 @@ tasks {
     // Make main js target be dependent on wasm targets
     getByName("jsProcessResources")
         .dependsOn(
+            "jsWorkerBrowserDistribution",
             "wasmWorkerBrowserDistribution",
             "wasmTestBrowserDistribution"
         )
     getByName("jsBrowserProductionWebpack")
         .dependsOn(
+            "jsWorkerBrowserDistribution",
             "wasmWorkerBrowserProductionWebpack",
             "wasmTestBrowserDistribution"
         )
     getByName("jsBrowserDevelopmentWebpack")
         .dependsOn(
+            "jsWorkerBrowserDistribution",
             "wasmWorkerBrowserDevelopmentWebpack",
             "wasmTestBrowserDistribution"
         )

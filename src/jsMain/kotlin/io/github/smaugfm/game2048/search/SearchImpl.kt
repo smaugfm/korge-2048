@@ -1,6 +1,7 @@
 package io.github.smaugfm.game2048.search
 
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
+import io.github.smaugfm.game2048.isWasmSupported
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.awaitAll
@@ -10,10 +11,15 @@ import kotlin.math.max
 actual class SearchImpl actual constructor(log: Boolean) : Search() {
     private val workers =
         directions.associateWith {
-            Worker("./wasm-worker.js")
+            Worker(
+                if (isWasmSupported)
+                    "./wasm-worker.js"
+                else
+                    "./js-worker.js"
+            )
         }
 
-    override val distinctTilesDepthNegativeTerm = 3
+    override val distinctTilesDepthNegativeTerm = if(isWasmSupported) 3 else 4
 
     override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> =
         requests.map(::webWorkerSearch)

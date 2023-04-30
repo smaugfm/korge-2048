@@ -8,7 +8,7 @@ import org.w3c.dom.DedicatedWorkerGlobalScope
 class HashMapTranspositionTable : MutableMapTranspositionTable(HashMap())
 
 fun main() {
-    println("Web-worker (wasm) started")
+    println("Web-worker (js) started")
     val table = HashMapTranspositionTable()
 
     val self = js("self") as DedicatedWorkerGlobalScope
