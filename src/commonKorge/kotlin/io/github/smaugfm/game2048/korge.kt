@@ -18,6 +18,8 @@ import korlibs.korge.Korge
 import korlibs.korge.KorgeConfig
 import korlibs.render.GameWindow
 
+var usingWasm = false
+
 suspend fun startKorge(injector: AsyncInjector) {
     IntArray2
     Korge(

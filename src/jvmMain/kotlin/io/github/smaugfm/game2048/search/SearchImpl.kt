@@ -14,7 +14,8 @@ import kotlin.math.max
 actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
     private val table = ConcurrentHashMapTranspositionTable()
 
-    override val distinctTilesDepthNegativeTerm = 2
+    override fun platformDepthLimit(distinctTiles: Int) =
+        distinctTiles - 2
 
     override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> {
         table.clear()

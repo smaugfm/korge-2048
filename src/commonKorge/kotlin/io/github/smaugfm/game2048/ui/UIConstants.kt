@@ -23,6 +23,10 @@ class UIConstants private constructor(
     val tilePadding = tileSize / 12
     val rectRadius = tileSize / 18
     val rectCorners = RectCorners(rectRadius)
+    val buttonSize: Double = tileSize * 0.45
+    val statHeight = tileSize * 0.8
+    val padding = tileSize / 10
+    val smallPadding = padding / 2
 
     companion object {
 

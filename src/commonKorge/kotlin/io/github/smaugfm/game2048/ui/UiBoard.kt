@@ -29,7 +29,8 @@ class UiBoard(
 ) : Container() {
     private val blocks = arrayOfNulls<UiBlock>(boardArraySize)
 
-    private val boardTopOffset: Double = uiConstants.tileSize * 1.5
+    private val boardTopOffset: Double =
+        uiConstants.statHeight + uiConstants.padding * 3 + uiConstants.buttonSize
 
     init {
         val boardSizePixels: Double =

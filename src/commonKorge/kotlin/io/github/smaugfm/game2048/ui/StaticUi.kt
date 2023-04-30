@@ -8,6 +8,7 @@ import io.github.smaugfm.game2048.ui.UIConstants.Companion.gameOverTextColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelBackgroundColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.labelColor
 import io.github.smaugfm.game2048.ui.UIConstants.Companion.textColor
+import io.github.smaugfm.game2048.usingWasm
 import korlibs.event.Key
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
@@ -26,6 +27,7 @@ import korlibs.korge.view.RoundRect
 import korlibs.korge.view.Text
 import korlibs.korge.view.View
 import korlibs.korge.view.ViewDslMarker
+import korlibs.korge.view.align.alignBottomToBottomOf
 import korlibs.korge.view.align.alignLeftToLeftOf
 import korlibs.korge.view.align.alignRightToLeftOf
 import korlibs.korge.view.align.alignRightToRightOf
@@ -41,6 +43,7 @@ import korlibs.korge.view.positionY
 import korlibs.korge.view.roundRect
 import korlibs.korge.view.setText
 import korlibs.korge.view.size
+import korlibs.korge.view.solidRect
 import korlibs.korge.view.text
 import korlibs.math.geom.Rectangle
 import korlibs.math.geom.Size
@@ -51,9 +54,12 @@ class StaticUi(
     private val inputManager: KorgeInputManager,
     private val uiConstants: UIConstants,
 ) {
-    private val buttonSize: Double = uiConstants.tileSize * 0.3
-    private val padding = uiConstants.tileSize / 10
-    private val statMargin = padding
+    private val buttonSize: Double = uiConstants.buttonSize
+    private val underBoardLabelSize = uiConstants.tileSize * 0.3 * 0.5
+    private val padding = uiConstants.padding
+    private val smallPadding = uiConstants.smallPadding
+    private val betweenButtonsPadding = padding / 1.5
+    private val statMargin = uiConstants.padding
     private val statInnerPadding = uiConstants.tileSize / 8
 
     fun addStaticUi(
@@ -84,7 +90,7 @@ class StaticUi(
             } else ""
         }) {
             alignRightToRightOf(uiBoard)
-            alignTopToBottomOf(uiBoard, padding / 2)
+            alignTopToBottomOf(uiBoard, smallPadding)
         }
         addUnderBoardLabel(gs.aiElapsedMs, {
             if (gs.showAiStats.value) {
@@ -95,8 +101,18 @@ class StaticUi(
             } else
                 ""
         }) {
-            alignRightToLeftOf(depthText, padding / 2)
-            alignTopToBottomOf(uiBoard, padding / 2)
+            alignRightToLeftOf(depthText, smallPadding)
+            alignTopToBottomOf(uiBoard, smallPadding)
+        }
+
+        addUnderBoardLabel(
+            gs.aiElapsedMs,
+            {
+                if (usingWasm && gs.showAiStats.value) "wasm" else ""
+            }
+        ) {
+            alignRightToRightOf(uiBoard)
+            alignTopToBottomOf(uiBoard, smallPadding * 2 + underBoardLabelSize)
         }
     }
 
@@ -106,7 +122,7 @@ class StaticUi(
             { "move #%d".format(it) }
         ) {
             alignLeftToLeftOf(uiBoard)
-            alignTopToBottomOf(uiBoard, padding / 2)
+            alignTopToBottomOf(uiBoard, smallPadding)
         }
     }
 
@@ -120,7 +136,7 @@ class StaticUi(
         }
         return text(
             "",
-            (buttonSize * 0.5).toFloat(),
+            underBoardLabelSize.toFloat(),
             UIConstants.underboardLabelColor,
             uiConstants.fontBold
         ) {
@@ -145,7 +161,7 @@ class StaticUi(
             }
         }
         val undoBlock = addBtn(bgBest, inputManager::handleUndoClick) { bg ->
-            alignRightToLeftOf(restartBlock, padding / 2)
+            alignRightToLeftOf(restartBlock, betweenButtonsPadding)
             image(uiConstants.undoImg) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(bg)
@@ -159,7 +175,7 @@ class StaticUi(
                     backgroundColor
             }
             onAiPlaying(bg, gs.isAiPlaying.value)
-            alignRightToLeftOf(undoBlock, padding / 2)
+            alignRightToLeftOf(undoBlock, betweenButtonsPadding)
             text(
                 "AI",
                 (buttonSize * 0.7).toFloat(),
@@ -186,7 +202,7 @@ class StaticUi(
             gs.isAiPlaying.observe {
                 this.visible = it
             }
-            alignRightToLeftOf(aiBlock, padding / 2)
+            alignRightToLeftOf(aiBlock, betweenButtonsPadding)
             text(
                 "AI",
                 (buttonSize * 0.7).toFloat(),
@@ -214,7 +230,7 @@ class StaticUi(
                 uiConstants.rectCorners,
                 backgroundColor,
             )
-            alignTopToBottomOf(bgBest, padding / 2)
+            alignTopToBottomOf(bgBest, padding)
             content(bg)
             onClick {
                 onClick()
@@ -227,7 +243,7 @@ class StaticUi(
         callback: @ViewDslMarker (RoundRect.() -> Unit) = {},
     ): RoundRect {
         val bgStat = roundRect(
-            Size(uiConstants.tileSize * 1.5, uiConstants.tileSize * 0.8),
+            Size(uiConstants.tileSize * 1.5, uiConstants.statHeight),
             uiConstants.rectCorners,
             labelBackgroundColor,
             callback = callback
@@ -303,7 +319,7 @@ class StaticUi(
             accentColor,
         ) {
             alignLeftToLeftOf(uiBoard)
-            positionY(30)
+            positionY(padding)
         }
         text(
             "2048",

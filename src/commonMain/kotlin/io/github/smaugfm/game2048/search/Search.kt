@@ -51,10 +51,10 @@ abstract class Search protected constructor(
     private fun getDepthLimit(board: Board4): Int {
         val distinctTiles = board.countDistinctTiles()
 
-        return max(MIN_DEPTH_LIMIT, distinctTiles - distinctTilesDepthNegativeTerm)
+        return max(MIN_DEPTH_LIMIT, platformDepthLimit(distinctTiles))
     }
 
-    protected abstract val distinctTilesDepthNegativeTerm: Int
+    protected abstract fun platformDepthLimit(distinctTiles: Int): Int
 
     protected abstract suspend fun getExpectimaxResults(
         requests: List<SearchRequest>,
