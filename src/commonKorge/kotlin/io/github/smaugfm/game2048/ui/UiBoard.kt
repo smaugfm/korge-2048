@@ -127,12 +127,15 @@ class UiBoard(
     }
 
     companion object {
-        suspend fun Container.addBoard(injector: AsyncInjector): UiBoard =
+        suspend fun addBoard(
+            views: Views,
+            injector: AsyncInjector,
+        ): UiBoard =
             UiBoard(
                 injector.get<Views>().virtualWidth,
                 injector.get(),
                 injector.get<GameState>()
-            ).addTo(this)
+            ).addTo(views.root)
 
         private operator fun Scale.plus(d: Double): Scale = Scale(scaleX + d, scaleY + d)
     }

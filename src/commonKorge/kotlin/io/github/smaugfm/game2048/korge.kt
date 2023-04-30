@@ -11,6 +11,7 @@ import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.search.SearchImpl
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UIConstants
+import io.github.smaugfm.game2048.ui.UiBoard
 import korlibs.datastructure.IntArray2
 import korlibs.image.color.RGBA
 import korlibs.inject.AsyncInjector
@@ -46,8 +47,9 @@ suspend fun createInjector(): AsyncInjector {
         History(this)
         KorgeInputManager(this)
         StaticUi(this)
+        mapSingleton { UiBoard.addBoard(get(), get()) }
 
-        mapSingleton { MainScene(get(), get(), get(), get(), get(), get()) }
+        mapSingleton { MainScene(get(), get(), get(), get(), get(), get(), get()) }
     }
     return injector
 }

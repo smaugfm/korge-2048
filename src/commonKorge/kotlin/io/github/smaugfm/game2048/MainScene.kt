@@ -32,6 +32,7 @@ class MainScene(
     private val history: History,
     private val boardFactory: BoardFactory<Board4>,
     private val expectimax: Search,
+    private val uiBoard: UiBoard,
     private val staticUi: StaticUi,
 ) : Scene() {
     private val aiDispatcher =
@@ -42,10 +43,7 @@ class MainScene(
     private val isAiStopping: ObservableProperty<Boolean> = ObservableProperty(false)
     private var board: Board4 = boardFactory.createEmpty()
 
-    private lateinit var uiBoard: UiBoard
-
     override suspend fun SContainer.sceneMain() {
-        uiBoard = addBoard(injector)
         staticUi.addStaticUi(this, uiBoard)
         if (!history.isEmpty()) {
             restoreField(history.currentElement)

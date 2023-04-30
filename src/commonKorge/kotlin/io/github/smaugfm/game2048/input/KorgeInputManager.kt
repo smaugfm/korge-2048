@@ -2,6 +2,7 @@ package io.github.smaugfm.game2048.input
 
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.persistence.GameState
+import io.github.smaugfm.game2048.ui.UiBoard
 import korlibs.event.Key
 import korlibs.inject.AsyncInjector
 import korlibs.io.async.ObservableProperty
@@ -13,13 +14,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class KorgeInputManager private constructor(
-    views: Views,
+    uiBoard: UiBoard,
     isAiPlaying: ObservableProperty<Boolean>,
 ) : InputManager {
     private val flow = MutableSharedFlow<InputEvent>()
 
     init {
-        views.root.keys {
+        uiBoard.keys {
             down { keyEvent ->
                 if (isAiPlaying.value)
                     return@down
@@ -35,7 +36,7 @@ class KorgeInputManager private constructor(
                 }
             }
         }
-        views.root.onSwipe(20.0) {
+        uiBoard.onSwipe(20.0) {
             if (isAiPlaying.value)
                 return@onSwipe
 
