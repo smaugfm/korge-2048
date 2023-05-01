@@ -1,3 +1,5 @@
+rootProject.name = "game2048"
+
 pluginManagement {
     val korgeVersion: String by settings
     val kotlinxBenchmarkVersion: String by settings
