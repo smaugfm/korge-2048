@@ -5,7 +5,7 @@ import kotlin.jvm.JvmInline
 
 interface TranspositionTable {
     val size: Int
-    fun search(board: Board4): CacheEntry?
+    fun search(board: Board4): CacheEntry
     fun update(board: Board4, depth: Int, score: Float)
     fun clear()
 
@@ -19,6 +19,8 @@ interface TranspositionTable {
                 CacheEntry(
                     (score.toRawBits().toULong() or (depth.toULong() shl 32)).toLong()
                 )
+
+            val EMPTY = CacheEntry(0)
         }
     }
 }

@@ -7,13 +7,14 @@ import io.github.smaugfm.game2048.board.Tile.Companion.TILE_TWO_PROBABILITY
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.heuristics.impl.Board4Heuristics
 import io.github.smaugfm.game2048.transposition.TranspositionTable
+import io.github.smaugfm.game2048.transposition.TranspositionTable.CacheEntry.Companion.EMPTY
 import kotlin.math.max
 
 /**
  * Based on [this](https://github.com/nneonneo/2048-ai) repo
  */
 class ExpectimaxSearch internal constructor(
-    val transpositionTable: TranspositionTable,
+    private val transpositionTable: TranspositionTable,
 ) {
     private var cacheSize: Int = 0
     private var evaluations: Long = 0
@@ -64,10 +65,11 @@ class ExpectimaxSearch internal constructor(
         if (depth >= depthLimit) {
             return evaluateBoard(depth, board)
         }
-        val cachedScore = expectimaxCacheSearch(board, depth)
-        if (cachedScore != null) {
+
+        val cacheEntry = transpositionTable.search(board)
+        if (cacheEntry != EMPTY && cacheEntry.depth <= depth) {
             cacheHits++
-            return cachedScore
+            return cacheEntry.score
         }
 
         val emptyCount = board.countEmptyTiles()
@@ -99,28 +101,20 @@ class ExpectimaxSearch internal constructor(
         return score
     }
 
-    private fun expectimaxCacheSearch(board: Board4, depth: Int): Float? {
-        transpositionTable.search(board)?.let { entry ->
-            if (entry.depth <= depth) {
-                return entry.score
-            }
-        }
-        return null
-    }
-
     private fun moveNode(
         board: Board4,
         prob: Float,
         depth: Int,
     ): Float {
-        return directions
-            .map {
-                val newBoard = board.move(it)
-                moves++
-                if (newBoard == board)
-                    return@map Float.NEGATIVE_INFINITY
-                expectimaxNode(newBoard, depth + 1, prob)
-            }.max()
+        var best = 0f
+        for (dir in directions) {
+            val newBoard = board.move(dir)
+            moves++
+            if (newBoard != board) {
+                best = max(expectimaxNode(newBoard, depth + 1, prob), best)
+            }
+        }
+        return best
     }
 
     private fun evaluateBoard(depth: Int, board: Board4): Float {

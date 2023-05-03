@@ -10,8 +10,8 @@ abstract class MutableMapTranspositionTable(
     override val size: Int
         get() = table.size
 
-    override fun search(board: Board4): CacheEntry? {
-        return table[board.bits.toLong()]?.let { CacheEntry(it) }
+    override fun search(board: Board4): CacheEntry {
+        return table[board.bits.toLong()]?.let { CacheEntry(it) } ?: CacheEntry.EMPTY
     }
 
     override fun update(board: Board4, depth: Int, score: Float) {

@@ -7,10 +7,10 @@ import kotlinx.benchmark.*
 
 @State(Scope.Benchmark)
 @Measurement(
-    iterations = 5, time = 10, timeUnit = BenchmarkTimeUnit.SECONDS
+    iterations = 2, time = 10, timeUnit = BenchmarkTimeUnit.SECONDS
 )
 @Warmup(
-    iterations = 5, time = 10, timeUnit = BenchmarkTimeUnit.SECONDS
+    iterations = 2, time = 10, timeUnit = BenchmarkTimeUnit.SECONDS
 )
 @OutputTimeUnit(BenchmarkTimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
@@ -27,9 +27,8 @@ class FindBestMoveBenchmark {
     private var board4 = Board4.fromArray(arr)
 
     @Benchmark
-    fun expectimax() {
+    fun expectimax() =
         runBlockingNoJs {
             expectimax.findBestMove(board4)
         }
-    }
 }

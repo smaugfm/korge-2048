@@ -63,13 +63,15 @@ class AnySizeBoardHeuristics : Heuristics<AnySizeBoard> {
         if (rowMerges > 0)
             merges += 1 + rowMerges
 
-        return EMPTY_WEIGHT * empty +
+        return UNCONDITIONAL_ADDEND +
+            EMPTY_WEIGHT * empty +
             MERGES_WEIGHT * merges -
             MONO_WEIGHT * min(monoDec, monoInc) -
             SUM_WEIGHT * sum
     }
 
     companion object {
+        const val UNCONDITIONAL_ADDEND = 200000.0f;
         const val SUM_POW = 3.5f
         const val SUM_WEIGHT = 11.0f
         const val MONO_POW = 4.0f
