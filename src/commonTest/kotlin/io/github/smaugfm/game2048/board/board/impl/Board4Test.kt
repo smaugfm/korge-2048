@@ -1,7 +1,10 @@
-package io.github.smaugfm.game2048.board
+package io.github.smaugfm.game2048.board.board.impl
 
+import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.util.toMatrixString
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -28,6 +31,21 @@ class Board4Test {
         )
 
         assertEquals(transposed, board.transpose())
+    }
+
+    private fun Board4.countDistinctTilesSimple(): Int {
+        return tiles().toList()
+            .filter { it.isNotEmpty }
+            .distinctBy { it.power }
+            .size
+    }
+
+    @Test
+    fun countDistinctTilesTest() {
+        repeat(10_000) {
+            val b = Board4(Random.nextLong().toULong())
+            assertEquals(b.countDistinctTilesSimple(), b.countDistinctTiles())
+        }
     }
 
     @Test

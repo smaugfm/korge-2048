@@ -1,5 +1,9 @@
-package io.github.smaugfm.game2048.board
+package io.github.smaugfm.game2048.board.board.impl
 
+import io.github.smaugfm.game2048.board.BoardMove
+import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Tile
+import io.github.smaugfm.game2048.board.boardArraySize
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import kotlin.test.Test
 import kotlin.test.assertEquals

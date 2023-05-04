@@ -3,7 +3,6 @@ package io.github.smaugfm.game2048.search
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.util.FindBestMoveStatsLogger
 import kotlin.math.max
 import kotlin.time.measureTimedValue
 
@@ -21,7 +20,7 @@ abstract class Search protected constructor(
         val combinedStats = results.map { it.stats }.reduce(::combineStats)
 
         if (log)
-            FindBestMoveStatsLogger.logResults(
+            SearchStatsLogger.logResults(
                 duration,
                 bestResult.score,
                 depthLimit,

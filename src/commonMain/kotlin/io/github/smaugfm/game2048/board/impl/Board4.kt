@@ -162,10 +162,16 @@ value class Board4(val bits: ULong) :
     }
 
     fun countDistinctTiles(): Int {
-        return tiles().toList()
-            .filter { it.isNotEmpty }
-            .distinctBy { it.power }
-            .size
+        var bitset = 0u
+        var board = bits
+        while (board != 0UL) {
+            bitset = bitset or (1 shl (board and 0xfu).toInt()).toUInt()
+            board = board shr 4
+        }
+
+        bitset = bitset shr 1
+
+        return bitset.countOneBits()
     }
 
     companion object : BoardFactory<Board4> {

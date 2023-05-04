@@ -1,5 +1,6 @@
-package io.github.smaugfm.game2048.board
+package io.github.smaugfm.game2048.board.board.impl
 
+import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard
 import io.github.smaugfm.game2048.board.impl.Board4
 import io.github.smaugfm.game2048.board.impl.PrecomputedTables

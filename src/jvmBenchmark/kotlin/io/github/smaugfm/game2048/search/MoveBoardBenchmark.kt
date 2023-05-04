@@ -1,4 +1,4 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.search
 
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.impl.AnySizeBoard

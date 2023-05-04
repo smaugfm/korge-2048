@@ -1,7 +1,6 @@
-package io.github.smaugfm.game2048
+package io.github.smaugfm.game2048.search
 
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.search.SearchImpl
 import korlibs.io.async.runBlockingNoJs
 import kotlinx.benchmark.*
 
@@ -22,13 +21,12 @@ class FindBestMoveBenchmark {
             1, 1, 1, 1,
             1, 0, 0, 1
         )
-    private var expectimax =
-        SearchImpl(false)
+    private var search = SearchImpl(false)
     private var board4 = Board4.fromArray(arr)
 
     @Benchmark
     fun expectimax() =
         runBlockingNoJs {
-            expectimax.findBestMove(board4)
+            search.findBestMove(board4)
         }
 }

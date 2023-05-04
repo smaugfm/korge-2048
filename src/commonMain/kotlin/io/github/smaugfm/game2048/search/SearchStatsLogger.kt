@@ -1,12 +1,12 @@
-package io.github.smaugfm.game2048.util
+package io.github.smaugfm.game2048.search
 
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.search.SearchStats
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.time.Duration
 
-object FindBestMoveStatsLogger {
+object SearchStatsLogger {
+    private val elapsedRegex = "(\\d+)\\.\\d+(\\w+)".toRegex()
 
     fun logResults(
         duration: Duration,
@@ -15,15 +15,18 @@ object FindBestMoveStatsLogger {
         direction: Direction,
         s: SearchStats,
     ) {
+        val m = elapsedRegex.matchEntire(duration.toString())!!
+        val elapsed = "${m.groupValues[1].padStart(3)}${m.groupValues[2].padEnd(2)}"
+
         println(
             "Move ${direction.toString().padEnd(6)}: " +
-                "score=${score.format(15)}, " +
-                "evaluated=${s.evaluations.format(8)}, " +
-                "moves=${s.moves.format(8)}, " +
-                "cacheHits=${s.cacheHits.format(8)}, " +
-                "cacheSize=${s.cacheSize.toLong().format(8)}, " +
+                "score=${score.format(12)}, " +
+                "elapsed=${elapsed}, " +
                 "maxDepth=${s.maxDepthReached.toString().padStart(2)}, " +
-                "elapsed=$duration, " +
+                "evals=${s.evaluations.format(6)}, " +
+                "moves=${s.moves.format(6)}, " +
+                "cacheHits=${s.cacheHits.format(6)}, " +
+                "cacheSize=${s.cacheSize.toLong().format(6)}, " +
                 "depthLimit=$depthLimit"
         )
     }

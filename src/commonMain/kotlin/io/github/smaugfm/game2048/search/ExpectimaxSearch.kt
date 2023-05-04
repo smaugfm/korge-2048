@@ -30,6 +30,8 @@ class ExpectimaxSearch internal constructor(
     }
 
     fun score(request: SearchRequest): SearchResult? {
+        transpositionTable.clear()
+
         val newBoard = request.board.move(request.dir)
 
         if (newBoard == request.board)
