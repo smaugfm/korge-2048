@@ -20,7 +20,7 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
         }
 
     override fun platformDepthLimit(distinctTiles: Int) =
-        distinctTiles - if (usingWasm) 3 else 4
+        distinctTiles - if (usingWasm) 3 else 6
 
     override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> =
         requests.map(::webWorkerSearch)
