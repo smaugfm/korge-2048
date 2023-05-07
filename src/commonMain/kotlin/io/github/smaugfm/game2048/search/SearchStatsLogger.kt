@@ -6,7 +6,7 @@ import kotlin.math.round
 import kotlin.time.Duration
 
 object SearchStatsLogger {
-    private val elapsedRegex = "(\\d+)\\.\\d+(\\w+)".toRegex()
+    private val elapsedRegex = "(\\d+)(?:\\.\\d+)?(\\w+)".toRegex()
 
     fun logResults(
         duration: Duration,

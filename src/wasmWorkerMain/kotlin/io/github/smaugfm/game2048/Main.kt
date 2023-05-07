@@ -11,16 +11,22 @@ fun main() {
 
     val self = js("self") as DedicatedWorkerGlobalScope
     self.onmessage = { messageEvent ->
-        val requestStr = messageEvent.data.toString()
+        try {
+            val requestStr = messageEvent.data.toString()
 
-        val request = SearchRequest.deserialize(requestStr)!!
+            val request = SearchRequest.deserialize(requestStr)!!
 
-        val scoreResult = ExpectimaxSearch(table).score(request)
-        self.postMessage(
-            scoreResult
-                ?.serialize()
-                ?.asDynamic()
-        )
-        null
+            val scoreResult = ExpectimaxSearch(table).score(request)
+            self.postMessage(
+                scoreResult
+                    ?.serialize()
+                    ?.asDynamic()
+            )
+            null
+        } catch (e: Throwable) {
+            println("Unhandled exception in web worker (wasm):")
+            println(e)
+            null
+        }
     }
 }

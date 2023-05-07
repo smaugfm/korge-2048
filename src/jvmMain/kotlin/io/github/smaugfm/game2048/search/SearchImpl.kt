@@ -1,31 +1,58 @@
 package io.github.smaugfm.game2048.search
 
 import io.github.smaugfm.game2048.board.Direction
+import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.transposition.Long2LongMapTranspositionTable
 import korlibs.io.concurrent.createFixedThreadDispatcher
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.actor
 import kotlin.math.max
 
+@OptIn(ObsoleteCoroutinesApi::class)
 actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
-    private val tables =
-        Array(Direction.values().size) { Long2LongMapTranspositionTable() }
+    private val workers =
+        directions.associateWith {
+            scope.actor<WorkerMessage> {
+                val table = Long2LongMapTranspositionTable()
+                for (msg in channel) {
+                    try {
+                        msg.result.complete(
+                            ExpectimaxSearch(table).score(msg.req)
+                        )
+                    } catch (e: Throwable) {
+                        println(
+                            "Unhandled exception in worker (jvm):"
+                        )
+                        println(e)
+                        msg.result.completeExceptionally(e)
+                    }
+                }
+            }
+        }
+
+    class WorkerMessage(
+        val req: SearchRequest,
+        val result: CompletableDeferred<SearchResult?>,
+    )
 
     override fun platformDepthLimit(distinctTiles: Int) =
         distinctTiles - 2
 
     override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> {
-        return requests.map(::threadedSearch)
+        return requests.map { threadedSearch(it) }
             .awaitAll()
             .filterNotNull()
     }
 
-    private fun threadedSearch(req: SearchRequest) =
-        scope.async {
-            ExpectimaxSearch(tables[req.dir.ordinal]).score(req)
+    private suspend fun threadedSearch(req: SearchRequest): Deferred<SearchResult?> =
+        CompletableDeferred<SearchResult?>().also {
+            workers[req.dir]!!.send(WorkerMessage(req, it))
         }
 
     override fun combineStats(
