@@ -13,7 +13,6 @@ import io.github.smaugfm.game2048.persistence.History
 import io.github.smaugfm.game2048.ui.AnimationSpeed
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UiBoard
-import io.github.smaugfm.game2048.ui.UiBoard.Companion.addBoard
 import korlibs.io.async.ObservableProperty
 import korlibs.io.async.launchAsap
 import korlibs.io.async.launchImmediately
@@ -82,9 +81,9 @@ class MainScene(
 
                             gs.aiAnimationSpeed.update(
                                 when (gs.aiAnimationSpeed.value) {
-                                    AnimationSpeed.Normal -> AnimationSpeed.Fast
-                                    AnimationSpeed.Fast   -> AnimationSpeed.Faster
-                                    AnimationSpeed.Faster -> AnimationSpeed.Normal
+                                    AnimationSpeed.Normal      -> AnimationSpeed.Fast
+                                    AnimationSpeed.Fast        -> AnimationSpeed.NoAnimation
+                                    AnimationSpeed.NoAnimation -> AnimationSpeed.Normal
                                 }
                             )
                         }

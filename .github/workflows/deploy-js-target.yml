@@ -22,4 +22,4 @@ jobs:
       - name: Adding Known Hosts
         run: ssh-keyscan -p ${{ secrets.SSH_SERVER_PORT }} -H ${{ secrets.SSH_SERVER_HOST }} >> ~/.ssh/known_hosts
       - name: Deploy with rsync
-        run: rsync -avz -e "ssh -p ${{ secrets.SSH_SERVER_PORT }}" ./build/www/ ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_SERVER_HOST }}:${{ secrets.SSH_SERVER_RSYNC_PATH }}
+        run: rsync -avz --del -e "ssh -p ${{ secrets.SSH_SERVER_PORT }}" ./build/www/ ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_SERVER_HOST }}:${{ secrets.SSH_SERVER_RSYNC_PATH }}

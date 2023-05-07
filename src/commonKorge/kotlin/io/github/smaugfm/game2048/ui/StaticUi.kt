@@ -11,7 +11,6 @@ import io.github.smaugfm.game2048.ui.UIConstants.Companion.textColor
 import io.github.smaugfm.game2048.usingWasm
 import korlibs.event.Key
 import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
 import korlibs.image.text.TextAlignment
 import korlibs.inject.AsyncInjector
 import korlibs.io.async.ObservableProperty
@@ -189,9 +188,9 @@ class StaticUi(
         addBtn(bgBest, inputManager::handleAnimationSpeedClick) { bg ->
             fun Text.onAnimationSpeed(speed: AnimationSpeed) {
                 text = when (speed) {
-                    AnimationSpeed.Fast -> "x2"
-                    AnimationSpeed.Faster -> "x3"
                     AnimationSpeed.Normal -> "x1"
+                    AnimationSpeed.Fast        -> "x2"
+                    AnimationSpeed.NoAnimation -> "x3"
                 }
             }
 
