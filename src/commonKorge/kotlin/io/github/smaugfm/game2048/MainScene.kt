@@ -4,42 +4,34 @@ import io.github.smaugfm.game2048.board.BoardFactory
 import io.github.smaugfm.game2048.board.BoardMove
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.impl.Board4
-import io.github.smaugfm.game2048.search.Search
-import io.github.smaugfm.game2048.search.Search.Companion.FindBestMoveResult
 import io.github.smaugfm.game2048.input.InputEvent
 import io.github.smaugfm.game2048.input.KorgeInputManager
 import io.github.smaugfm.game2048.persistence.GameState
 import io.github.smaugfm.game2048.persistence.History
+import io.github.smaugfm.game2048.search.Search
+import io.github.smaugfm.game2048.search.Search.Companion.FindBestMoveResult
 import io.github.smaugfm.game2048.ui.AnimationSpeed
 import io.github.smaugfm.game2048.ui.StaticUi
 import io.github.smaugfm.game2048.ui.UiBoard
-import korlibs.io.async.ObservableProperty
 import korlibs.io.async.launchAsap
 import korlibs.io.async.launchImmediately
-import korlibs.io.concurrent.createFixedThreadDispatcher
 import korlibs.korge.scene.Scene
 import korlibs.korge.view.SContainer
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 
 class MainScene(
     private var inputManager: KorgeInputManager,
     private val gs: GameState,
     private val history: History,
     private val boardFactory: BoardFactory<Board4>,
-    private val expectimax: Search,
+    private val search: Search,
     private val uiBoard: UiBoard,
     private val staticUi: StaticUi,
 ) : Scene() {
-    private val aiDispatcher =
-        Dispatchers.createFixedThreadDispatcher("ai", 2)
     private var isAnimationRunning = false
     private var isGameOverModal = false
 
-    private val isAiStopping: ObservableProperty<Boolean> = ObservableProperty(false)
     private var board: Board4 = boardFactory.createEmpty()
 
     override suspend fun SContainer.sceneMain() {
@@ -57,10 +49,7 @@ class MainScene(
                     when (inputEvent) {
                         InputEvent.ClickInput.AiButtonClick       -> {
                             if (isGameOverModal) return@collect
-                            if (!gs.isAiPlaying.value)
-                                gs.isAiPlaying.update(true)
-                            else
-                                isAiStopping.update(true)
+                            gs.isAiPlaying.update(!gs.isAiPlaying.value)
                         }
 
                         InputEvent.ClickInput.RestartClick        ->
@@ -79,13 +68,12 @@ class MainScene(
                         InputEvent.ClickInput.AnimationSpeedClick -> {
                             if (isGameOverModal || !gs.isAiPlaying.value) return@collect
 
-                            gs.aiAnimationSpeed.update(
-                                when (gs.aiAnimationSpeed.value) {
+                            gs.animationSpeed =
+                                when (gs.animationSpeed) {
                                     AnimationSpeed.Normal      -> AnimationSpeed.Fast
                                     AnimationSpeed.Fast        -> AnimationSpeed.NoAnimation
                                     AnimationSpeed.NoAnimation -> AnimationSpeed.Normal
                                 }
-                            )
                         }
 
                         is InputEvent.DirectionInput              -> {
@@ -98,66 +86,48 @@ class MainScene(
         }
 
         gs.isAiPlaying.observe {
-            if (it)
-                startAiPlay()
+            if (it) {
+                launchAsap {
+                    startAiPlay()
+                }
+            }
         }
         if (gs.isAiPlaying.value)
             startAiPlay()
     }
 
-    private fun startAiPlay() {
-        launchAsap(aiDispatcher) {
-            var bestMoveResultDeferred: Deferred<FindBestMoveResult?> =
-                CompletableDeferred(null)
-            var bestMoveResult = expectimax.findBestMove(board)
-            isAiStopping.observe {
-                if (it)
-                    bestMoveResultDeferred.cancel()
-            }
-            while (!isAiStopping.value) {
-                val waitForAnimation = CompletableDeferred<Unit>()
+    private suspend fun startAiPlay() {
+        var bestMoveResult: FindBestMoveResult? =
+            search.findBestMove(board)
+        while (bestMoveResult != null && gs.isAiPlaying.value) {
+            var (newBoard, moves) = board.moveGenerateMoves(bestMoveResult.direction)
 
-                if (bestMoveResult == null) {
-                    gs.isAiPlaying.update(false)
-                    gameOver()
-                    break
-                }
-                var (newBoard, moves) = board.moveGenerateMoves(bestMoveResult.direction)
-                gs.aiDepth.update(bestMoveResult.maxDepth)
-                gs.aiElapsedMs.update(bestMoveResult.elapsedMs)
-                animateMoves(moves) {
-                    waitForAnimation.complete(Unit)
-                }
-                val newTile = newBoard.placeRandomTile() ?: break
-                newBoard = newTile.newBoard
+            val prevBestMove = bestMoveResult
+            val animationDeferred = animateMoves(moves)
 
-                history.add(board.tiles(), gs.score.value)
+            val tilePlacementRes = newBoard.placeRandomTile() ?: break
+            newBoard = tilePlacementRes.newBoard
 
-                if (!gs.isAiPlaying.value) {
-                    break
-                }
-                bestMoveResultDeferred = async(aiDispatcher) {
-                    expectimax.findBestMove(newBoard)
-                }
-                waitForAnimation.await()
+            bestMoveResult = search.findBestMove(newBoard)
+            animationDeferred.await()
 
-                gs.moveNumber.update(gs.moveNumber.value + 1)
-                uiBoard.createNewBlock(newTile.tile, newTile.index)
+            gs.aiDepth.update(prevBestMove.maxDepth)
+            gs.aiElapsedMs.update(prevBestMove.elapsedMs)
+            gs.moveNumber.update(gs.moveNumber.value + 1)
 
-                board = newBoard
-                try {
-                    bestMoveResult = bestMoveResultDeferred.await()
-                } catch (e: CancellationException) {
-                    break
-                }
-            }
+            uiBoard.createNewBlock(tilePlacementRes.tile, tilePlacementRes.index)
 
-            isAiStopping.update(false)
-            gs.isAiPlaying.update(false)
+            board = newBoard
+            history.add(board.tiles(), gs.score.value)
+        }
+
+        gs.isAiPlaying.update(false)
+        if (bestMoveResult == null) {
+            gameOver()
         }
     }
 
-    private fun handleUserDirectionInput(direction: Direction) {
+    private suspend fun handleUserDirectionInput(direction: Direction) {
         if (isAnimationRunning) {
             return
         }
@@ -165,13 +135,12 @@ class MainScene(
 
         val (newBoard, moves) = board.moveGenerateMoves(direction)
         if (board != newBoard) {
-            animateMoves(moves) {
-                board = newBoard
-                gs.moveNumber.update(gs.moveNumber.value + 1)
-                generateBlockAndSave()
-                if (!board.hasAvailableMoves())
-                    gameOver()
-            }
+            animateMoves(moves).await()
+            board = newBoard
+            gs.moveNumber.update(gs.moveNumber.value + 1)
+            generateBlockAndSave()
+            if (!board.hasAvailableMoves())
+                gameOver()
         }
 
     }
@@ -184,16 +153,17 @@ class MainScene(
 
     private fun animateMoves(
         moves: List<BoardMove>,
-        onEnd: () -> Unit = {},
-    ) {
+    ): Deferred<Unit> {
+        val cd = CompletableDeferred<Unit>()
         isAnimationRunning = true
         launchImmediately {
             uiBoard.animate(moves) {
                 updateScore(moves)
                 isAnimationRunning = false
-                onEnd()
+                cd.complete(Unit)
             }
         }
+        return cd
     }
 
     private fun updateScore(moves: List<BoardMove>) {

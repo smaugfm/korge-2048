@@ -17,7 +17,7 @@ sealed class AnimationSpeed(
     companion object {
         fun fromString(str: String): AnimationSpeed? =
             when (str) {
-                "Faster" -> NoAnimation
+                "NoAnimation" -> NoAnimation
                 "Fast"   -> Fast
                 "Normal" -> Normal
                 else     -> null

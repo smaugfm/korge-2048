@@ -189,7 +189,7 @@ class StaticUi(
             fun Text.onAnimationSpeed(speed: AnimationSpeed) {
                 text = when (speed) {
                     AnimationSpeed.Normal -> "x1"
-                    AnimationSpeed.Fast        -> "x2"
+                    AnimationSpeed.Fast -> "x2"
                     AnimationSpeed.NoAnimation -> "x3"
                 }
             }
@@ -205,11 +205,14 @@ class StaticUi(
                 textColor,
                 uiConstants.fontBold
             ) {
-                onAnimationSpeed(gs.aiAnimationSpeed.value)
+                onAnimationSpeed(gs.animationSpeed)
                 centerXOn(bg)
                 alignTopToTopOf(bg, -1)
-                gs.aiAnimationSpeed.observe {
+                gs.observeAnimationSpeed {
                     onAnimationSpeed(it)
+                }
+                gs.isAiPlaying.observe {
+                    onAnimationSpeed(gs.animationSpeed)
                 }
             }
         }

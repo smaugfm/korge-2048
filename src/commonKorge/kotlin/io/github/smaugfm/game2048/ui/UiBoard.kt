@@ -98,7 +98,7 @@ class UiBoard(
 
     private fun Animator.animateMerge(from1: Int, from2: Int, to: Int, newTile: Tile) {
         sequence {
-            if (gs.aiAnimationSpeed.value !== AnimationSpeed.NoAnimation)
+            if (gs.animationSpeed !== AnimationSpeed.NoAnimation)
                 parallel {
                     blocks[from1]!!.animateMove(this, to)
                     blocks[from2]!!.animateMove(this, to)
@@ -108,7 +108,7 @@ class UiBoard(
                 blocks[from2]!!.removeFromParent()
                 createNewBlock(newTile, to)
             }
-            if (gs.aiAnimationSpeed.value !== AnimationSpeed.NoAnimation)
+            if (gs.animationSpeed !== AnimationSpeed.NoAnimation)
                 sequenceLazy {
                     blocks[to]!!.animateScale(this)
                 }

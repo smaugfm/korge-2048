@@ -13,12 +13,24 @@ class GameState(
     val score: ObservableProperty<Int>,
     val isAiPlaying: ObservableProperty<Boolean>,
     val moveNumber: ObservableProperty<Int>,
-    val aiAnimationSpeed: ObservableProperty<AnimationSpeed> =
+    private val aiAnimationSpeed: ObservableProperty<AnimationSpeed> =
         ObservableProperty(AnimationSpeed.Normal),
     val showAiStats: ObservableProperty<Boolean> = ObservableProperty(false),
     val aiDepth: ObservableProperty<Int> = ObservableProperty(0),
     val aiElapsedMs: ObservableProperty<Float> = ObservableProperty(0f),
 ) {
+    fun observeAnimationSpeed(handler: (AnimationSpeed) -> Unit) {
+        aiAnimationSpeed.observe(handler)
+    }
+    var animationSpeed: AnimationSpeed
+        get() =
+            if (isAiPlaying.value)
+                aiAnimationSpeed.value
+            else
+                AnimationSpeed.Normal
+        set(value) = aiAnimationSpeed.update(value)
+
+
     init {
         score.observe {
             if (it > best.value) best.update(it)

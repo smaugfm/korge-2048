@@ -83,31 +83,24 @@ class UiBlock(
             this,
             columnX(to, uiConstants),
             rowY(to, uiConstants),
-            animationSpeed.moveAnimationDuration,
+            gs.animationSpeed.moveAnimationDuration,
             Easing.LINEAR
         )
     }
-
-    private val animationSpeed: AnimationSpeed
-        get() =
-            if (gs.isAiPlaying.value)
-                gs.aiAnimationSpeed.value
-            else
-                AnimationSpeed.Normal
 
     fun animateScale(animator: Animator) {
         animator.tween(
             this::x[x - 4],
             this::y[y - 4],
             this::scale[scale + 0.1],
-            time = animationSpeed.scaleAnimationDuration / 2,
+            time = gs.animationSpeed.scaleAnimationDuration / 2,
             easing = Easing.LINEAR
         )
         animator.tween(
             this::x[x],
             this::y[y],
             this::scale[scale],
-            time = animationSpeed.scaleAnimationDuration / 2,
+            time = gs.animationSpeed.scaleAnimationDuration / 2,
             easing = Easing.LINEAR
         )
     }
