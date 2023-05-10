@@ -2,18 +2,19 @@ package io.github.smaugfm.game2048.persistence
 
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.boardArraySize
-import korlibs.datastructure.iterators.fastForEach
+import io.github.smaugfm.game2048.util.CircularAppendOnlyList
 import korlibs.inject.AsyncInjector
 import korlibs.korge.service.storage.storage
 import korlibs.korge.view.Views
 
 class History private constructor(
     from: String?,
+    val maxSize: Int = 512,
     private val onUpdate: (History) -> Unit,
 ) {
     class Element(val tiles: Array<Tile>, val score: Int)
 
-    private val history = mutableListOf<Element>()
+    private val history = CircularAppendOnlyList<Element>(maxSize)
 
     val currentElement: Element
         get() = history.last()
@@ -22,20 +23,21 @@ class History private constructor(
         from
             .takeUnless { it?.isBlank() == true }
             ?.split(';')
-            ?.fastForEach {
-                val element = elementFromString(it)
-                history.add(element)
+            ?.takeLast(maxSize)
+            ?.map(::elementFromString)
+            ?.let {
+                history.addLastAll(it)
             }
     }
 
     fun add(tiles: Array<Tile>, score: Int) {
-        history.add(Element(tiles, score))
+        history.addLast(Element(tiles, score))
         onUpdate(this)
     }
 
     fun undo(): Element {
         if (history.size > 1) {
-            history.removeAt(history.size - 1)
+            history.removeLast()
             onUpdate(this)
         }
         return history.last()
@@ -46,7 +48,7 @@ class History private constructor(
         onUpdate(this)
     }
 
-    fun isEmpty() = history.isEmpty()
+    fun isEmpty() = history.isEmpty
 
     private fun elementFromString(string: String): Element {
         val tiles = string.split(',').map { it.toInt() }
@@ -64,7 +66,6 @@ class History private constructor(
         suspend operator fun invoke(injector: AsyncInjector) {
             injector.mapSingleton {
                 val views: Views = get()
-//                History("1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,1000") {
                 History(views.storage.getOrNull("history")) {
                     views.storage["history"] = it.toString()
                 }
