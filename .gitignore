@@ -4,6 +4,8 @@ build/
 /ref.cpp
 /ref.h
 
+.kotlin
+
 .idea/
 *.ipr
 *.iws

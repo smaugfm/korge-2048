@@ -10,6 +10,7 @@
             console.log("%cFalling back to Javascript Expectimax implementation.%c\n" +
                 "If possible, please follow the steps " +
                 "for your browser for Kotlin/Wasm to work.", bold, normal)
+            console.error(e)
             hasWasmSupport = false;
         }
     })()
