@@ -73,7 +73,7 @@ actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
         private val dispatcher: CoroutineDispatcher =
             Dispatchers.createFixedThreadDispatcher(
                 "expectimax",
-                Direction.values().size
+                Direction.entries.size
             )
         private val scope = CoroutineScope(dispatcher)
     }

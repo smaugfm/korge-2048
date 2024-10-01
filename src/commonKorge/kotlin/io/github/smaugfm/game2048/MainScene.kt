@@ -173,7 +173,7 @@ class MainScene(
         gs.score.update(gs.score.value + points)
     }
 
-    private fun gameOver() {
+    private suspend fun gameOver() {
         if (!isGameOverModal) {
             isGameOverModal = true
             staticUi.showGameOver(uiBoard)

@@ -3,7 +3,7 @@ package io.github.smaugfm.game2048.persistence
 import io.github.smaugfm.game2048.board.Tile
 import io.github.smaugfm.game2048.board.boardArraySize
 import io.github.smaugfm.game2048.util.CircularAppendOnlyList
-import korlibs.inject.AsyncInjector
+import korlibs.inject.Injector
 import korlibs.korge.service.storage.storage
 import korlibs.korge.view.Views
 
@@ -63,7 +63,7 @@ class History private constructor(
     }
 
     companion object {
-        suspend operator fun invoke(injector: AsyncInjector) {
+        suspend operator fun invoke(injector: Injector) {
             injector.mapSingleton {
                 val views: Views = get()
                 History(views.storage.getOrNull("history")) {

@@ -12,15 +12,9 @@ import io.github.smaugfm.game2048.usingWasm
 import korlibs.event.Key
 import korlibs.image.color.Colors
 import korlibs.image.text.TextAlignment
-import korlibs.inject.AsyncInjector
+import korlibs.inject.Injector
 import korlibs.io.async.ObservableProperty
-import korlibs.io.lang.format
-import korlibs.korge.input.keys
-import korlibs.korge.input.onClick
-import korlibs.korge.input.onDown
-import korlibs.korge.input.onOut
-import korlibs.korge.input.onOver
-import korlibs.korge.input.onUp
+import korlibs.korge.input.*
 import korlibs.korge.view.Container
 import korlibs.korge.view.RoundRect
 import korlibs.korge.view.Text
@@ -58,7 +52,7 @@ class StaticUi(
     private val statMargin = uiConstants.padding
     private val statInnerPadding = uiConstants.tileSize / 8
 
-    fun addStaticUi(
+    suspend fun addStaticUi(
         container: Container,
         uiBoard: UiBoard,
     ) {
@@ -145,7 +139,7 @@ class StaticUi(
         }
     }
 
-    private fun Container.addButtons(
+    private suspend fun Container.addButtons(
         bgBest: View,
         bgField: View,
     ) {
@@ -218,7 +212,7 @@ class StaticUi(
         }
     }
 
-    private fun Container.addBtn(
+    private suspend fun Container.addBtn(
         bgBest: View,
         onClick: suspend () -> Unit,
         content: Container.(RoundRect) -> Unit,
@@ -231,7 +225,7 @@ class StaticUi(
             )
             alignTopToBottomOf(bgBest, padding)
             content(bg)
-            onClick {
+            onClickSuspend {
                 onClick()
             }
         }
@@ -261,7 +255,7 @@ class StaticUi(
                 Rectangle(
                     0.0,
                     0.0,
-                    bgStat.width.toDouble(),
+                    bgStat.width,
                     uiConstants.tileSize - statInnerPadding
                 )
             )
@@ -275,7 +269,7 @@ class StaticUi(
         return bgStat
     }
 
-    fun showGameOver(uiBoard: UiBoard) =
+    suspend fun showGameOver(uiBoard: UiBoard) =
         uiBoard.container {
             suspend fun handleTryAgainClick() {
                 this@container.removeFromParent()
@@ -307,13 +301,13 @@ class StaticUi(
                 y += 70
 
                 color = bg
-                onOver {
+                onOverSuspend {
                     onOver { color = hover }
                     onOut { color = bg }
                     onDown { color = pressed }
                     onUp { color = pressed }
 
-                    onClick {
+                    onClickSuspend {
                         handleTryAgainClick()
                     }
                 }
@@ -350,7 +344,7 @@ class StaticUi(
     }
 
     companion object {
-        suspend operator fun invoke(injector: AsyncInjector) {
+        operator fun invoke(injector: Injector) {
             injector.mapSingleton { StaticUi(get(), get(), get()) }
         }
     }

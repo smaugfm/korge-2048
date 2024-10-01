@@ -1,7 +1,7 @@
 package io.github.smaugfm.game2048.persistence
 
 import io.github.smaugfm.game2048.ui.AnimationSpeed
-import korlibs.inject.AsyncInjector
+import korlibs.inject.Injector
 import korlibs.io.async.ObservableProperty
 import korlibs.korge.service.storage.NativeStorage
 import korlibs.korge.service.storage.storage
@@ -51,7 +51,7 @@ class GameState(
     }
 
     companion object {
-        suspend operator fun invoke(injector: AsyncInjector) {
+        suspend operator fun invoke(injector: Injector) {
             injector.mapSingleton {
                 val storage = injector.get<Views>().storage
                 GameState(

@@ -6,11 +6,12 @@ import korlibs.image.color.RGBA
 import korlibs.image.font.Font
 import korlibs.image.font.readTtfFont
 import korlibs.image.format.readBitmap
-import korlibs.inject.AsyncInjector
+import korlibs.inject.Injector
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.view.Views
 import korlibs.math.geom.RectCorners
 import korlibs.math.geom.Size
+import kotlinx.coroutines.runBlocking
 
 class UIConstants private constructor(
     views: Views,
@@ -30,15 +31,17 @@ class UIConstants private constructor(
 
     companion object {
 
-        suspend operator fun invoke(injector: AsyncInjector) {
+        operator fun invoke(injector: Injector) {
             injector.mapSingleton {
-                UIConstants(
-                    get(),
-                    resourcesVfs["clear_sans.ttf"].readTtfFont(),
-                    resourcesVfs["clear_sans_bold.ttf"].readTtfFont(),
-                    resourcesVfs["restart.png"].readBitmap(),
-                    resourcesVfs["undo.png"].readBitmap()
-                )
+                runBlocking {
+                    UIConstants(
+                        get(),
+                        resourcesVfs["clear_sans.ttf"].readTtfFont(),
+                        resourcesVfs["clear_sans_bold.ttf"].readTtfFont(),
+                        resourcesVfs["restart.png"].readBitmap(),
+                        resourcesVfs["undo.png"].readBitmap()
+                    )
+                }
             }
         }
 
