@@ -1,2 +1,10 @@
+[versions]
+kotlin = "2.0.20"
+korge = "6.0.0-beta4"
+
 [plugins]
-korge = { id = "com.soywiz.korge", version = "6.0.0-beta4" }
+korge = { id = "com.soywiz.korge", version.ref = "korge" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+
+[libraries]
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
