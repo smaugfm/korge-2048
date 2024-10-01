@@ -13,9 +13,9 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
         directions.associateWith {
             Worker(
                 if (usingWasm)
-                    "./wasm-worker.js"
+                    "./wasm.js"
                 else
-                    "./js-worker.js"
+                    "./js.js"
             )
         }
 

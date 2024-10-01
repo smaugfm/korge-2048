@@ -22,9 +22,7 @@ actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
                 val table = Long2LongMapTranspositionTable()
                 for (msg in channel) {
                     try {
-                        msg.result.complete(
-                            ExpectimaxSearch(table).score(msg.req)
-                        )
+                        msg.result.complete(ExpectimaxSearch(table).score(msg.req))
                     } catch (e: Throwable) {
                         println(
                             "Unhandled exception in worker (jvm):"

@@ -1,5 +1,6 @@
 import korlibs.korge.gradle.BuildVersions
 import korlibs.korge.gradle.korge
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     alias(libs.plugins.korge)
@@ -19,9 +20,36 @@ korge {
     serializationJson()
 }
 
+val generatedOutput: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
+//https://stackoverflow.com/questions/63858392/gradle-copy-submodules-output-into-other-submodule-resources/76489643
+val copyGeneratedOutput: TaskProvider<Copy> by tasks.registering(Copy::class) {
+    from(generatedOutput)
+    into(project.layout.buildDirectory.dir("generatedOutput"))
+    include { elem ->
+        listOf(".js", ".js.map", ".wasm")
+            .any(elem.name::endsWith)
+    }
+}
+
+afterEvaluate {
+    tasks {
+        getByName("jsCreateIndexHtml").dependsOn(copyGeneratedOutput)
+    }
+}
+
+dependencies {
+    generatedOutput(project(":solve")) {
+        targetConfiguration = "distribution"
+    }
+}
+
 kotlin {
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(project(":common"))
                 implementation(project(":solve"))
@@ -29,6 +57,14 @@ kotlin {
                 implementation("com.soywiz.korge:korge:${BuildVersions.KORGE}")
             }
         }
+        jsMain {
+            resources.srcDir(copyGeneratedOutput)
+        }
+    }
+
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 }
 
