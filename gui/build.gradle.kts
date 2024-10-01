@@ -14,7 +14,7 @@ korge {
     entrypoint("main", "io.github.smaugfm.game2048.MainKt")
 
     targetJvm()
-//  targetJs()
+    targetJs()
 //  targetWasmJs()
     serializationJson()
 }

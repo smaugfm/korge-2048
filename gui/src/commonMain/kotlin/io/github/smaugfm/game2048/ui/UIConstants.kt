@@ -11,7 +11,6 @@ import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.view.Views
 import korlibs.math.geom.RectCorners
 import korlibs.math.geom.Size
-import kotlinx.coroutines.runBlocking
 
 class UIConstants private constructor(
     views: Views,
@@ -29,18 +28,32 @@ class UIConstants private constructor(
     val padding = tileSize / 10
     val smallPadding = padding / 2
 
+    class Resources(
+        val font: Font,
+        val fontBold: Font,
+        val restartImg: Bitmap,
+        val undoImg: Bitmap,
+    ) {
+        companion object {
+            suspend fun load(): Resources = Resources(
+                resourcesVfs["clear_sans.ttf"].readTtfFont(),
+                resourcesVfs["clear_sans_bold.ttf"].readTtfFont(),
+                resourcesVfs["restart.png"].readBitmap(),
+                resourcesVfs["undo.png"].readBitmap()
+            )
+        }
+    }
+
     companion object {
-        operator fun invoke(injector: Injector) {
+        operator fun invoke(injector: Injector, resources: Resources) {
             injector.mapSingleton {
-                runBlocking {
-                    UIConstants(
-                        get(),
-                        resourcesVfs["clear_sans.ttf"].readTtfFont(),
-                        resourcesVfs["clear_sans_bold.ttf"].readTtfFont(),
-                        resourcesVfs["restart.png"].readBitmap(),
-                        resourcesVfs["undo.png"].readBitmap()
-                    )
-                }
+                UIConstants(
+                    get(),
+                    resources.font,
+                    resources.fontBold,
+                    resources.restartImg,
+                    resources.undoImg
+                )
             }
         }
 

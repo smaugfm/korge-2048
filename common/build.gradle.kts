@@ -1,7 +1,8 @@
 plugins {
-  alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinMultiplatform)
 }
 
 kotlin {
-  jvm()
+    jvm()
+    js { browser() }
 }

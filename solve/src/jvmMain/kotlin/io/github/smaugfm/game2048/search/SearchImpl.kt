@@ -41,10 +41,10 @@ actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
         val result: CompletableDeferred<SearchResult?>,
     )
 
-    override fun platformDepthLimit(distinctTiles: Int) =
+    actual override fun platformDepthLimit(distinctTiles: Int) =
         distinctTiles - 2
 
-    override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> {
+    actual override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> {
         return requests.map { threadedSearch(it) }
             .awaitAll()
             .filterNotNull()
@@ -55,7 +55,7 @@ actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
             workers[req.dir]!!.send(WorkerMessage(req, it))
         }
 
-    override fun combineStats(
+    actual override fun combineStats(
         one: SearchStats,
         two: SearchStats,
     ) = object : SearchStats {

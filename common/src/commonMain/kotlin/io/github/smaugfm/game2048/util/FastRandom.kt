@@ -56,6 +56,6 @@ open class FastRandom private constructor(
         require(until > from) { boundsErrorMessage(from, until) }
         return (nextLong() and 0x7FFFFFFFFFFFFFFFL % (until - from)) + from
     }
-    private inline fun Int.takeUpperBits(bitCount: Int): Int = this ushr (32 - bitCount)
+    private fun Int.takeUpperBits(bitCount: Int): Int = this ushr (32 - bitCount)
     private fun boundsErrorMessage(from: Any, until: Any) = "Random range is empty: [$from, $until)."
 }

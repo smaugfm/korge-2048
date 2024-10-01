@@ -37,7 +37,7 @@ suspend fun createInjector(): Injector {
         mapInstance(BoardFactory::class, Board4)
         mapSingleton(Search::class) { SearchImpl() }
         GameState(this)
-        UIConstants(this)
+        UIConstants(this, UIConstants.Resources.load())
         History(this)
         KorgeInputManager(this)
         StaticUi(this)

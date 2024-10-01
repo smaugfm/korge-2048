@@ -1,5 +1,6 @@
 import korlibs.korge.gradle.BuildVersions
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -7,6 +8,7 @@ plugins {
 
 kotlin {
     jvm()
+    js { browser() }
     sourceSets {
         all {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
@@ -21,15 +23,23 @@ kotlin {
                 implementation(libs.kotlin.test)
             }
         }
+
         jvmMain {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${BuildVersions.COROUTINES}")
-            }
+            kotlinxDeps()
+        }
+        jsMain {
+            kotlinxDeps()
         }
     }
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+}
+
+fun KotlinSourceSet.kotlinxDeps() {
+    dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${BuildVersions.COROUTINES}")
     }
 }

@@ -37,6 +37,7 @@ import korlibs.korge.view.size
 import korlibs.korge.view.text
 import korlibs.math.geom.Rectangle
 import korlibs.math.geom.Size
+import korlibs.util.format
 import kotlin.math.roundToInt
 
 class StaticUi(
