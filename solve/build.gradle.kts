@@ -1,4 +1,7 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import korlibs.korge.gradle.BuildVersions
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
@@ -30,6 +33,7 @@ val distribution: NamedDomainObjectProvider<Configuration> by configurations.reg
 kotlin {
     jvm()
     js { configureJsOrWasm() }
+    wasmJs { configureJsOrWasm() }
     sourceSets {
         all {
             languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
@@ -57,6 +61,7 @@ kotlin {
 //https://stackoverflow.com/questions/63858392/gradle-copy-submodules-output-into-other-submodule-resources/76489643
 artifacts {
     add(distribution.name, tasks.named("jsBrowserDistribution"))
+    add(distribution.name, tasks.named("wasmJsBrowserDistribution"))
 }
 
 fun KotlinSourceSet.kotlinxDeps() {

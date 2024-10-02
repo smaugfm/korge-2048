@@ -1,26 +1,44 @@
 package io.github.smaugfm.game2048.search
 
+import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
+import io.github.smaugfm.game2048.usingWasm
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
 import org.w3c.dom.Worker
 import kotlin.math.max
 
 actual class SearchImpl actual constructor(log: Boolean) : Search() {
-    private val usingWasm = false
-    private val workers =
-        directions.associateWith {
-            Worker(
-                if (usingWasm)
-                    "./wasm.js"
-                else
-                    "./js.js"
-            )
+    private lateinit var workers: Map<Direction, Worker>
+
+    private fun loadWorkers(srcCode: String): Map<Direction, Worker> =
+        directions.associateWith { Worker(srcCode) }
+
+    public actual override suspend fun init() {
+        workers = loadWorkers("./wasmJs.js")
+
+        //Without this pingPongCheck's do not succeed for some reason
+        delay(100)
+
+        if (workers.values.all { it.pingPongCheck() }) {
+            usingWasm = true
+            consoleLogBold("Using WebAssembly Expectimax implementation")
+        } else {
+            usingWasm = false
+            consoleLogBold("Falling back to Javascript Expectimax implementation")
+            workers = loadWorkers("./js.js")
+            if (workers.values.any { !it.pingPongCheck() }) {
+                consoleLogBold("JS web worker did not load correctly")
+            }
         }
+    }
 
     actual override fun platformDepthLimit(distinctTiles: Int) =
-        distinctTiles - if (usingWasm) 3 else 6
+        distinctTiles - if (usingWasm == true) 3 else 6
 
     actual override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> =
         requests.map(::webWorkerSearch)
@@ -45,18 +63,51 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
         workers[req.dir]!!.computeScore(req.serialize())
 
     companion object {
-        fun Worker.computeScore(data: String): Deferred<SearchResult?> {
-            val completableDeferred = CompletableDeferred<SearchResult?>()
-            this.onmessage = { messageEvent ->
-                val result = SearchResult.deserialize(messageEvent.data.toString())
-                completableDeferred.complete(result)
-            }
-            this.onerror = { event ->
-                completableDeferred.completeExceptionally(RuntimeException(event.type))
-            }
-            this.postMessage(data)
+        fun consoleLogBold(str: String) {
+            console.log(
+                "%c$str%c",
+                "font-weight: bold",
+                "font-weight: normal"
+            )
+        }
 
-            return completableDeferred
+        suspend fun Worker.pingPongCheck(): Boolean {
+            val res = CompletableDeferred<Boolean>()
+            onmessage = { e ->
+                if (e.data.toString() == "pong")
+                    res.complete(true)
+                else {
+                    console.log(e.data)
+                    res.complete(false)
+                }
+            }
+            onerror = { e ->
+                console.error(e)
+                res.complete(false)
+            }
+            postMessage("ping")
+            return try {
+                withTimeout(50) {
+                    res.await()
+                }
+            } catch (e: TimeoutCancellationException) {
+                console.log("Timed out waiting for 'pong' from wasm worker")
+                false
+            }
+        }
+
+        fun Worker.computeScore(data: String): Deferred<SearchResult?> {
+            val res = CompletableDeferred<SearchResult?>()
+            onmessage = { e ->
+                val result = SearchResult.deserialize(e.data.toString())
+                res.complete(result)
+            }
+            onerror = { e ->
+                res.completeExceptionally(RuntimeException(e.type))
+            }
+            postMessage(data)
+
+            return res
         }
     }
 }

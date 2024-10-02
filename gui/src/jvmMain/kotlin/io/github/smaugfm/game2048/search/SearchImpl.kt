@@ -39,6 +39,10 @@ actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
         val result: CompletableDeferred<SearchResult?>,
     )
 
+    public actual override suspend fun init() {
+        //do nothing
+    }
+
     actual override fun platformDepthLimit(distinctTiles: Int) =
         distinctTiles - 2
 

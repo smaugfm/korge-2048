@@ -14,7 +14,13 @@ import korlibs.image.color.Colors
 import korlibs.image.text.TextAlignment
 import korlibs.inject.Injector
 import korlibs.io.async.ObservableProperty
-import korlibs.korge.input.*
+import korlibs.korge.input.keys
+import korlibs.korge.input.onClickSuspend
+import korlibs.korge.input.onDown
+import korlibs.korge.input.onOut
+import korlibs.korge.input.onOver
+import korlibs.korge.input.onOverSuspend
+import korlibs.korge.input.onUp
 import korlibs.korge.view.Container
 import korlibs.korge.view.RoundRect
 import korlibs.korge.view.Text
@@ -99,7 +105,16 @@ class StaticUi(
         addUnderBoardLabel(
             gs.aiElapsedMs,
             {
-                if (usingWasm && gs.showAiStats.value) "wasm" else ""
+                if (gs.showAiStats.value) {
+                    if (usingWasm == true)
+                        "WebAssembly implementation"
+                    else if (usingWasm == false)
+                        "JS implementation (use Chrome for speed-up)"
+                    else
+                        ""
+                } else {
+                    ""
+                }
             }
         ) {
             alignRightToRightOf(uiBoard)
@@ -318,7 +333,7 @@ class StaticUi(
             keys.down {
                 when (it.key) {
                     Key.ENTER, Key.SPACE -> handleTryAgainClick()
-                    else                 -> Unit
+                    else -> Unit
                 }
             }
         }

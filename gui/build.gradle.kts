@@ -16,7 +16,7 @@ korge {
 
     targetJvm()
     targetJs()
-//  targetWasmJs()
+    targetWasmJs()
     serializationJson()
 }
 

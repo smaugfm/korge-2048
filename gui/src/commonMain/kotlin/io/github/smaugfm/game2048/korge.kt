@@ -17,7 +17,7 @@ import korlibs.inject.Injector
 import korlibs.korge.Korge
 import korlibs.render.GameWindow
 
-var usingWasm = false
+var usingWasm: Boolean? = null
 
 suspend fun startKorge(injector: Injector) {
     Korge(
@@ -32,10 +32,12 @@ suspend fun startKorge(injector: Injector) {
 }
 
 suspend fun createInjector(): Injector {
+    val search = SearchImpl()
+    search.init()
     val injector = Injector().apply {
         mapInstance(Heuristics::class, Board4Heuristics())
         mapInstance(BoardFactory::class, Board4)
-        mapSingleton(Search::class) { SearchImpl() }
+        mapSingleton(Search::class) { search }
         GameState(this)
         UIConstants(this, UIConstants.Resources.load())
         History(this)

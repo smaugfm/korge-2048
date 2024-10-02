@@ -53,6 +53,7 @@ abstract class Search protected constructor(
         return max(MIN_DEPTH_LIMIT, platformDepthLimit(distinctTiles))
     }
 
+    protected abstract suspend fun init()
     protected abstract fun platformDepthLimit(distinctTiles: Int): Int
 
     protected abstract suspend fun getExpectimaxResults(
