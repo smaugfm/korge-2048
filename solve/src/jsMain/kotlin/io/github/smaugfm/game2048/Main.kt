@@ -19,9 +19,7 @@ fun main() {
                 val request = SearchRequest.deserialize(requestStr)!!
                 val scoreResult = ExpectimaxSearch(table).score(request)
                 self.postMessage(
-                    scoreResult
-                        ?.serialize()
-                        ?.asDynamic()
+                    scoreResult?.serialize()?.asDynamic()
                 )
             }
             null

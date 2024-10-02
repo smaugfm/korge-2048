@@ -19,21 +19,13 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
         directions.associateWith { Worker(srcCode) }
 
     public actual override suspend fun init() {
-        workers = loadWorkers("./wasmJs.js")
-
-        //Without this pingPongCheck's do not succeed for some reason
-        delay(100)
-
-        if (workers.values.all { it.pingPongCheck() }) {
-            usingWasm = true
+        checkWasmSupport()
+        workers = if (usingWasm == true) {
             consoleLogBold("Using WebAssembly Expectimax implementation")
+            loadWorkers("./wasmJs.js")
         } else {
-            usingWasm = false
             consoleLogBold("Falling back to Javascript Expectimax implementation")
-            workers = loadWorkers("./js.js")
-            if (workers.values.any { !it.pingPongCheck() }) {
-                consoleLogBold("JS web worker did not load correctly")
-            }
+            loadWorkers("./js.js")
         }
     }
 
@@ -71,30 +63,31 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
             )
         }
 
-        suspend fun Worker.pingPongCheck(): Boolean {
-            val res = CompletableDeferred<Boolean>()
-            onmessage = { e ->
-                if (e.data.toString() == "pong")
-                    res.complete(true)
-                else {
-                    console.log(e.data)
-                    res.complete(false)
-                }
-            }
-            onerror = { e ->
-                console.error(e)
-                res.complete(false)
-            }
-            postMessage("ping")
-            return try {
-                withTimeout(50) {
-                    res.await()
+        suspend fun checkWasmSupport() {
+            val deferred = CompletableDeferred<Unit>()
+
+            val worker = Worker("./wasmJs.js")
+            try {
+                withTimeout(200) {
+                    worker.onmessage = { e ->
+                        if (e.data.toString() == "started")
+                            deferred.complete(Unit)
+                        else
+                            console.log(
+                                "Message received from wasm " +
+                                    "worker is not 'started' but ${e.data.toString()}"
+                            )
+                    }
+                    delay(100)
+                    deferred.await()
+                    usingWasm = true
                 }
             } catch (e: TimeoutCancellationException) {
-                console.log("Timed out waiting for 'pong' from wasm worker")
-                false
+                usingWasm = false
             }
+            worker.terminate()
         }
+
 
         fun Worker.computeScore(data: String): Deferred<SearchResult?> {
             val res = CompletableDeferred<SearchResult?>()
