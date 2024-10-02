@@ -66,7 +66,7 @@ artifacts {
 
 fun KotlinSourceSet.kotlinxDeps() {
     dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${BuildVersions.COROUTINES}")
+        implementation(libs.kotlinx.serialization)
+        implementation(libs.kotlinx.coroutines)
     }
 }

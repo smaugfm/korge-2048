@@ -53,8 +53,8 @@ kotlin {
             dependencies {
                 implementation(project(":common"))
                 implementation(project(":solve"))
-                implementation("com.soywiz.korge:korge-core:${BuildVersions.KORGE}")
-                implementation("com.soywiz.korge:korge:${BuildVersions.KORGE}")
+                implementation(libs.korge)
+                implementation(libs.korge.core)
             }
         }
         jsMain {
