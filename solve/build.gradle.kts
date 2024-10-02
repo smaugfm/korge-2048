@@ -1,6 +1,5 @@
 @file:OptIn(ExperimentalWasmDsl::class)
 
-import korlibs.korge.gradle.BuildVersions
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
@@ -16,7 +15,6 @@ fun KotlinJsTargetDsl.configureJsOrWasm() {
     browser {
         webpackTask {
             mainOutputFileName = "$targetName.js"
-            println("mainOutputFileName = $targetName.js")
         }
         @OptIn(ExperimentalDistributionDsl::class)
         distribution {

@@ -3,14 +3,18 @@ kotlin = "2.0.20"
 korge = "6.0.0-beta4"
 kotlinxSerialization = "1.7.1"
 kotlinxCoroutines = "1.9.0-RC.2"
+kotlinxBenchmark = "0.4.12"
 
 [plugins]
 korge = { id = "com.soywiz.korge", version.ref = "korge" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
+kotlinxBenchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinxBenchmark" }
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmark" }
 korge-core = { module = "com.soywiz.korge:korge-core", version.ref = "korge" }
 korge = { module = "com.soywiz.korge:korge", version.ref = "korge" }

@@ -109,7 +109,7 @@ class StaticUi(
                     if (usingWasm == true)
                         "WebAssembly implementation"
                     else if (usingWasm == false)
-                        "JS implementation (use Chrome for speed-up)"
+                        "JS implementation (Chrome is faster)"
                     else
                         ""
                 } else {
