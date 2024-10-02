@@ -42,7 +42,7 @@ afterEvaluate {
 }
 
 dependencies {
-    generatedOutput(project(":solve")) {
+    generatedOutput(projects.solve) {
         targetConfiguration = "distribution"
     }
 }
@@ -51,8 +51,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":common"))
-                implementation(project(":solve"))
+                implementation(projects.common)
+                implementation(projects.solve)
                 implementation(libs.korge)
                 implementation(libs.korge.core)
             }

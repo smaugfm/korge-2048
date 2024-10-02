@@ -6,20 +6,21 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.head_commit.message, '#deploy') }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout-ref || github.ref }}
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-          cache: gradle
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
       - name: Code build
-        run: ./gradlew browserReleaseEsbuild --no-daemon
+        run: ./gradlew browserReleaseEsbuild
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: 'dummy'
-      - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_SERVER_PORT }} -H ${{ secrets.SSH_SERVER_HOST }} >> ~/.ssh/known_hosts
+          known_hosts: ${{secrets.SSH_KNOWN_HOSTS_CONTENTS}}
       - name: Deploy with rsync
-        run: rsync -avz --del -e "ssh -p ${{ secrets.SSH_SERVER_PORT }}" ./build/www/ ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_SERVER_HOST }}:${{ secrets.SSH_SERVER_RSYNC_PATH }}
+        run: rsync -avz --del -e "ssh -p ${{ secrets.SSH_SERVER_PORT }}" ./gui/build/www/ ${{ secrets.SSH_SERVER_USER }}@${{ secrets.SSH_SERVER_HOST }}:${{ secrets.SSH_SERVER_RSYNC_PATH }}

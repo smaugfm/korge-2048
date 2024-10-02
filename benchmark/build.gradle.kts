@@ -16,8 +16,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":common"))
-                implementation(project(":solve"))
+                implementation(projects.common)
+                implementation(projects.solve)
                 implementation(libs.kotlinx.benchmark.runtime)
             }
         }

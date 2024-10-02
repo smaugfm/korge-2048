@@ -38,7 +38,7 @@ kotlin {
         }
         commonMain {
             dependencies {
-                implementation(project(":common"))
+                implementation(projects.common)
             }
         }
         commonTest {
