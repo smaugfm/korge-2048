@@ -2,7 +2,6 @@ package io.github.smaugfm.game2048.search
 
 import io.github.smaugfm.game2048.board.Board4
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import kotlin.math.max
 import kotlin.time.measureTimedValue
 
@@ -35,17 +34,10 @@ abstract class Search protected constructor(
         )
     }
 
-    private suspend fun Search.calculateBoardScore(
+    protected abstract suspend fun calculateBoardScore(
         board: Board4,
         depthLimit: Int,
-    ) = getExpectimaxResults(
-        directions.map {
-            SearchRequest(
-                board,
-                depthLimit,
-                it
-            )
-        })
+    ): List<SearchResult>
 
     private fun getDepthLimit(board: Board4): Int {
         val distinctTiles = board.countDistinctTiles()
@@ -55,10 +47,6 @@ abstract class Search protected constructor(
 
     protected abstract suspend fun init()
     protected abstract fun platformDepthLimit(distinctTiles: Int): Int
-
-    protected abstract suspend fun getExpectimaxResults(
-        requests: List<SearchRequest>,
-    ): List<SearchResult>
 
     protected abstract fun combineStats(
         one: SearchStats,

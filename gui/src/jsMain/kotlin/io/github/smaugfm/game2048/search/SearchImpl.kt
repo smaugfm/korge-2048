@@ -1,5 +1,6 @@
 package io.github.smaugfm.game2048.search
 
+import io.github.smaugfm.game2048.board.Board4
 import io.github.smaugfm.game2048.board.Direction
 import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.usingWasm
@@ -32,8 +33,11 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
     actual override fun platformDepthLimit(distinctTiles: Int) =
         distinctTiles - if (usingWasm == true) 3 else 6
 
-    actual override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> =
-        requests.map(::webWorkerSearch)
+    actual override suspend fun calculateBoardScore(
+        board: Board4,
+        depthLimit: Int
+    ): List<SearchResult> =
+        Direction.entries.map { SearchRequest(board, depthLimit, it) }.map(::webWorkerSearch)
             .awaitAll()
             .filterNotNull()
 

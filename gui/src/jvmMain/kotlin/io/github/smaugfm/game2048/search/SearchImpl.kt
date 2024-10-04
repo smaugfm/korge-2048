@@ -1,44 +1,17 @@
 package io.github.smaugfm.game2048.search
 
+import io.github.smaugfm.game2048.board.Board4
 import io.github.smaugfm.game2048.board.Direction
-import io.github.smaugfm.game2048.board.Direction.Companion.directions
 import io.github.smaugfm.game2048.transposition.Long2LongMapTranspositionTable
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.channels.actor
 import java.util.concurrent.Executors
 import kotlin.math.max
 
-@OptIn(ObsoleteCoroutinesApi::class)
 actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
-    private val workers =
-        directions.associateWith {
-            scope.actor<WorkerMessage> {
-                val table = Long2LongMapTranspositionTable()
-                for (msg in channel) {
-                    try {
-                        msg.result.complete(ExpectimaxSearch(table).score(msg.req))
-                    } catch (e: Throwable) {
-                        println(
-                            "Unhandled exception in worker (jvm):"
-                        )
-                        println(e)
-                        msg.result.completeExceptionally(e)
-                    }
-                }
-            }
-        }
-
-    class WorkerMessage(
-        val req: SearchRequest,
-        val result: CompletableDeferred<SearchResult?>,
-    )
-
     public actual override suspend fun init() {
         //do nothing
     }
@@ -46,16 +19,16 @@ actual class SearchImpl actual constructor(log: Boolean) : Search(log) {
     actual override fun platformDepthLimit(distinctTiles: Int) =
         distinctTiles - 2
 
-    actual override suspend fun getExpectimaxResults(requests: List<SearchRequest>): List<SearchResult> {
-        return requests.map { threadedSearch(it) }
-            .awaitAll()
-            .filterNotNull()
-    }
-
-    private suspend fun threadedSearch(req: SearchRequest): Deferred<SearchResult?> =
-        CompletableDeferred<SearchResult?>().also {
-            workers[req.dir]!!.send(WorkerMessage(req, it))
-        }
+    actual override suspend fun calculateBoardScore(
+        board: Board4,
+        depthLimit: Int
+    ): List<SearchResult> =
+        Direction.entries.map { SearchRequest(board, depthLimit, it) }.map { req ->
+            scope.async {
+                val table = Long2LongMapTranspositionTable()
+                ExpectimaxSearch(table).score(req)
+            }
+        }.awaitAll().filterNotNull()
 
     actual override fun combineStats(
         one: SearchStats,
