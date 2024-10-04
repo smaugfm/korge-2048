@@ -16,4 +16,4 @@ per second with depths up to 10 on the M1 Macbook.
 Web version compiled with Kotlin/JS is here: [2048.marchuk.io](2048.marchuk.io).
 
 Kotlin/WASM uses experimetnal [Web Assembly garbage collection](https://github.com/WebAssembly/gc) and if it is not supported in the browser the game falls back to JS-only implementation of Expectimax search. 
-For now, to achieve maximum performance in the web version use Chrome browser with `chrome://flags/#enable-webassembly-garbage-collection` flag enabled.
+For now, to achieve maximum performance in the web version use Chromium-based browser.
