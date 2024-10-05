@@ -14,12 +14,12 @@ fun main() {
         try {
             val requestStr = messageEvent.data.toString()
             if (requestStr == "ping") {
-                self.postMessage("pong".asDynamic())
+                self.postMessage("pong")
             } else {
                 val request = SearchRequest.deserialize(requestStr)!!
                 val scoreResult = ExpectimaxSearch(table).score(request)
                 self.postMessage(
-                    scoreResult?.serialize()?.asDynamic()
+                    scoreResult?.serialize()
                 )
             }
             null

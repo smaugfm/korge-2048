@@ -1,4 +1,3 @@
-import korlibs.korge.gradle.BuildVersions
 import korlibs.korge.gradle.korge
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
@@ -41,11 +40,9 @@ afterEvaluate {
     }
 }
 
-dependencies {
-    generatedOutput(projects.solve) {
-        targetConfiguration = "distribution"
-    }
-}
+dependencies.add(generatedOutput.name, projects.solve, {
+    targetConfiguration = "distribution"
+})
 
 kotlin {
     sourceSets {
