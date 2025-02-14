@@ -20,13 +20,19 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
         directions.associateWith { Worker(srcCode) }
 
     public actual override suspend fun init() {
-        checkWasmSupport()
-        workers = if (usingWasm == true) {
+        val wasmCodeFile = "./wasmJs.js"
+        val jsCodeFile = "./js.js"
+
+        usingWasm = checkWebWorkers(wasmCodeFile)
+
+        if (usingWasm == true) {
             consoleLogBold("Using WebAssembly Expectimax implementation")
-            loadWorkers("./wasmJs.js")
-        } else {
+            workers = loadWorkers(wasmCodeFile)
+        } else if (checkWebWorkers(jsCodeFile)) {
             consoleLogBold("Falling back to Javascript Expectimax implementation")
-            loadWorkers("./js.js")
+            workers = loadWorkers(jsCodeFile)
+        } else {
+            println("Web workers were not loaded. AI is disabled.")
         }
     }
 
@@ -37,7 +43,8 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
         board: Board4,
         depthLimit: Int
     ): List<SearchResult> =
-        Direction.entries.map { SearchRequest(board, depthLimit, it) }.map(::webWorkerSearch)
+        Direction.entries.map { SearchRequest(board, depthLimit, it) }
+            .map(::webWorkerSearch)
             .awaitAll()
             .filterNotNull()
 
@@ -67,29 +74,32 @@ actual class SearchImpl actual constructor(log: Boolean) : Search() {
             )
         }
 
-        suspend fun checkWasmSupport() {
+        suspend fun checkWebWorkers(codeFile: String): Boolean {
             val deferred = CompletableDeferred<Unit>()
 
-            val worker = Worker("./wasmJs.js")
+            var workersLoaded = false
+            val worker = Worker(codeFile)
             try {
                 withTimeout(200) {
                     worker.onmessage = { e ->
-                        if (e.data.toString() == "started")
+                        if (e.data.toString() == "pong") {
                             deferred.complete(Unit)
-                        else
+                        } else
                             console.log(
-                                "Message received from wasm " +
-                                    "worker is not 'started' but ${e.data.toString()}"
+                                "Message received from web worker " +
+                                    "is not 'pong' but ${e.data.toString()}"
                             )
                     }
                     delay(100)
+                    worker.postMessage("ping")
                     deferred.await()
-                    usingWasm = true
+                    workersLoaded = true
                 }
             } catch (e: TimeoutCancellationException) {
-                usingWasm = false
+                workersLoaded = false
             }
             worker.terminate()
+            return workersLoaded
         }
 
 

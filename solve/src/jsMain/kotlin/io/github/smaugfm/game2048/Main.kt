@@ -8,7 +8,6 @@ import org.w3c.dom.DedicatedWorkerGlobalScope
 fun main() {
     val table = Long2LongMapTranspositionTable()
     val self = js("self") as DedicatedWorkerGlobalScope
-    println("Web worker (js) started")
 
     self.onmessage = { messageEvent ->
         try {
@@ -29,4 +28,6 @@ fun main() {
             null
         }
     }
+
+    println("Web worker (js) started")
 }

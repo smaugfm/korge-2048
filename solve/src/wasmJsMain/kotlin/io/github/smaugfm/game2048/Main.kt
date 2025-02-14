@@ -10,14 +10,15 @@ private fun getWorkerGlobalScope(): DedicatedWorkerGlobalScope = js("self")
 fun main() {
     val table = Long2LongMapTranspositionTable()
     val self = getWorkerGlobalScope()
-    println("Web-worker (wasm) started")
 
-    self.postMessage("started".toJsString())
     self.onmessage = { messageEvent ->
         try {
             val requestStr = messageEvent.data.toString()
-            if (requestStr == "ping") self.postMessage("pong".toJsString())
-            else {
+            if (requestStr == "ping") {
+                println("receved ping")
+                self.postMessage("pong".toJsString())
+                println("posted pong")
+            } else {
                 val request = SearchRequest.deserialize(requestStr)!!
 
                 val scoreResult = ExpectimaxSearch(table).score(request)
@@ -30,4 +31,6 @@ fun main() {
             println(e)
         }
     }
+
+    println("Web-worker (wasm) started")
 }
